@@ -19,7 +19,7 @@ import { MongooseConfigService } from 'src/database/mongoose.config.service';
     ConfigModule.forRoot({
       isGlobal: true,
       load: [configuration],
-      envFilePath: ['.env'],
+      envFilePath: '.env',
     }),
     MongooseModule.forRootAsync({
       useClass: MongooseConfigService,
