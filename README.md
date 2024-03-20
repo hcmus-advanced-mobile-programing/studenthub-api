@@ -1,35 +1,40 @@
-<p align="center">
-  <a href="http://nestjs.com/" target="blank"><img src="https://nestjs.com/img/logo-small.svg" width="200" alt="Nest Logo" /></a>
-</p>
+# Nest Backend Starter
 
-  <p align="center">A progressive <a href="http://nodejs.org" target="_blank">Node.js</a> framework for building efficient and scalable server-side applications.</p>
-    <p align="center">
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/v/@nestjs/core.svg" alt="NPM Version" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/l/@nestjs/core.svg" alt="Package License" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/dm/@nestjs/common.svg" alt="NPM Downloads" /></a>
-<a href="https://circleci.com/gh/nestjs/nest" target="_blank"><img src="https://img.shields.io/circleci/build/github/nestjs/nest/master" alt="CircleCI" /></a>
-<a href="https://coveralls.io/github/nestjs/nest?branch=master" target="_blank"><img src="https://coveralls.io/repos/github/nestjs/nest/badge.svg?branch=master#9" alt="Coverage" /></a>
-<a href="https://discord.gg/G7Qnnhy" target="_blank"><img src="https://img.shields.io/badge/discord-online-brightgreen.svg" alt="Discord"/></a>
-<a href="https://opencollective.com/nest#backer" target="_blank"><img src="https://opencollective.com/nest/backers/badge.svg" alt="Backers on Open Collective" /></a>
-<a href="https://opencollective.com/nest#sponsor" target="_blank"><img src="https://opencollective.com/nest/sponsors/badge.svg" alt="Sponsors on Open Collective" /></a>
-  <a href="https://paypal.me/kamilmysliwiec" target="_blank"><img src="https://img.shields.io/badge/Donate-PayPal-ff3f59.svg"/></a>
-    <a href="https://opencollective.com/nest#sponsor"  target="_blank"><img src="https://img.shields.io/badge/Support%20us-Open%20Collective-41B883.svg" alt="Support us"></a>
-  <a href="https://twitter.com/nestframework" target="_blank"><img src="https://img.shields.io/twitter/follow/nestframework.svg?style=social&label=Follow"></a>
-</p>
-  <!--[![Backers on Open Collective](https://opencollective.com/nest/backers/badge.svg)](https://opencollective.com/nest#backer)
-  [![Sponsors on Open Collective](https://opencollective.com/nest/sponsors/badge.svg)](https://opencollective.com/nest#sponsor)-->
+## Features
 
-## Description
+- [x] Database ([typeorm](https://typeorm.io/)).
+- [x] Config Service ([@nestjs/config](https://www.npmjs.com/package/@nestjs/config)).
+- [ ] Mailing ([nodemailer](https://www.npmjs.com/package/nodemailer), [@nestjs-modules/mailer](https://www.npmjs.com/package/@nestjs-modules/mailer)).
+- [x] Basic Sign in and sign up
+- [x] Admin and User roles.
+- [ ] File uploads. Support local.
+- [x] Swagger.
+- [x] E2E and units tests.
+- [x] Docker.
 
-[Nest](https://github.com/nestjs/nest) framework TypeScript starter repository.
-
-## Installation
+## Quick start
 
 ```bash
+cp env.example .env
+
 yarn install
 ```
 
-## Running the app
+### Install Redis
+
+From the terminal, run:
+
+```
+brew install redis
+```
+
+Starting Redis using launchd
+
+```
+brew services start redis
+```
+
+## Development
 
 ```bash
 # development
@@ -38,37 +43,70 @@ $ yarn run start
 # watch mode
 $ yarn run start:dev
 
+# Or
+$ yarn run dev
+
 # production mode
-$ yarn run start:prod
+$ npm run start:prod
 ```
 
-## Test
+## Swagger
+
+nest API description available at: [localhost:4088/api-docs](http://localhost:4088/api-docs)
+
+## Database utils
+
+Generate migration
+
+```bash
+yarn run migration:generate
+```
+
+Run migration
+
+```bash
+yarn run migration:run
+```
+
+Revert migration
+
+```bash
+yarn run migration:revert
+```
+
+Drop all tables in database
+
+```bash
+yarn run schema:drop
+```
+
+## Tests
 
 ```bash
 # unit tests
-$ yarn run test
+npm run test
 
 # e2e tests
-$ yarn run test:e2e
-
-# test coverage
-$ yarn run test:cov
+npm run test:e2e
 ```
 
-## Contributors
+## Nest CLI
 
-- Luc Tran Quang | 18127147 | [tqlucitvn](https://github.com/tqlucitvn)
+### New resources
 
-## Support
+```
+npx nest g resource modules/<resource name>
+```
 
-Nest is an MIT-licensed open source project. It can grow thanks to the sponsors and support by the amazing backers. If you'd like to join them, please [read more here](https://docs.nestjs.com/support).
+## Deployment
 
-## Stay in touch
+1. Prepare environment file
+2. Run docker build and up command by using `production-dc.yml`
 
-- Author - [Kamil Myśliwiec](https://kamilmysliwiec.com)
-- Website - [https://nestjs.com](https://nestjs.com/)
-- Twitter - [@nestframework](https://twitter.com/nestframework)
+```bash
+docker-compose -f production-dc.yml build
 
-## License
+docker-compose -f production-dc.yml up -d
+```
 
-Nest is [MIT licensed](LICENSE).
+## TEMPLATE SOURCE: <https://github.com/KuaqSon/nestjs-starter>
