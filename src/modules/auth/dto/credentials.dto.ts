@@ -1,12 +1,11 @@
-import { IsArray, IsEmail, IsNotEmpty, IsOptional, IsString, Matches, MaxLength, MinLength } from 'class-validator';
 import { ApiProperty } from '@nestjs/swagger';
+import { IsArray, IsOptional, IsString, Matches, MaxLength, MinLength } from 'class-validator';
 import { UserRoleEnum } from 'src/roles/roles.enum';
 
 export class CreateCredentialDto {
   @IsString()
-  @IsEmail()
   @ApiProperty()
-  email: string;
+  username: string;
 
   @MinLength(8)
   @MaxLength(32)
@@ -16,11 +15,6 @@ export class CreateCredentialDto {
   @ApiProperty()
   password: string;
 
-  @IsString()
-  @IsNotEmpty()
-  @ApiProperty()
-  fullName: string;
-
   @IsArray()
   @IsOptional()
   @ApiProperty()
@@ -29,9 +23,8 @@ export class CreateCredentialDto {
 
 export class AuthCredentialsDto {
   @IsString()
-  @IsEmail()
   @ApiProperty()
-  email: string;
+  username: string;
 
   @IsString()
   @ApiProperty()

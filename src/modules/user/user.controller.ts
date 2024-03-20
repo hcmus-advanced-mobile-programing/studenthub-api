@@ -1,47 +1,35 @@
-import { Body, Controller, Delete, Get, Post, Put, Query } from '@nestjs/common';
-
-import { UserService } from './user.service';
+import { Body, Controller, Delete, Get, Param, Post, Put } from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
 import { Auth, UUIDParam } from 'src/decorators/http.decorators';
-import { CreateUserDto } from 'src/modules/user/dto/create-user.dto';
-import { PaginateUserDto } from 'src/modules/user/dto/paginate-user.dto';
-import { UpdateUserDto } from 'src/modules/user/dto/update-user.dto';
-import { UserRoleEnum } from 'src/roles/roles.enum';
-import { UserFindArgs } from 'src/modules/user/dto/user-find-args.dto';
 import { UserChangePassDto } from 'src/modules/user/dto/change-pass-user.dto';
-import { UpdateProfileDto } from 'src/modules/user/dto/update-profile.dto';
+import { CreateUserDto } from 'src/modules/user/dto/create-user.dto';
+import { UpdateUserDto } from 'src/modules/user/dto/update-user.dto';
+import { UserService } from './user.service';
 
 @ApiTags('user')
 @Controller('user')
 export class UserController {
   constructor(private userService: UserService) {}
 
-  @Auth([UserRoleEnum.ADMIN, UserRoleEnum.MANAGER])
-  @Get()
-  getUserList(@Query() args: UserFindArgs): Promise<PaginateUserDto> {
-    return this.userService.getAllUser(args);
-  }
-
   @Post()
-  @Auth([UserRoleEnum.ADMIN, UserRoleEnum.MANAGER])
+  // @Auth([])
   create(@Body() userDto: CreateUserDto): Promise<void> {
     return this.userService.add(userDto);
   }
 
-  @Put('update-profile')
-  @Auth()
-  updateProfile(@Body() updateProfileDto: UpdateProfileDto): Promise<void> {
-    return this.userService.updateProfile(updateProfileDto);
+  @Get(':id')
+  async getById(@Param('id') id: string) {
+    return this.userService.findById(id);
   }
 
   @Put(':id')
-  @Auth([UserRoleEnum.ADMIN, UserRoleEnum.MANAGER])
+  @Auth([])
   update(@UUIDParam('id') id: string, @Body() userDto: UpdateUserDto): Promise<void> {
     return this.userService.update(id, userDto);
   }
 
   @Delete(':id')
-  @Auth([UserRoleEnum.ADMIN])
+  @Auth([])
   delete(@UUIDParam('id') id: string): Promise<void> {
     return this.userService.delete(id);
   }
