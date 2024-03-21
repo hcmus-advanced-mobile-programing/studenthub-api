@@ -15,7 +15,7 @@
   },
   "scripts": {
     "prebuild": "rimraf dist",
-    "build": "nest build",
+    "build": "cross-env NODE_ENV=production nest build",
     "format": "prettier --config .prettierrc --write \"src/**/*.ts\" \"test/**/*.ts\"",
     "start": "nest start",
     "dev": "cross-env NODE_ENV=development nest start --watch",
