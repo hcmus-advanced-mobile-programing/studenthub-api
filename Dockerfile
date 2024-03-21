@@ -8,6 +8,7 @@ COPY . .
 
 RUN ls -a
 
+RUN yarn add global nestjs
 RUN yarn install --frozen-lockfile
 RUN yarn run build
 
