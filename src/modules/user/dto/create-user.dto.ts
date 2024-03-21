@@ -1,7 +1,6 @@
 import { Matches, MaxLength, MinLength } from 'class-validator';
 import { ApiProperty } from '@nestjs/swagger';
 import { BaseUserResDto } from 'src/modules/user/dto/user-res.dto';
-import { UserRoleEnum } from 'src/roles/roles.enum';
 
 export class CreateUserDto extends BaseUserResDto {
   @MinLength(8)
@@ -11,10 +10,4 @@ export class CreateUserDto extends BaseUserResDto {
   })
   @ApiProperty()
   password: string;
-
-  @ApiProperty()
-  username: string;
-
-  @ApiProperty()
-  roles: UserRoleEnum[];
 }
