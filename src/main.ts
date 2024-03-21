@@ -53,6 +53,18 @@ async function bootstrap() {
     SwaggerModule.setup('api-docs', app, document);
   }
 
+  // TEMPORATY FOR TEST
+  if (isProduction) {
+    const config = new DocumentBuilder()
+      .setTitle('Nest Tool')
+      .setDescription('nest API description')
+      .setVersion('1.0')
+      .addBearerAuth({ type: 'http', scheme: 'bearer', bearerFormat: 'JWT' })
+      .build();
+    const document = SwaggerModule.createDocument(app, config);
+    SwaggerModule.setup('api-docs', app, document);
+  }
+
   app.enableCors({ allowedHeaders: '*', origin: '*', credentials: true });
 
   Sentry.init({
