@@ -3,22 +3,19 @@ dotenv.config();
 
 import { BullModule } from '@nestjs/bull';
 import { MiddlewareConsumer, Module, NestModule } from '@nestjs/common';
-
 import { ConfigModule } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
-
 import { LoggerModule } from 'nestjs-pino';
 import configuration from 'src/config/configuration';
 import { TypeOrmConfigService } from 'src/database/typeorm-config.service';
 import loggerConfig from 'src/logger/config';
 import { AuthModule } from 'src/modules/auth/auth.module';
+import { NotificationChannelModule } from 'src/modules/notification-channel/notification-channel.module';
 import { UserModule } from 'src/modules/user/user.module';
 import { HttRequestContextMiddleware } from 'src/shared/http-request-context/http-request-context.middleware';
 import { HttRequestContextModule } from 'src/shared/http-request-context/http-request-context.module';
 import { RequestIdHeaderMiddleware } from 'src/shared/middlewares/request-id-header.middleware';
 import { DataSource } from 'typeorm';
-import { NotificationChannelModule } from 'src/modules/notification-channel/notification-channel.module';
-import { PostModule } from 'src/modules/post/post.module';
 
 @Module({
   imports: [
@@ -45,7 +42,6 @@ import { PostModule } from 'src/modules/post/post.module';
     AuthModule,
     UserModule,
     NotificationChannelModule,
-    PostModule,
   ],
 })
 export class AppModule implements NestModule {
