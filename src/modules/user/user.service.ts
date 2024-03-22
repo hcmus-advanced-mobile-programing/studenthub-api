@@ -5,22 +5,22 @@ import * as bcrypt from 'bcrypt';
 
 import { CreateUserDto } from 'src/modules/user/dto/create-user.dto';
 import { UpdateUserDto } from 'src/modules/user/dto/update-user.dto';
-import { UserEntity } from 'src/modules/user/user.entity';
+import { User } from 'src/modules/user/user.entity';
 import { PaginationResult, genPaginationResult } from 'src/shared/dtos/common.dtos';
 import { HttpRequestContextService } from 'src/shared/http-request-context/http-request-context.service';
 import { EntityCondition } from 'src/utils/types/entity-condition.type';
 import { UserFindArgs } from 'src/modules/user/dto/user-find-args.dto';
 import { UserChangePassDto } from 'src/modules/user/dto/change-pass-user.dto';
 import { UpdateProfileDto } from 'src/modules/user/dto/update-profile.dto';
-import { UserRoleEnum } from 'src/roles/roles.enum';
+import { UserRole } from 'src/common/common.enum';
 
 @Injectable()
 export class UserService {
   private readonly logger = new Logger(UserService.name);
 
   constructor(
-    @InjectRepository(UserEntity)
-    private usersRepository: Repository<UserEntity>,
+    @InjectRepository(User)
+    private usersRepository: Repository<User>,
     private readonly httpContext: HttpRequestContextService
   ) {}
 
@@ -28,13 +28,13 @@ export class UserService {
     return await this.usersRepository.save(this.usersRepository.create(createUserDto));
   }
 
-  async findOne(fields: EntityCondition<UserEntity>): Promise<UserEntity> {
+  async findOne(fields: EntityCondition<User>): Promise<User> {
     return this.usersRepository.findOne({
       where: fields,
     });
   }
 
-  async getAllUser(args: UserFindArgs): Promise<PaginationResult<UserEntity>> {
+  async getAllUser(args: UserFindArgs): Promise<PaginationResult<User>> {
     const { limit, offset, q, roles, isActive, order } = args;
     const userId = this.httpContext.getUser().id;
 
@@ -73,22 +73,21 @@ export class UserService {
 
   async add(userDto: CreateUserDto): Promise<void> {
     const currentUserRoles = this.httpContext.getUser()?.roles || [];
-    const { email, fullName, roles, password } = userDto;
+    const { username, roles, password } = userDto;
 
-    const existed = await this.usersRepository.findOneBy({ email });
+    const existed = await this.usersRepository.findOneBy({ username });
     if (existed) {
       throw new ConflictException('This email is already associated with an account');
     }
 
-    if (currentUserRoles.includes(UserRoleEnum.MANAGER) && roles.includes(UserRoleEnum.ADMIN)) {
+    if (currentUserRoles.includes(UserRole.MANAGER) && roles.includes(UserRole.ADMIN)) {
       throw new ForbiddenException();
     }
     const salt = await bcrypt.genSalt();
     const hashedPassword = await bcrypt.hash(password, salt);
     const user = this.usersRepository.create({
-      email,
+      username,
       password: hashedPassword,
-      fullName,
       roles,
     });
 
@@ -97,8 +96,8 @@ export class UserService {
 
   async update(userId: string, userDto: UpdateUserDto): Promise<void> {
     const currentUserRoles = this.httpContext.getUser()?.roles || [];
-    const roles = userDto.roles;
-    if (currentUserRoles.includes(UserRoleEnum.MANAGER) && roles?.includes(UserRoleEnum.ADMIN)) {
+    const role = userDto.roles;
+    if (currentUserRoles.includes(UserRole.MANAGER) && role?.includes(UserRole.ADMIN)) {
       throw new ForbiddenException();
     }
     await this.usersRepository.update(userId, userDto);
@@ -115,7 +114,7 @@ export class UserService {
     const hashedPassword = await bcrypt.hash(newPassword, salt);
 
     const currentUser = this.httpContext.getUser();
-    const user = await this.findOne({ email: currentUser.email });
+    const user = await this.findOne({ id: currentUser.id });
     const isValidPassword = await bcrypt.compare(oldPassword, user.password);
 
     if (isValidPassword && newPassword !== oldPassword)

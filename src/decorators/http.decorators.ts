@@ -5,10 +5,10 @@ import { ApiBearerAuth, ApiUnauthorizedResponse } from '@nestjs/swagger';
 import { PublicRoute } from 'src/decorators/public-route.decorator';
 import { AuthGuard } from 'src/guards/auth.guard';
 import { RolesGuard } from 'src/guards/roles.guard';
-import { Roles } from 'src/roles/roles.decorator';
-import { UserRoleEnum } from 'src/roles/roles.enum';
+import { Roles } from 'src/common/common.decorator';
+import { UserRole } from 'src/common/common.enum';
 
-export function Auth(roles: UserRoleEnum[] = [], options?: Partial<{ public: boolean }>): MethodDecorator {
+export function Auth(roles: UserRole[] = [], options?: Partial<{ public: boolean }>): MethodDecorator {
   const isPublicRoute = options?.public;
 
   return applyDecorators(

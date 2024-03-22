@@ -1,53 +1,30 @@
-import {
-  Column,
-  CreateDateColumn,
-  Entity,
-  JoinColumn,
-  OneToMany,
-  PrimaryGeneratedColumn,
-  UpdateDateColumn,
-} from 'typeorm';
 import { ApiProperty } from '@nestjs/swagger';
-import { UserRoleEnum } from 'src/roles/roles.enum';
-import { PostEntity } from 'src/modules/post/entities/post.entity';
+import { Base } from 'src/modules/base/base.entity';
+import { UserRole } from 'src/common/common.enum';
+import { Column, Entity, OneToOne } from 'typeorm';
+import { Student } from 'src/modules/student/student.entity';
+import { Company } from 'src/modules/company/company.entity';
 
 @Entity({
-  name: 'User',
+  name: 'user',
+  synchronize: false,
 })
-export class UserEntity {
-  @PrimaryGeneratedColumn('uuid')
-  @ApiProperty({ description: 'userID' })
-  id: string;
-
+export class User extends Base {
   @Column({ unique: true })
-  @ApiProperty({ description: 'email' })
-  email: string;
+  @ApiProperty({ description: 'username' })
+  username: string;
 
   @Column()
   @ApiProperty({ description: 'password' })
   password: string;
 
-  @Column()
-  @ApiProperty({ description: 'full name' })
-  fullName: string;
-
   @Column('text', { array: true, default: ['USER'] })
   @ApiProperty({ description: 'roles' })
-  roles: UserRoleEnum[];
+  roles: UserRole[];
 
-  @CreateDateColumn()
-  createdAt: Date;
+  @OneToOne(() => Student, student => student.user)
+    student: Student;
 
-  @UpdateDateColumn()
-  updatedAt: Date;
-
-  @Column({ default: false })
-  isActive: boolean;
-
-  @Column({ default: false })
-  isConfirm: boolean;
-
-  @OneToMany(() => PostEntity, (post) => post.id)
-  @JoinColumn()
-  posts: PostEntity[];
+  @OneToOne(() => Company, company => company.user)
+    company: Company;
 }

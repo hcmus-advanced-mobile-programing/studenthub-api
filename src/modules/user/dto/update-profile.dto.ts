@@ -4,5 +4,5 @@ export class UpdateProfileDto {
   @ApiProperty({
     required: true,
   })
-  fullName: string;
+  username: string;
 }

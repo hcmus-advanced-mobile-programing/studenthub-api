@@ -1,7 +1,7 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { Transform } from 'class-transformer';
 import { IsBoolean, IsOptional, IsString } from 'class-validator';
-import { UserRoleEnum } from 'src/roles/roles.enum';
+import { UserRole } from 'src/common/common.enum';
 import { FindArgs } from 'src/shared/dtos/common.dtos';
 
 export class UserFindArgs extends FindArgs {
@@ -17,7 +17,7 @@ export class UserFindArgs extends FindArgs {
   @ApiProperty({
     required: false,
     description: 'filter by roles',
-    default: UserRoleEnum.USER,
+    default: UserRole.USER,
   })
   @IsOptional()
   @IsString()

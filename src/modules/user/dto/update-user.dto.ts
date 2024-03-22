@@ -1,5 +1,5 @@
 import { IsBoolean, IsNotEmpty, IsOptional } from 'class-validator';
-import { UserRoleEnum } from 'src/roles/roles.enum';
+import { UserRole } from 'src/common/common.enum';
 
 export class UpdateUserDto {
   @IsOptional()
@@ -8,7 +8,7 @@ export class UpdateUserDto {
 
   @IsOptional()
   @IsNotEmpty()
-  roles: UserRoleEnum[];
+  roles: UserRole[];
 
   @IsOptional()
   @IsNotEmpty()

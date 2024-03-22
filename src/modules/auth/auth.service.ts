@@ -11,7 +11,7 @@ import * as bcrypt from 'bcrypt';
 import { CreateCredentialDto, AuthCredentialsDto } from 'src/modules/auth/dto/credentials.dto';
 import { UserResDto } from 'src/modules/user/dto/user-res.dto';
 import { UserService } from 'src/modules/user/user.service';
-import { UserRoleEnum } from 'src/roles/roles.enum';
+import { UserRole } from 'src/common/common.enum';
 import { HttpRequestContextService } from 'src/shared/http-request-context/http-request-context.service';
 
 @Injectable()
@@ -25,20 +25,14 @@ export class AuthService {
   ) {}
 
   async getCurrentUser(): Promise<UserResDto> {
-    throw new Error('test error');
     const userId = this.httpContext.getUser().id;
     const user = await this.usersService.findOne({ id: userId });
-    if (!user.isActive) {
-      throw new ForbiddenException('inactivated account');
-    }
-
-    const { id, email, fullName, roles } = user;
 
     const dto: UserResDto = {
-      id,
-      email,
-      fullName,
-      roles,
+      id: user.id,
+      roles: user.roles,
+      student: user.student,
+      company: user.company,
     };
 
     return dto;
@@ -46,7 +40,7 @@ export class AuthService {
 
   async validateLogin(loginDto: AuthCredentialsDto): Promise<{ token: string }> {
     const user = await this.usersService.findOne({
-      email: loginDto.email,
+      username: loginDto.username,
     });
     const isValidPassword = await bcrypt.compare(loginDto.password, user.password);
 
@@ -56,7 +50,7 @@ export class AuthService {
 
     const token = this.jwtService.sign({
       id: user.id,
-      email: user.email,
+      username: user.username,
       roles: user.roles,
     });
 
@@ -66,14 +60,13 @@ export class AuthService {
   }
 
   async register(userDto: CreateCredentialDto): Promise<void> {
-    const { email, password, fullName } = userDto;
+    const { username, password } = userDto;
     const salt = await bcrypt.genSalt();
     const hashedPassword = await bcrypt.hash(password, salt);
     await this.usersService.create({
-      email,
+      username,
       password: hashedPassword,
-      fullName,
-      roles: [UserRoleEnum.USER],
+      roles: [UserRole.USER],
     });
 
     // TODO: Do mailing stuffs

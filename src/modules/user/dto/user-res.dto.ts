@@ -1,25 +1,36 @@
 import { IsArray, IsEmail, IsNotEmpty, IsOptional, IsString } from 'class-validator';
 import { ApiProperty } from '@nestjs/swagger';
-import { UserRoleEnum } from 'src/roles/roles.enum';
+import { UserRole } from 'src/common/common.enum';
+import { Student } from 'src/modules/student/student.entity';
+import { Company } from 'src/modules/company/company.entity';
 
 export class BaseUserResDto {
   @IsString()
-  @IsEmail()
   @ApiProperty()
-  email: string;
-
-  @IsString()
-  @IsNotEmpty()
-  @ApiProperty()
-  fullName: string;
+  username: string;
 
   @IsArray()
   @IsOptional()
   @ApiProperty()
-  roles: UserRoleEnum[];
+  roles: UserRole[];
 }
 
-export class UserResDto extends BaseUserResDto {
+export class UserResDto {
   @ApiProperty()
-  readonly id: string;
+  readonly id: string | number;
+
+  @IsArray()
+  @IsOptional()
+  @ApiProperty()
+  roles: UserRole[];
+
+  @IsArray()
+  @IsNotEmpty()
+  @ApiProperty()
+  student?: Student;
+
+  @IsArray()
+  @IsNotEmpty()
+  @ApiProperty()
+  company?: Company;
 }
