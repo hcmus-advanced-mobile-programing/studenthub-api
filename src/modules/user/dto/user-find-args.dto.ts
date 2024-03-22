@@ -17,9 +17,9 @@ export class UserFindArgs extends FindArgs {
   @ApiProperty({
     required: false,
     description: 'filter by roles',
-    default: UserRoleEnum.USER,
+    // default: UserRoleEnum.USER,
   })
   @IsOptional()
   @IsString()
-  roles?: string;
+  roles?: UserRoleEnum[];
 }
