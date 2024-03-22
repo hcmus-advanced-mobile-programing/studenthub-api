@@ -40,11 +40,11 @@ export class UserService {
 
     const record = this.usersRepository
       .createQueryBuilder('user')
-      .select(['user.id', 'user.fullName', 'user.email', 'user.roles', 'user.isActive', 'user.createdAt'])
+      .select(['user.id', 'user.username', 'user.roles', 'user.isActive', 'user.createdAt'])
       .where('user.id != :userId', { userId });
 
     if (q) {
-      record.andWhere('LOWER(CONCAT(user.fullName, user.email)) ILIKE LOWER(:keyword)', {
+      record.andWhere('LOWER(CONCAT(user.username)) ILIKE LOWER(:keyword)', {
         keyword: `%${q}%`,
       });
     }
@@ -73,11 +73,11 @@ export class UserService {
 
   async add(userDto: CreateUserDto): Promise<void> {
     const currentUserRoles = this.httpContext.getUser()?.roles || [];
-    const { email, fullName, roles, password } = userDto;
+    const { username, roles, password } = userDto;
 
-    const existed = await this.usersRepository.findOneBy({ email });
+    const existed = await this.usersRepository.findOneBy({ username });
     if (existed) {
-      throw new ConflictException('This email is already associated with an account');
+      throw new ConflictException('This username is already associated with an account');
     }
 
     if (currentUserRoles.includes(UserRoleEnum.MANAGER) && roles.includes(UserRoleEnum.ADMIN)) {
@@ -86,9 +86,8 @@ export class UserService {
     const salt = await bcrypt.genSalt();
     const hashedPassword = await bcrypt.hash(password, salt);
     const user = this.usersRepository.create({
-      email,
+      username,
       password: hashedPassword,
-      fullName,
       roles,
     });
 
@@ -115,7 +114,7 @@ export class UserService {
     const hashedPassword = await bcrypt.hash(newPassword, salt);
 
     const currentUser = this.httpContext.getUser();
-    const user = await this.findOne({ email: currentUser.email });
+    const user = await this.findOne({ username: currentUser.username });
     const isValidPassword = await bcrypt.compare(oldPassword, user.password);
 
     if (isValidPassword && newPassword !== oldPassword)
