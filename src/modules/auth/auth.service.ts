@@ -1,9 +1,17 @@
-import { ForbiddenException, Injectable, Logger, UnprocessableEntityException } from '@nestjs/common';
+import {
+  ForbiddenException,
+  HttpException,
+  HttpStatus,
+  Injectable,
+  Logger,
+  UnprocessableEntityException,
+} from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import * as bcrypt from 'bcrypt';
-import { AuthCredentialsDto, CreateCredentialDto } from 'src/modules/auth/dto/credentials.dto';
+import { CreateCredentialDto, AuthCredentialsDto } from 'src/modules/auth/dto/credentials.dto';
 import { UserResDto } from 'src/modules/user/dto/user-res.dto';
 import { UserService } from 'src/modules/user/user.service';
+import { UserRoleEnum } from 'src/roles/roles.enum';
 import { HttpRequestContextService } from 'src/shared/http-request-context/http-request-context.service';
 
 @Injectable()
@@ -24,11 +32,12 @@ export class AuthService {
       throw new ForbiddenException('inactivated account');
     }
 
-    const { id, username, roles } = user;
+    const { id, email, fullName, roles } = user;
 
     const dto: UserResDto = {
       id,
-      username,
+      email,
+      fullName,
       roles,
     };
 
@@ -37,7 +46,7 @@ export class AuthService {
 
   async validateLogin(loginDto: AuthCredentialsDto): Promise<{ token: string }> {
     const user = await this.usersService.findOne({
-      username: loginDto.username,
+      email: loginDto.email,
     });
     const isValidPassword = await bcrypt.compare(loginDto.password, user.password);
 
@@ -47,7 +56,7 @@ export class AuthService {
 
     const token = this.jwtService.sign({
       id: user.id,
-      username: user.username,
+      email: user.email,
       roles: user.roles,
     });
 
@@ -57,12 +66,14 @@ export class AuthService {
   }
 
   async register(userDto: CreateCredentialDto): Promise<void> {
-    const { username, password, roles } = userDto;
-
-    await this.usersService.add({
-      username,
-      password,
-      roles: roles,
+    const { email, password, fullName } = userDto;
+    const salt = await bcrypt.genSalt();
+    const hashedPassword = await bcrypt.hash(password, salt);
+    await this.usersService.create({
+      email,
+      password: hashedPassword,
+      fullName,
+      roles: [UserRoleEnum.USER],
     });
 
     // TODO: Do mailing stuffs
