@@ -1,0 +1,16 @@
+{
+    "version": "0.2.0",
+    "configurations": [
+      {
+        "type": "node",
+        "request": "launch",
+        "name": "Launch Program",
+        "outputCapture": "std",
+        "skipFiles": ["<node_internals>/**"],
+        "program": "${workspaceFolder}/dist/main.js",
+        "env": {
+          "PORT": "4400",
+        }
+      }
+    ]
+  }
