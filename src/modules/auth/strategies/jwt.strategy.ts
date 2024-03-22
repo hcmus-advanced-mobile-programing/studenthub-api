@@ -2,14 +2,14 @@ import { ExtractJwt, Strategy } from 'passport-jwt';
 import { ForbiddenException, Injectable, Logger, UnauthorizedException } from '@nestjs/common';
 import { PassportStrategy } from '@nestjs/passport';
 import { ConfigService } from '@nestjs/config';
+import { UserEntity } from 'src/modules/user/user.entity';
 import { UserResDto } from 'src/modules/user/dto/user-res.dto';
 import { UserService } from 'src/modules/user/user.service';
 import { HttpRequestContextService } from 'src/shared/http-request-context/http-request-context.service';
-import { User } from 'src/database/entities/user.entity';
 
 const logger = new Logger();
 
-type JwtPayload = Pick<User, 'id' | 'username' | 'roles'> & { iat: number; exp: number };
+type JwtPayload = Pick<UserEntity, 'id' | 'email' | 'roles'> & { iat: number; exp: number };
 
 @Injectable()
 export class JwtStrategy extends PassportStrategy(Strategy) {
@@ -41,13 +41,14 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
     }
 
     if (!user) {
-      logger.warn(`User %j is not found or not active %j`, user?.username);
+      logger.warn(`User %j is not found or not active %j`, user?.email);
       throw new UnauthorizedException();
     }
 
     const currUser: UserResDto = {
       id: user.id,
-      username: user.username,
+      email: user.email,
+      fullName: user.fullName,
       roles: user.roles,
     };
 
