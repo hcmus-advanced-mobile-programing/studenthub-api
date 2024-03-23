@@ -16,10 +16,6 @@ export class Company extends Base {
   @ApiProperty({ description: 'fullname' })
   fullname: string;
 
-  @Column({ unique: true })
-  @ApiProperty({ description: 'email' })
-  email: string;
-
   @Column({ name: 'company_name' })
   @ApiProperty({ description: 'companyName' })
   companyName: string;

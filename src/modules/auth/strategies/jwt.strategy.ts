@@ -9,7 +9,7 @@ import { HttpRequestContextService } from 'src/shared/http-request-context/http-
 
 const logger = new Logger();
 
-type JwtPayload = Pick<User, 'id' | 'username' | 'roles'> & { iat: number; exp: number };
+type JwtPayload = Pick<User, 'id' | 'email' | 'roles'> & { iat: number; exp: number };
 
 @Injectable()
 export class JwtStrategy extends PassportStrategy(Strategy) {
@@ -38,7 +38,7 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
     const user = await this.userService.findOne({ id: payload.id });
 
     if (!user) {
-      logger.warn(`User %j is not found or not active %j`, user?.username);
+      logger.warn(`User %j is not found or not active %j`, user?.email);
       throw new UnauthorizedException();
     }
 

@@ -7,7 +7,7 @@ import { Company } from 'src/modules/company/company.entity';
 export class BaseUserResDto {
   @IsString()
   @ApiProperty()
-  username: string;
+  email: string;
 
   @IsArray()
   @IsOptional()

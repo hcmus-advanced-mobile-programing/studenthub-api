@@ -11,8 +11,8 @@ import { Company } from 'src/modules/company/company.entity';
 })
 export class User extends Base {
   @Column({ unique: true })
-  @ApiProperty({ description: 'username' })
-  username: string;
+  @ApiProperty({ description: 'email' })
+  email: string;
 
   @Column()
   @ApiProperty({ description: 'password' })
