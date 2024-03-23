@@ -22,9 +22,9 @@ export class User extends Base {
   @ApiProperty({ description: 'roles' })
   roles: UserRole[];
 
-  @OneToOne(() => Student, student => student.user)
-    student: Student;
+  @OneToOne(() => Student, (student) => student.user)
+  student: Student;
 
-  @OneToOne(() => Company, company => company.user)
-    company: Company;
+  @OneToOne(() => Company, (company) => company.user)
+  company: Company;
 }

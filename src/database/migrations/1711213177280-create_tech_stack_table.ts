@@ -1,10 +1,10 @@
 import { MigrationInterface, QueryRunner, Table } from 'typeorm';
 
-export class CreateProjectProposalTable1711125085440 implements MigrationInterface {
+export class CreateTechStackTable1711213177280 implements MigrationInterface {
   public async up(queryRunner: QueryRunner): Promise<any> {
     await queryRunner.createTable(
       new Table({
-        name: 'project_proposal',
+        name: 'tech_stack',
         columns: [
           {
             name: 'id',
@@ -14,13 +14,9 @@ export class CreateProjectProposalTable1711125085440 implements MigrationInterfa
             generationStrategy: 'increment',
           },
           {
-            name: 'project_id',
-            type: 'bigint',
-            isNullable: false,
-          },
-          {
-            name: 'proposal_id',
-            type: 'bigint',
+            name: 'name',
+            type: 'varchar',
+            length: '100',
             isNullable: false,
           },
           {
@@ -45,6 +41,6 @@ export class CreateProjectProposalTable1711125085440 implements MigrationInterfa
   }
 
   public async down(queryRunner: QueryRunner): Promise<void> {
-    await queryRunner.dropTable('project_proposal');
+    await queryRunner.dropTable('tech_stack');
   }
 }
