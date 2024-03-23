@@ -1,7 +1,8 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { DisableFlag, StatusFlag, TypeFlag } from 'src/common/common.enum';
+import { TypeFlag } from 'src/common/common.enum';
 import { Base } from 'src/modules/base/base.entity';
-import { Column, Entity } from 'typeorm';
+import { Proposal } from 'src/modules/proposal/proposal.entity';
+import { Column, Entity, OneToMany } from 'typeorm';
 
 @Entity({
   name: 'project',
@@ -23,4 +24,7 @@ export class Project extends Base {
   @Column({ name: 'type_flag' })
   @ApiProperty({ description: 'typeFlag' })
   typeFlag: TypeFlag;
+
+  @OneToMany(() => Proposal, (proposal) => proposal.student)
+  proposals: Proposal[];
 }

@@ -28,7 +28,7 @@ export class Company extends Base {
   @ApiProperty({ description: 'description' })
   description: string;
 
-  @OneToOne(() => User, user => user.student)
+  @OneToOne(() => User, (user) => user.student)
   @JoinColumn()
   user: User;
 }

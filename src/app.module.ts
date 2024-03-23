@@ -17,6 +17,7 @@ import { HttRequestContextMiddleware } from 'src/shared/http-request-context/htt
 import { HttRequestContextModule } from 'src/shared/http-request-context/http-request-context.module';
 import { RequestIdHeaderMiddleware } from 'src/shared/middlewares/request-id-header.middleware';
 import { DataSource } from 'typeorm';
+import { ProposalModule } from 'src/modules/proposal/proposal.module';
 
 @Module({
   imports: [
@@ -38,10 +39,11 @@ import { DataSource } from 'typeorm';
         port: parseInt(process.env.REDIS_PORT, 10),
       },
     }),
-    AuthModule,
-    UserModule,
     HttRequestContextModule,
     LoggerModule.forRootAsync(loggerConfig),
+    AuthModule,
+    UserModule,
+    ProposalModule,
   ],
 })
 export class AppModule implements NestModule {
