@@ -16,10 +16,6 @@ export class Student extends Base {
   @ApiProperty({ description: 'fullname' })
   fullname: string;
 
-  @Column({ unique: true })
-  @ApiProperty({ description: 'email' })
-  email: string;
-
   @Column({ name: 'tech_stack_id', type: 'bigint' })
   @ApiProperty({ description: 'techStackId' })
   techStackId: number | string;

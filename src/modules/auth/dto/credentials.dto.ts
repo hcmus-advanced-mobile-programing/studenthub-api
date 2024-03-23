@@ -4,8 +4,9 @@ import { UserRole } from 'src/common/common.enum';
 
 export class CreateCredentialDto {
   @IsString()
+  @IsEmail()
   @ApiProperty()
-  username: string;
+  email: string;
 
   @MinLength(8)
   @MaxLength(32)
@@ -30,7 +31,7 @@ export class AuthCredentialsDto {
   @IsString()
   @IsEmail()
   @ApiProperty()
-  username: string;
+  email: string;
 
   @IsString()
   @ApiProperty()

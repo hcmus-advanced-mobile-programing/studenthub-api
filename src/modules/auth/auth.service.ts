@@ -1,7 +1,4 @@
 import {
-  ForbiddenException,
-  HttpException,
-  HttpStatus,
   Injectable,
   Logger,
   UnprocessableEntityException,
@@ -40,7 +37,7 @@ export class AuthService {
 
   async validateLogin(loginDto: AuthCredentialsDto): Promise<{ token: string }> {
     const user = await this.usersService.findOne({
-      username: loginDto.username,
+      email: loginDto.email,
     });
     const isValidPassword = await bcrypt.compare(loginDto.password, user.password);
 
@@ -50,7 +47,7 @@ export class AuthService {
 
     const token = this.jwtService.sign({
       id: user.id,
-      username: user.username,
+      email: user.email,
       roles: user.roles,
     });
 
@@ -60,21 +57,13 @@ export class AuthService {
   }
 
   async register(userDto: CreateCredentialDto): Promise<void> {
-    const { username, password } = userDto;
+    const { email, password } = userDto;
     const salt = await bcrypt.genSalt();
     const hashedPassword = await bcrypt.hash(password, salt);
     await this.usersService.create({
-      username,
+      email,
       password: hashedPassword,
       roles: [UserRole.USER],
     });
-
-    // TODO: Do mailing stuffs
-    // await this.mailService.userSignUp({
-    //   to: user.email,
-    //   data: {
-    //     hash,
-    //   },
-    // });
   }
 }

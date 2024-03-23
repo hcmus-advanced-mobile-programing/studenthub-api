@@ -73,9 +73,9 @@ export class UserService {
 
   async add(userDto: CreateUserDto): Promise<void> {
     const currentUserRoles = this.httpContext.getUser()?.roles || [];
-    const { username, roles, password } = userDto;
+    const { email, roles, password } = userDto;
 
-    const existed = await this.usersRepository.findOneBy({ username });
+    const existed = await this.usersRepository.findOneBy({ email });
     if (existed) {
       throw new ConflictException('This email is already associated with an account');
     }
@@ -86,7 +86,7 @@ export class UserService {
     const salt = await bcrypt.genSalt();
     const hashedPassword = await bcrypt.hash(password, salt);
     const user = this.usersRepository.create({
-      username,
+      email,
       password: hashedPassword,
       roles,
     });
