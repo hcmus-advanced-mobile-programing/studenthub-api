@@ -12,12 +12,16 @@
 - [x] E2E and units tests.
 - [x] Docker.
 
-## Quick start
+## Run source code local
 
 ```bash
 cp env.example .env
 
 yarn install
+
+yarn run migration:run
+
+yarn run start
 ```
 
 ## Development
