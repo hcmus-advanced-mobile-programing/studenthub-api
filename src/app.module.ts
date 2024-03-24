@@ -13,6 +13,7 @@ import { TypeOrmConfigService } from 'src/database/typeorm-config.service';
 import loggerConfig from 'src/logger/config';
 import { AuthModule } from 'src/modules/auth/auth.module';
 import { UserModule } from 'src/modules/user/user.module';
+import { ProjectModule } from './modules/project/project.module';
 import { HttRequestContextMiddleware } from 'src/shared/http-request-context/http-request-context.middleware';
 import { HttRequestContextModule } from 'src/shared/http-request-context/http-request-context.module';
 import { RequestIdHeaderMiddleware } from 'src/shared/middlewares/request-id-header.middleware';
@@ -39,6 +40,9 @@ import { ProposalModule } from 'src/modules/proposal/proposal.module';
         port: parseInt(process.env.REDIS_PORT, 10),
       },
     }),
+    AuthModule,
+    UserModule,
+    ProjectModule,
     HttRequestContextModule,
     LoggerModule.forRootAsync(loggerConfig),
     AuthModule,

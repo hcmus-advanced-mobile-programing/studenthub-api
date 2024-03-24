@@ -9,6 +9,10 @@ import { Column, Entity, OneToMany } from 'typeorm';
   synchronize: false,
 })
 export class Project extends Base {
+  @Column({ name: 'company_id', type: 'bigint' }) 
+  @ApiProperty({ description: 'company_id' })
+  companyId: number | string;
+
   @Column({ name: 'project_scope_id', type: 'bigint' })
   @ApiProperty({ description: 'projectScopeId' })
   projectScopeId: number | string;

@@ -14,6 +14,11 @@ export class CreateProjectTable1711121252836 implements MigrationInterface {
             generationStrategy: 'increment',
           },
           {
+            name: 'company_id',
+            type: 'bigint',
+            isNullable: false,
+          },
+          {
             name: 'project_scope_id',
             type: 'bigint',
             isNullable: false,
