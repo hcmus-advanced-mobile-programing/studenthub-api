@@ -9,7 +9,7 @@ import { Column, Entity, OneToMany } from 'typeorm';
   synchronize: false,
 })
 export class Project extends Base {
-  @Column({ name: 'company_id', type: 'bigint' }) 
+  @Column({ name: 'company_id', type: 'bigint' })
   @ApiProperty({ description: 'company_id' })
   companyId: number | string;
 

@@ -7,7 +7,7 @@ import { Project } from './project.entity';
 export class ProjectService {
   constructor(
     @InjectRepository(Project)
-    private readonly projectRepository: Repository<Project>,
+    private readonly projectRepository: Repository<Project>
   ) {}
 
   async findByCompanyId(companyId: number): Promise<Project[]> {
@@ -22,6 +22,13 @@ export class ProjectService {
     return projects;
   }
 
+  async create(project: Project): Promise<Project> {
+    return this.projectRepository.save(project);
+  }
+  async findAll(): Promise<Project[]> {
+    const projects = (await this.projectRepository.find()) || [];
+    return projects;
+  }
   async findById(id: number): Promise<Project> {
     const project = await this.projectRepository.findOne({ where: { id } });
 
@@ -30,5 +37,13 @@ export class ProjectService {
     }
 
     return project;
+  }
+
+  async delete(id: number): Promise<void> {
+    await this.projectRepository.delete(id);
+  }
+
+  async update(id: number, updatedProject: Project): Promise<void> {
+    await this.projectRepository.update(id, updatedProject);
   }
 }
