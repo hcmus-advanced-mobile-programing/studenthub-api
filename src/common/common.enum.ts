@@ -8,7 +8,7 @@ export enum UserRole {
 export enum StatusFlag {
   Waitting = 0,
   Offer = 1,
-  Hired = 1,
+  Hired = 2,
 }
 
 export enum DisableFlag {
