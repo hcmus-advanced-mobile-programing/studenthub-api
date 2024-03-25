@@ -5,7 +5,6 @@ import { Column, Entity, JoinColumn, ManyToOne } from 'typeorm';
 
 @Entity({
   name: 'education',
-  synchronize: false,
 })
 export class Education extends Base {
   @Column({ name: 'student_id', type: 'bigint' })

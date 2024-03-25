@@ -7,7 +7,6 @@ import { Company } from 'src/modules/company/company.entity';
 
 @Entity({
   name: 'user',
-  synchronize: false,
 })
 export class User extends Base {
   @Column({ unique: true })
@@ -21,6 +20,10 @@ export class User extends Base {
   @Column('text', { array: true, default: ['USER'] })
   @ApiProperty({ description: 'roles' })
   roles: UserRole[];
+
+  @Column({ default: false })
+  @ApiProperty({ description: 'isConfirmed' })
+  isConfirmed: boolean;
 
   @OneToOne(() => Student, (student) => student.user)
   student: Student;
