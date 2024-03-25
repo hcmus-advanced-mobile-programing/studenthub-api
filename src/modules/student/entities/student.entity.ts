@@ -7,7 +7,7 @@ import { Language } from 'src/modules/student/entities/language.entity';
 import { SkillSet } from 'src/modules/student/entities/skillSet.entity';
 import { TechStack } from 'src/modules/student/entities/techStack.entity';
 import { User } from 'src/modules/user/user.entity';
-import { Column, Entity, JoinColumn, ManyToMany, OneToMany, OneToOne } from 'typeorm';
+import { Column, Entity, JoinColumn, JoinTable, ManyToMany, OneToMany, OneToOne } from 'typeorm';
 
 @Entity({
   name: 'student',
@@ -57,7 +57,7 @@ export class Student extends Base {
   @OneToMany(() => Experience, (experience) => experience.student)
   experiences: Experience[];
 
-  @ManyToMany(() => SkillSet)
-  @JoinColumn({ name: 'skill_set_id' })
+  @ManyToMany(() => SkillSet, (skillSet) => skillSet.students)
+  @JoinTable()
   skillSets: SkillSet[];
 }
