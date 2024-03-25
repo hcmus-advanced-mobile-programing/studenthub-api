@@ -24,11 +24,11 @@ export class Company extends Base {
   companyName: string;
 
   @Column()
-  @ApiProperty({ description: 'website' })
+  @ApiProperty({ description: 'website', nullable: true })
   website: string;
 
   @Column()
-  @ApiProperty({ description: 'description' })
+  @ApiProperty({ description: 'description', nullable: true })
   description: string;
 
   @OneToOne(() => User, (user) => user.company)

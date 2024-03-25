@@ -21,6 +21,10 @@ export class User extends Base {
   @ApiProperty({ description: 'roles' })
   roles: UserRole[];
 
+  @Column({ default: false })
+  @ApiProperty({ description: 'isConfirmed' })
+  isConfirmed: boolean;
+
   @OneToOne(() => Student, (student) => student.user)
   student: Student;
 

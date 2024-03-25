@@ -25,15 +25,11 @@ export class Student extends Base {
   @ApiProperty({ description: 'techStackId' })
   techStackId: number | string;
 
-  @Column({ name: 'skill_set_id', type: 'bigint' })
-  @ApiProperty({ description: 'skillSetId' })
-  skillSetId: number[] | string[];
-
-  @Column({ name: 'resume' })
+  @Column({ name: 'resume', nullable: true })
   @ApiProperty({ description: 'resume' })
   resume: string;
 
-  @Column({ name: 'transcript' })
+  @Column({ name: 'transcript', nullable: true })
   @ApiProperty({ description: 'transcript' })
   transcript: string;
 

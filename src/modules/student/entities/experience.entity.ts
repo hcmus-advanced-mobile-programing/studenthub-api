@@ -23,7 +23,7 @@ export class Experience extends Base {
   @ApiProperty({ description: 'endMonth' })
   endMonth: Date;
 
-  @Column({ name: 'description' })
+  @Column({ name: 'description', nullable: true })
   @ApiProperty({ description: 'description' })
   description: string;
 
