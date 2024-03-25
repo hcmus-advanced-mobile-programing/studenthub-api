@@ -22,6 +22,12 @@ export class UserController {
     return this.userService.getAllUser(args);
   }
 
+  @Auth()
+  @Post(':id/profile')
+  createProfile() {
+    console.log('hehe');
+  }
+
   @Post()
   @Auth([UserRole.ADMIN, UserRole.MANAGER])
   create(@Body() userDto: CreateUserDto): Promise<void> {
