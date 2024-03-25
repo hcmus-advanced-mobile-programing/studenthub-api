@@ -19,6 +19,8 @@ import { HttRequestContextModule } from 'src/shared/http-request-context/http-re
 import { RequestIdHeaderMiddleware } from 'src/shared/middlewares/request-id-header.middleware';
 import { DataSource } from 'typeorm';
 import { ProposalModule } from 'src/modules/proposal/proposal.module';
+import { CompanyModule } from 'src/modules/company/company.module';
+import { StudentModule } from 'src/modules/student/student.module';
 
 @Module({
   imports: [
@@ -48,6 +50,8 @@ import { ProposalModule } from 'src/modules/proposal/proposal.module';
     AuthModule,
     UserModule,
     ProposalModule,
+    CompanyModule,
+    StudentModule,
   ],
 })
 export class AppModule implements NestModule {

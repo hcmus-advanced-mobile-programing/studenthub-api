@@ -1,6 +1,6 @@
 import { IsNotEmpty, IsNumber, IsObject, IsString } from 'class-validator';
 import { ApiProperty } from '@nestjs/swagger';
-import { Student } from 'src/modules/student/student.entity';
+import { Student } from 'src/modules/student/entities/student.entity';
 import { Project } from 'src/modules/project/project.entity';
 import { StatusFlag } from 'src/common/common.enum';
 

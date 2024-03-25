@@ -2,12 +2,11 @@ import { ApiProperty } from '@nestjs/swagger';
 import { DisableFlag, StatusFlag } from 'src/common/common.enum';
 import { Base } from 'src/modules/base/base.entity';
 import { Project } from 'src/modules/project/project.entity';
-import { Student } from 'src/modules/student/student.entity';
+import { Student } from 'src/modules/student/entities/student.entity';
 import { Column, Entity, JoinColumn, ManyToOne } from 'typeorm';
 
 @Entity({
   name: 'proposal',
-  synchronize: false,
 })
 export class Proposal extends Base {
   @Column({ name: 'project_id', type: 'bigint' })

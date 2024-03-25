@@ -4,7 +4,6 @@ import { Column, Entity } from 'typeorm';
 
 @Entity({
   name: 'tech_stack',
-  synchronize: false,
 })
 export class TechStack extends Base {
   @Column()

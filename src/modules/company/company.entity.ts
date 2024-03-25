@@ -5,7 +5,6 @@ import { Column, Entity, JoinColumn, OneToOne } from 'typeorm';
 
 @Entity({
   name: 'company',
-  synchronize: false,
 })
 export class Company extends Base {
   @Column({ name: 'user_id', type: 'bigint' })
@@ -15,6 +14,10 @@ export class Company extends Base {
   @Column()
   @ApiProperty({ description: 'fullname' })
   fullname: string;
+
+  @Column({ name: 'company_size' })
+  @ApiProperty({ description: 'companySize' })
+  companySize: string;
 
   @Column({ name: 'company_name' })
   @ApiProperty({ description: 'companyName' })
@@ -28,7 +31,7 @@ export class Company extends Base {
   @ApiProperty({ description: 'description' })
   description: string;
 
-  @OneToOne(() => User, (user) => user.student)
+  @OneToOne(() => User, (user) => user.company)
   @JoinColumn()
   user: User;
 }

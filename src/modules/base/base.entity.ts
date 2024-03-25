@@ -1,7 +1,9 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { Entity, PrimaryGeneratedColumn, Column, UpdateDateColumn, CreateDateColumn } from 'typeorm';
 
-@Entity()
+@Entity({
+  synchronize: false,
+})
 export class Base {
   @PrimaryGeneratedColumn()
   @ApiProperty({ description: 'id' })

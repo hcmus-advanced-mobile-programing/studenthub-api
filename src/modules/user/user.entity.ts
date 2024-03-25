@@ -2,12 +2,11 @@ import { ApiProperty } from '@nestjs/swagger';
 import { Base } from 'src/modules/base/base.entity';
 import { UserRole } from 'src/common/common.enum';
 import { Column, Entity, OneToOne } from 'typeorm';
-import { Student } from 'src/modules/student/student.entity';
+import { Student } from 'src/modules/student/entities/student.entity';
 import { Company } from 'src/modules/company/company.entity';
 
 @Entity({
   name: 'user',
-  synchronize: false,
 })
 export class User extends Base {
   @Column({ unique: true })
