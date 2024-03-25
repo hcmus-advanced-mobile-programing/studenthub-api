@@ -1,5 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { Base } from 'src/modules/base/base.entity';
+import { Base } from 'src/common/base.entity';
 import { UserRole } from 'src/common/common.enum';
 import { Column, Entity, OneToOne } from 'typeorm';
 import { Student } from 'src/modules/student/student.entity';

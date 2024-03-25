@@ -13,6 +13,8 @@ import { UserFindArgs } from 'src/modules/user/dto/user-find-args.dto';
 import { UserChangePassDto } from 'src/modules/user/dto/change-pass-user.dto';
 import { UpdateProfileDto } from 'src/modules/user/dto/update-profile.dto';
 import { UserRole } from 'src/common/common.enum';
+import { Student } from 'src/modules/student/student.entity';
+import { Company } from 'src/modules/company/company.entity';
 
 @Injectable()
 export class UserService {
@@ -21,11 +23,19 @@ export class UserService {
   constructor(
     @InjectRepository(User)
     private usersRepository: Repository<User>,
+    @InjectRepository(Student)
+    private studentRepository: Repository<Student>,
+    @InjectRepository(Company)
+    private companyRepository: Repository<Company>,
     private readonly httpContext: HttpRequestContextService
   ) {}
 
   async create(createUserDto: CreateUserDto) {
-    return await this.usersRepository.save(this.usersRepository.create(createUserDto));
+    const { roles, fullName } = createUserDto;
+    const user = await this.usersRepository.save(this.usersRepository.create(createUserDto));
+    roles.includes(UserRole.STUDENT) && (await this.studentRepository.save({ userId: user.id, fullname: fullName }));
+    roles.includes(UserRole.COMPANY) && (await this.companyRepository.save({ userId: user.id, fullname: fullName }));
+    return user;
   }
 
   async findOne(fields: EntityCondition<User>): Promise<User> {
@@ -72,7 +82,7 @@ export class UserService {
   }
 
   async add(userDto: CreateUserDto): Promise<void> {
-    const currentUserRoles = this.httpContext.getUser()?.roles || [];
+    // const currentUserRoles = this.httpContext.getUser()?.roles || [];
     const { email, roles, password } = userDto;
 
     const existed = await this.usersRepository.findOneBy({ email });
@@ -80,9 +90,9 @@ export class UserService {
       throw new ConflictException('This email is already associated with an account');
     }
 
-    if (currentUserRoles.includes(UserRole.MANAGER) && roles.includes(UserRole.ADMIN)) {
-      throw new ForbiddenException();
-    }
+    // if (currentUserRoles.includes(UserRole.MANAGER) && roles.includes(UserRole.ADMIN)) {
+    //   throw new ForbiddenException();
+    // }
     const salt = await bcrypt.genSalt();
     const hashedPassword = await bcrypt.hash(password, salt);
     const user = this.usersRepository.create({

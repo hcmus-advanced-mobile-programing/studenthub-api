@@ -1,6 +1,6 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { TypeFlag } from 'src/common/common.enum';
-import { Base } from 'src/modules/base/base.entity';
+import { Base } from 'src/common/base.entity';
 import { Proposal } from 'src/modules/proposal/proposal.entity';
 import { Column, Entity, OneToMany } from 'typeorm';
 
