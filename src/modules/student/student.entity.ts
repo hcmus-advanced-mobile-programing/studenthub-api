@@ -1,11 +1,11 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { Base } from 'src/modules/base/base.entity';
 import { Proposal } from 'src/modules/proposal/proposal.entity';
-import { Education } from 'src/modules/student/entities/education.entity';
-import { Experience } from 'src/modules/student/entities/experience.entity';
-import { Language } from 'src/modules/student/entities/language.entity';
-import { SkillSet } from 'src/modules/student/entities/skillSet.entity';
-import { TechStack } from 'src/modules/student/entities/techStack.entity';
+import { Education } from 'src/modules/education/education.entity';
+import { Experience } from 'src/modules/experience/experience.entity';
+import { Language } from 'src/modules/language/language.entity';
+import { SkillSet } from 'src/modules/skillSet/skillSet.entity';
+import { TechStack } from 'src/modules/techStack/techStack.entity';
 import { User } from 'src/modules/user/user.entity';
 import { Column, Entity, JoinColumn, JoinTable, ManyToMany, OneToMany, OneToOne } from 'typeorm';
 

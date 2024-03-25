@@ -1,7 +1,7 @@
 import { IsArray, IsNotEmpty, IsObject, IsOptional, IsString } from 'class-validator';
 import { ApiProperty } from '@nestjs/swagger';
 import { UserRole } from 'src/common/common.enum';
-import { Student } from 'src/modules/student/entities/student.entity';
+import { Student } from 'src/modules/student/student.entity';
 import { Company } from 'src/modules/company/company.entity';
 
 export class BaseUserResDto {

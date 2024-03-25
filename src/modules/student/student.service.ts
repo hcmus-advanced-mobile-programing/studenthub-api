@@ -1,7 +1,7 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { CreateStudentProfileDto } from 'src/modules/student/dto/create-student-profile.dto';
-import { Student } from 'src/modules/student/entities/student.entity';
+import { Student } from 'src/modules/student/student.entity';
 import { HttpRequestContextService } from 'src/shared/http-request-context/http-request-context.service';
 import { Repository } from 'typeorm';
 
