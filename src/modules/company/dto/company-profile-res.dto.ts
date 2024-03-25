@@ -15,7 +15,7 @@ export class CompanyProfileResDto {
 
   @IsString()
   @ApiProperty({ description: 'companySize' })
-  companySize: string;
+  size: string;
 
   @IsString()
   @IsNotEmpty()

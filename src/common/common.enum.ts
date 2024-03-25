@@ -6,6 +6,14 @@ export enum UserRole {
   USER = 'USER',
 }
 
+export enum CompanySize {
+  JUST_ME = 'JUST_ME', //"It's just me",
+  SMALL = 'SMALL', //'2-9 employees',
+  MEDIUM = 'MEDIUM', //'10-99 employees',
+  LARGE = 'LARGE', //'100-1000 employees',
+  VERY_LARGE = 'VERY_LARGE', //'More than 100 employees',
+}
+
 export enum StatusFlag {
   Waitting = 0,
   Offer = 1,

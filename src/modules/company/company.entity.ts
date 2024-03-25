@@ -1,5 +1,6 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { Base } from 'src/common/base.entity';
+import { CompanySize } from 'src/common/common.enum';
 import { User } from 'src/modules/user/user.entity';
 import { Column, Entity, JoinColumn, OneToOne } from 'typeorm';
 
@@ -23,6 +24,10 @@ export class Company extends Base {
   @Column({ name: 'website', nullable: true })
   @ApiProperty({ description: 'website' })
   website: string;
+
+  @Column({ name: 'size', nullable: false })
+  @ApiProperty({ description: 'Size of the company' })
+  size: CompanySize;
 
   @Column({ name: 'description', nullable: true })
   @ApiProperty({ description: 'description' })
