@@ -40,7 +40,7 @@ export class ProjectService {
   }
 
   async delete(id: number): Promise<void> {
-    await this.projectRepository.delete(id);
+    await this.projectRepository.update(id, { deletedAt: new Date() });
   }
 
   async update(id: number, updatedProject: Project): Promise<void> {
