@@ -59,7 +59,7 @@ export class AuthService {
     await this.usersService.create({
       email,
       password: hashedPassword,
-      roles: [UserRole.USER, role],
+      roles: [role],
       fullName: fullName,
     });
   }
