@@ -1,5 +1,6 @@
+import { Optional } from '@nestjs/common';
 import { ApiProperty } from '@nestjs/swagger';
-import { Base } from 'src/modules/base/base.entity';
+import { Base } from 'src/common/base.entity';
 import { Proposal } from 'src/modules/proposal/proposal.entity';
 import { Education } from 'src/modules/education/education.entity';
 import { Experience } from 'src/modules/experience/experience.entity';
@@ -11,6 +12,7 @@ import { Column, Entity, JoinColumn, JoinTable, ManyToMany, OneToMany, OneToOne 
 
 @Entity({
   name: 'student',
+  synchronize: true,
 })
 export class Student extends Base {
   @Column({ name: 'user_id', type: 'bigint' })
@@ -21,9 +23,10 @@ export class Student extends Base {
   @ApiProperty({ description: 'fullname' })
   fullname: string;
 
-  @Column({ name: 'tech_stack_id', type: 'bigint' })
-  @ApiProperty({ description: 'techStackId' })
-  techStackId: number | string;
+  @Column({ name: 'tech_stack_id', type: 'bigint', nullable: true })
+  @Optional()
+  @ApiProperty({ description: 'techStackId', nullable: true })
+  techStackId: number | string | null;
 
   @Column({ name: 'resume', nullable: true })
   @ApiProperty({ description: 'resume' })
@@ -37,7 +40,7 @@ export class Student extends Base {
   @JoinColumn({ name: 'user_id' })
   user: User;
 
-  @OneToOne(() => TechStack)
+  @OneToOne(() => TechStack, { nullable: true })
   @JoinColumn({ name: 'tech_stack_id' })
   techStack: TechStack;
 

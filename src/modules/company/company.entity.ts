@@ -1,10 +1,12 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { Base } from 'src/modules/base/base.entity';
+import { Base } from 'src/common/base.entity';
+import { CompanySize } from 'src/common/common.enum';
 import { User } from 'src/modules/user/user.entity';
 import { Column, Entity, JoinColumn, OneToOne } from 'typeorm';
 
 @Entity({
   name: 'company',
+  synchronize: true,
 })
 export class Company extends Base {
   @Column({ name: 'user_id', type: 'bigint' })
@@ -15,20 +17,20 @@ export class Company extends Base {
   @ApiProperty({ description: 'fullname' })
   fullname: string;
 
-  @Column({ name: 'company_size' })
-  @ApiProperty({ description: 'companySize' })
-  companySize: string;
-
-  @Column({ name: 'company_name' })
+  @Column({ name: 'company_name', nullable: true })
   @ApiProperty({ description: 'companyName' })
   companyName: string;
 
-  @Column()
-  @ApiProperty({ description: 'website', nullable: true })
+  @Column({ name: 'website', nullable: true })
+  @ApiProperty({ description: 'website' })
   website: string;
 
-  @Column()
-  @ApiProperty({ description: 'description', nullable: true })
+  @Column({ name: 'size', nullable: false })
+  @ApiProperty({ description: 'Size of the company' })
+  size: CompanySize;
+
+  @Column({ name: 'description', nullable: true })
+  @ApiProperty({ description: 'description' })
   description: string;
 
   @OneToOne(() => User, (user) => user.company)
