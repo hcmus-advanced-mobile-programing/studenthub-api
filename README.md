@@ -14,13 +14,31 @@
 
 ## Run source code local
 
+Download postgre (https://www.postgresql.org/download/)
+
+Config database follow file env (reference env.example)
+
 ```bash
 cp env.example .env
+```
 
+Install package
+```bash
 yarn install
+```
 
+Auto generate migration
+```bash
+yarn run migration:generate
+```
+
+Run migration to create tables
+```bash
 yarn run migration:run
+```
 
+Run source code
+```bash
 yarn run start
 ```
 

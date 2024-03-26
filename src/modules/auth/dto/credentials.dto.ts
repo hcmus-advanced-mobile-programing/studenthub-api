@@ -1,10 +1,13 @@
-import { IsArray, IsEmail, IsNotEmpty, IsOptional, IsString, Matches, MaxLength, MinLength } from 'class-validator';
 import { ApiProperty } from '@nestjs/swagger';
+import { Type } from 'class-transformer';
+import { IsEmail, IsEnum, IsNotEmpty, IsOptional, IsString, Matches, MaxLength, MinLength } from 'class-validator';
+import { IsEmailAlreadyExist } from 'src/class.validator';
 import { UserRole } from 'src/common/common.enum';
 
 export class CreateCredentialDto {
   @IsString()
   @IsEmail()
+  @IsEmailAlreadyExist({ message: 'Email already exists' })
   @ApiProperty()
   email: string;
 
@@ -21,10 +24,10 @@ export class CreateCredentialDto {
   @ApiProperty()
   fullName: string;
 
-  @IsArray()
-  @IsOptional()
+  @Type(() => Number)
+  @IsEnum(UserRole, { message: 'Please enter a valid role' })
   @ApiProperty()
-  roles: UserRole[];
+  role: UserRole;
 }
 
 export class AuthCredentialsDto {

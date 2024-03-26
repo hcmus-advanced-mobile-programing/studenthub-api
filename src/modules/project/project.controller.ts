@@ -4,7 +4,7 @@ import { ProjectService } from './project.service';
 import { ProjectSearchCompanyId } from './dto/project-search.dto';
 import { Project } from './project.entity';
 
-@ApiTags('Project')
+@ApiTags('project')
 @Controller('api/project')
 export class ProjectController {
   constructor(private readonly projectService: ProjectService) {}

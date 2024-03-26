@@ -1,11 +1,10 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { Base } from 'src/modules/base/base.entity';
+import { Base } from 'src/common/base.entity';
 import { Student } from 'src/modules/student/student.entity';
 import { Column, Entity, JoinColumn, ManyToOne } from 'typeorm';
 
 @Entity({
   name: 'education',
-  synchronize: false,
 })
 export class Education extends Base {
   @Column({ name: 'student_id', type: 'bigint' })
