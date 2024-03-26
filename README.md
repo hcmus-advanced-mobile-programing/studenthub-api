@@ -27,6 +27,11 @@ Install package
 yarn install
 ```
 
+Auto generate migration
+```bash
+yarn run migration:generate
+```
+
 Run migration to create tables
 ```bash
 yarn run migration:run
