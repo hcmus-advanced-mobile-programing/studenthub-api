@@ -22,37 +22,7 @@ export class UserController {
     return this.userService.getAllUser(args);
   }
 
-  @Auth()
-  @Post(':id/profile')
-  createProfile() {
-    console.log('hehe');
-  }
-
-  @Post()
-  @Auth([UserRole.ADMIN, UserRole.MANAGER])
-  create(@Body() userDto: CreateUserDto): Promise<void> {
-    return this.userService.add(userDto);
-  }
-
-  @Put('update-profile')
-  @Auth()
-  updateProfile(@Body() updateProfileDto: UpdateProfileDto): Promise<void> {
-    return this.userService.updateProfile(updateProfileDto);
-  }
-
   @Put(':id')
-  @Auth([UserRole.ADMIN, UserRole.MANAGER])
-  update(@UUIDParam('id') id: string, @Body() userDto: UpdateUserDto): Promise<void> {
-    return this.userService.update(id, userDto);
-  }
-
-  @Delete(':id')
-  @Auth([UserRole.ADMIN])
-  delete(@UUIDParam('id') id: string): Promise<void> {
-    return this.userService.delete(id);
-  }
-
-  @Put()
   @Auth()
   changePassword(@Body() userChangePassDto: UserChangePassDto): Promise<void> {
     return this.userService.changePassword(userChangePassDto);

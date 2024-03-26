@@ -17,7 +17,7 @@ export class UserFindArgs extends FindArgs {
   @ApiProperty({
     required: false,
     description: 'filter by roles',
-    default: UserRole.USER,
+    default: UserRole.STUDENT,
   })
   @IsOptional()
   @IsString()

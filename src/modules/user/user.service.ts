@@ -39,9 +39,10 @@ export class UserService {
   }
 
   async findOne(fields: EntityCondition<User>): Promise<User> {
-    return this.usersRepository.findOne({
+    return await this.usersRepository.findOne({
+      relations: ['student', 'company'],
       where: fields,
-    });
+    },);
   }
 
   async getAllUser(args: UserFindArgs): Promise<PaginationResult<User>> {
