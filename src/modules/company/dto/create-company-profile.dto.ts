@@ -8,7 +8,7 @@ export class CreateCompanyProfileDto {
   @ApiProperty({ required: true })
   companyName: string;
 
-  @ApiProperty({ required: true })
+  @ApiProperty({ required: true, type: 'enum', enum: CompanySize })
   size: CompanySize;
 
   @ApiProperty()
