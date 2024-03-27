@@ -41,6 +41,11 @@ export class StudentProfileService {
   async updateStudentProfile(id: string, studentProfileDto: UpdateStudentProfileDto) {
     const userId = this.httpContext.getUser().id;
     const student = await this.StudentRepository.findOneBy({ id });
+
+    if(!student) {
+      throw new Error(`Not found: studentId = ${id}`);
+    }
+
     if (student.userId !== userId) {
       throw new Error('You do not have permission to update this student profile');
     }

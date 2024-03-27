@@ -8,7 +8,7 @@ import { StudentProfileService } from 'src/modules/student/student.service';
 import { TechStack } from 'src/modules/techStack/techStack.entity';
 
 @ApiTags('profile/student')
-@Controller('profile/student')
+@Controller('api/profile/student')
 export class StudentProfileController {
   constructor(private studentProfileService: StudentProfileService) {}
 

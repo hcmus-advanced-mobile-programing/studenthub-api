@@ -11,7 +11,7 @@ export class SkillSetController {
     return this.skillSetService.findAll();
   }
 
-  @Post('createTechStack')
+  @Post('createSkillSet')
   async create(@Body('name') skillSetName: string): Promise<SkillSet> {
     return this.skillSetService.create(skillSetName);
   }

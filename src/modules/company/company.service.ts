@@ -29,9 +29,13 @@ export class CompanyProfileService {
   async updateCompanyProfile(id: string, companyProfileDto: UpdateCompanyProfileDto) {
     const userId = this.httpContext.getUser().id;
     const company = await this.CompanyRepository.findOneBy({ id });
+    if(!company) {
+      throw new Error(`Not found: companyId = ${id}`);
+    }
     if (company.userId !== userId) {
       throw new Error('You do not have permission to update this company profile');
     }
-    return await this.CompanyRepository.save({ id, ...companyProfileDto });
+    company.size? companyProfileDto.size = company.size : null;
+    return await this.CompanyRepository.update(id, companyProfileDto);
   }
 }
