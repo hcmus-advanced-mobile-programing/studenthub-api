@@ -22,8 +22,6 @@ export class StudentProfileService {
 
   async createStudentProfile(studentProfileDto: CreateStudentProfileDto) {
     const userId = this.httpContext.getUser().id;
-    console.log('haha');
-    console.log(studentProfileDto.skillSets);
     const techStack = studentProfileDto.techStackId
       ? await this.TechStackRepository.findOne({ where: { id: studentProfileDto.techStackId } })
       : null;
