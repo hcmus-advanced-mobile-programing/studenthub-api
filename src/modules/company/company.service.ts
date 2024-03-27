@@ -32,6 +32,6 @@ export class CompanyProfileService {
     if (company.userId !== userId) {
       throw new Error('You do not have permission to update this company profile');
     }
-    return await this.CompanyRepository.update({ id }, companyProfileDto);
+    return await this.CompanyRepository.save({ id, ...companyProfileDto });
   }
 }
