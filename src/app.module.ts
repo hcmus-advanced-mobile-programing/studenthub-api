@@ -21,6 +21,7 @@ import { DataSource } from 'typeorm';
 import { ProposalModule } from 'src/modules/proposal/proposal.module';
 import { CompanyModule } from 'src/modules/company/company.module';
 import { StudentModule } from 'src/modules/student/student.module';
+import { SkillSetModule } from 'src/modules/skillSet/skillSet.module';
 
 @Module({
   imports: [
@@ -52,6 +53,7 @@ import { StudentModule } from 'src/modules/student/student.module';
     ProposalModule,
     CompanyModule,
     StudentModule,
+    SkillSetModule
   ],
 })
 export class AppModule implements NestModule {
