@@ -7,7 +7,7 @@ import { PaginateProposalDto } from 'src/modules/proposal/dto/paginate-proposal.
 import { ProposalFindArgs } from 'src/modules/proposal/dto/proposal-find-args.dto';
 
 @ApiTags('proposal')
-@Controller('proposal')
+@Controller('api/proposal')
 export class ProposalController {
   constructor(private proposalService: ProposalService) {}
 

@@ -25,7 +25,7 @@ export class Company extends Base {
   @ApiProperty({ description: 'website' })
   website: string;
 
-  @Column({ name: 'size', nullable: true })
+  @Column({ name: 'size', nullable: false })
   @ApiProperty({ description: 'Size of the company' })
   size: CompanySize;
 
@@ -33,7 +33,7 @@ export class Company extends Base {
   @ApiProperty({ description: 'description' })
   description: string;
 
-  @OneToOne(() => User, (user) => user.company)
-  @JoinColumn()
+  @OneToOne(() => User)
+  @JoinColumn({ name: 'user_id' })
   user: User;
 }

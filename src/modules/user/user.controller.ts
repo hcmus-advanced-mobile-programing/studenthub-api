@@ -12,7 +12,7 @@ import { UserChangePassDto } from 'src/modules/user/dto/change-pass-user.dto';
 import { UpdateProfileDto } from 'src/modules/user/dto/update-profile.dto';
 
 @ApiTags('user')
-@Controller('user')
+@Controller('api/user')
 export class UserController {
   constructor(private userService: UserService) {}
 

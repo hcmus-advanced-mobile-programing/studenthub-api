@@ -4,7 +4,7 @@ import { Auth } from 'src/decorators/http.decorators';
 import { AuthService } from 'src/modules/auth/auth.service';
 import { AuthCredentialsDto, CreateCredentialDto } from 'src/modules/auth/dto/credentials.dto';
 
-@Controller('auth')
+@Controller('api/auth')
 @ApiTags('auth')
 export class AuthController {
   constructor(private readonly authService: AuthService) {}

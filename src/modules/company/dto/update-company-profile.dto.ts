@@ -8,7 +8,7 @@ export class UpdateCompanyProfileDto {
   companyName: string;
 
   @ApiProperty()
-  companySize: string;
+  size: number;
 
   @ApiProperty()
   website: string;

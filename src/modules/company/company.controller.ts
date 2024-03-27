@@ -8,7 +8,7 @@ import { CreateCompanyProfileDto } from 'src/modules/company/dto/create-company-
 import { UpdateCompanyProfileDto } from 'src/modules/company/dto/update-company-profile.dto';
 
 @ApiTags('profile/company')
-@Controller('profile/company')
+@Controller('api/profile/company')
 export class CompanyProfileController {
   constructor(private companyProfileService: CompanyProfileService) {}
 
