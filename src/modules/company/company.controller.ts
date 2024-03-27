@@ -1,4 +1,4 @@
-import { Body, Controller, Post, Put } from '@nestjs/common';
+import { Body, Controller, Param, Post, Put } from '@nestjs/common';
 
 import { ApiTags } from '@nestjs/swagger';
 import { Auth, UUIDParam } from 'src/decorators/http.decorators';
@@ -20,7 +20,7 @@ export class CompanyProfileController {
 
   @Auth()
   @Put(':id')
-  update(@UUIDParam('id') id: string, @Body() companyProfileDto: UpdateCompanyProfileDto) {
+  update(@Param('id') id: string, @Body() companyProfileDto: UpdateCompanyProfileDto) {
     return this.companyProfileService.updateCompanyProfile(id, companyProfileDto);
   }
 }

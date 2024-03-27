@@ -1,5 +1,7 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsNotEmpty, IsString } from 'class-validator';
+import { Type } from 'class-transformer';
+import { IsEnum, IsNotEmpty, IsNumber, IsString } from 'class-validator';
+import { CompanySize } from 'src/common/common.enum';
 
 export class CompanyProfileResDto {
   @ApiProperty()
@@ -13,9 +15,11 @@ export class CompanyProfileResDto {
   @ApiProperty({ description: 'fullname' })
   fullname: string;
 
-  @IsString()
+  @Type(() => Number)
+  @IsNumber()
+  @IsEnum(CompanySize, { message: 'Please enter a valid company size' })
   @ApiProperty({ description: 'companySize' })
-  size: string;
+  size: number;
 
   @IsString()
   @IsNotEmpty()
