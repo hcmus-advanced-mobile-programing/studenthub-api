@@ -21,6 +21,7 @@ import { DataSource } from 'typeorm';
 import { ProposalModule } from 'src/modules/proposal/proposal.module';
 import { CompanyModule } from 'src/modules/company/company.module';
 import { StudentModule } from 'src/modules/student/student.module';
+import { TechStackModule } from 'src/modules/techStack/techStack.module';
 import { SkillSetModule } from 'src/modules/skillSet/skillSet.module';
 
 @Module({
@@ -53,6 +54,7 @@ import { SkillSetModule } from 'src/modules/skillSet/skillSet.module';
     ProposalModule,
     CompanyModule,
     StudentModule,
+    TechStackModule,
     SkillSetModule
   ],
 })
