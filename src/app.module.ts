@@ -21,7 +21,7 @@ import { DataSource } from 'typeorm';
 import { ProposalModule } from 'src/modules/proposal/proposal.module';
 import { CompanyModule } from 'src/modules/company/company.module';
 import { StudentModule } from 'src/modules/student/student.module';
-import { TechStackModule } from 'src/modules/techStack/teckStack.module';
+import { TechStackModule } from 'src/modules/techStack/techStack.module';
 
 @Module({
   imports: [

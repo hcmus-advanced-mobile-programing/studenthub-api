@@ -1,8 +1,8 @@
 import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { TechStack } from './techStack.entity';
-import { TechStackService } from './teckStack.service';
-import { TechStackController } from './teckStack.controller';
+import { TechStackService } from './techStack.service';
+import { TechStackController } from './techStack.controller';
 
 @Module({
   imports: [TypeOrmModule.forFeature([TechStack])],
