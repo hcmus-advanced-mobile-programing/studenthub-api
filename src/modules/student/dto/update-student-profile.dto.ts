@@ -1,12 +1,12 @@
 import { ApiProperty } from '@nestjs/swagger';
 
 export class UpdateStudentProfileDto {
-  @ApiProperty({ required: true })
+  @ApiProperty()
   fullname: string;
 
-  @ApiProperty({ required: true })
+  @ApiProperty()
   techStackId: number | string;
 
   @ApiProperty()
-  skillSetId: number[] | string[];
+  skillSets: number[] | string[];
 }

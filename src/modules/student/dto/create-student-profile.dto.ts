@@ -8,5 +8,5 @@ export class CreateStudentProfileDto {
   techStackId: number | string;
 
   @ApiProperty()
-  skillSetId: number[] | string[];
+  skillSets: number[] | string[];
 }

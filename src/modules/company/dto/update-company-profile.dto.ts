@@ -1,4 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
+import { CompanySize } from 'src/common/common.enum';
 
 export class UpdateCompanyProfileDto {
   @ApiProperty()
@@ -7,8 +8,8 @@ export class UpdateCompanyProfileDto {
   @ApiProperty()
   companyName: string;
 
-  @ApiProperty()
-  size: number;
+  @ApiProperty({ type: 'enum', enum: CompanySize })
+  size: CompanySize;
 
   @ApiProperty()
   website: string;

@@ -23,6 +23,9 @@ import { CompanyModule } from 'src/modules/company/company.module';
 import { StudentModule } from 'src/modules/student/student.module';
 import { TechStackModule } from 'src/modules/techStack/techStack.module';
 import { SkillSetModule } from 'src/modules/skillSet/skillSet.module';
+import { LanguageModule } from 'src/modules/language/language.module';
+import { EducationModule } from 'src/modules/education/education.module';
+import { ExperienceModule } from 'src/modules/experience/experience.module';
 
 @Module({
   imports: [
@@ -53,7 +56,10 @@ import { SkillSetModule } from 'src/modules/skillSet/skillSet.module';
     CompanyModule,
     StudentModule,
     TechStackModule,
-    SkillSetModule
+    SkillSetModule,
+    LanguageModule,
+    EducationModule,
+    ExperienceModule,
   ],
 })
 export class AppModule implements NestModule {
