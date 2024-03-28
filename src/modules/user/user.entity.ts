@@ -21,6 +21,9 @@ export class User extends Base {
   @ApiProperty({ description: 'roles' })
   roles: UserRole[];
 
+  @Column({ name: 'verified', default: false })
+  verified: boolean;
+
   @Column({ default: false })
   @ApiProperty({ description: 'isConfirmed' })
   isConfirmed: boolean;

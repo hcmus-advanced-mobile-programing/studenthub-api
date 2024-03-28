@@ -12,17 +12,19 @@ import configuration from 'src/config/configuration';
 import { TypeOrmConfigService } from 'src/database/typeorm-config.service';
 import loggerConfig from 'src/logger/config';
 import { AuthModule } from 'src/modules/auth/auth.module';
+import { CompanyModule } from 'src/modules/company/company.module';
+import { ProposalModule } from 'src/modules/proposal/proposal.module';
+import { SkillSetModule } from 'src/modules/skillSet/skillSet.module';
+import { StudentModule } from 'src/modules/student/student.module';
+import { TechStackModule } from 'src/modules/techStack/techStack.module';
 import { UserModule } from 'src/modules/user/user.module';
-import { ProjectModule } from './modules/project/project.module';
 import { HttRequestContextMiddleware } from 'src/shared/http-request-context/http-request-context.middleware';
 import { HttRequestContextModule } from 'src/shared/http-request-context/http-request-context.module';
 import { RequestIdHeaderMiddleware } from 'src/shared/middlewares/request-id-header.middleware';
 import { DataSource } from 'typeorm';
-import { ProposalModule } from 'src/modules/proposal/proposal.module';
-import { CompanyModule } from 'src/modules/company/company.module';
-import { StudentModule } from 'src/modules/student/student.module';
-import { TechStackModule } from 'src/modules/techStack/techStack.module';
-import { SkillSetModule } from 'src/modules/skillSet/skillSet.module';
+import { MailModule } from './mail/mail.module';
+import { ProjectModule } from './modules/project/project.module';
+import { MailService } from 'src/mail/mail.service';
 
 @Module({
   imports: [
@@ -53,8 +55,10 @@ import { SkillSetModule } from 'src/modules/skillSet/skillSet.module';
     CompanyModule,
     StudentModule,
     TechStackModule,
-    SkillSetModule
+    SkillSetModule,
+    MailModule,
   ],
+  providers: [MailService],
 })
 export class AppModule implements NestModule {
   configure(consumer: MiddlewareConsumer) {
