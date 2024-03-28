@@ -64,14 +64,14 @@ export class StudentProfileService {
     return await this.StudentRepository.save(studentProfileToUpdate);
   }
 
-  async getTechStackByUserId(userId: number): Promise<TechStack | null> {
+  async getTechStackByUserId(id: number): Promise<TechStack | null> {
     const student = await this.StudentRepository.findOne({
-      where: { userId },
+      where: { id },
       relations: ['techStack'],
     });
 
     if (!student) {
-      throw new NotFoundException(`Student with userId ${userId} not found`);
+      throw new NotFoundException(`Student with student ${id} not found`);
     }
 
     return student.techStack;
