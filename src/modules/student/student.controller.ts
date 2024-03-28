@@ -24,8 +24,8 @@ export class StudentProfileController {
     return this.studentProfileService.updateStudentProfile(id, studentProfileDto);
   }
 
-  @Get(':userId/techStack')
-  async getTechStackByUserId(@Param('userId') userId: number): Promise<TechStack | null> {
-    return await this.studentProfileService.getTechStackByUserId(userId);
+  @Get(':studentId/techStack')
+  async getTechStackByStudentId(@Param('studentId') studentId: number): Promise<TechStack | null> {
+    return await this.studentProfileService.getTechStackByUserId(studentId);
   }
 }

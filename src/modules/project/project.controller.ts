@@ -9,13 +9,13 @@ import { Project } from './project.entity';
 export class ProjectController {
   constructor(private readonly projectService: ProjectService) {}
 
-  @Get(':companyId')
+  @Get('/company/:companyId')
   async projectSearchCompanyId(@Param() params: ProjectSearchCompanyId): Promise<Project[]> {
     return this.projectService.findByCompanyId(params.companyId);
   }
 
-  @Get(':id')
-  async projectSearchId(@Param('id') id: number): Promise<Project> {
+  @Get(':projectId')
+  async projectSearchId(@Param('projectId') id: number): Promise<Project> {
     return this.projectService.findById(id);
   }
 
