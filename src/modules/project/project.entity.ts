@@ -1,5 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { TypeFlag } from 'src/common/common.enum';
+import { ProjectScopeFlag, TypeFlag } from 'src/common/common.enum';
 import { Base } from 'src/common/base.entity';
 import { Proposal } from 'src/modules/proposal/proposal.entity';
 import { Column, Entity, OneToMany } from 'typeorm';
@@ -12,9 +12,9 @@ export class Project extends Base {
   @ApiProperty({ description: 'company_id' })
   companyId: number | string;
 
-  @Column({ name: 'project_scope_id', type: 'bigint' })
-  @ApiProperty({ description: 'projectScopeId' })
-  projectScopeId: number | string;
+  @Column({ name: 'project_scope_flag', default: ProjectScopeFlag.OneToThreeMonth })
+  @ApiProperty({ description: 'projectScopeFlag' })
+  projectScopeFlag: ProjectScopeFlag;
 
   @Column()
   @ApiProperty({ description: 'title' })

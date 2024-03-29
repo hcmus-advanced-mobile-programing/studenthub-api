@@ -26,6 +26,7 @@ import { SkillSetModule } from 'src/modules/skillSet/skillSet.module';
 import { LanguageModule } from 'src/modules/language/language.module';
 import { EducationModule } from 'src/modules/education/education.module';
 import { ExperienceModule } from 'src/modules/experience/experience.module';
+import { FavoriteProjectModule } from 'src/modules/favoriteProject/favoriteProject.module';
 
 @Module({
   imports: [
@@ -60,6 +61,7 @@ import { ExperienceModule } from 'src/modules/experience/experience.module';
     LanguageModule,
     EducationModule,
     ExperienceModule,
+    FavoriteProjectModule
   ],
 })
 export class AppModule implements NestModule {
