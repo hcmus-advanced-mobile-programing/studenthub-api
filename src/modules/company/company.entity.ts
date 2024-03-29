@@ -25,7 +25,7 @@ export class Company extends Base {
   @ApiProperty({ description: 'website' })
   website: string;
 
-  @Column({ name: 'size', nullable: false })
+  @Column({ name: 'size', nullable: true })
   @ApiProperty({ description: 'Size of the company' })
   size: CompanySize;
 
