@@ -25,7 +25,7 @@ export class CreateCredentialDto {
   @IsString()
   @IsNotEmpty()
   @ApiProperty()
-  fullName: string;
+  fullname: string;
 
   @Type(() => Number)
   @IsEnum(UserRole, { message: 'Please enter a valid role' })

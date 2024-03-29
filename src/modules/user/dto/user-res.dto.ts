@@ -19,6 +19,10 @@ export class UserResDto {
   @ApiProperty()
   readonly id: string | number;
 
+  @IsString()
+  @ApiProperty()
+  fullname: string;
+
   @IsArray()
   @IsOptional()
   @ApiProperty()

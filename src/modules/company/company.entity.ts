@@ -13,10 +13,6 @@ export class Company extends Base {
   @ApiProperty({ description: 'userId' })
   userId: number | string;
 
-  @Column()
-  @ApiProperty({ description: 'fullname' })
-  fullname: string;
-
   @Column({ name: 'company_name', nullable: true })
   @ApiProperty({ description: 'companyName' })
   companyName: string;

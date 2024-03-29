@@ -46,7 +46,7 @@ export class GetStudentProfileDto {
     dto.id = student.id;
     dto.userId = student.userId;
     dto.email = user.email;
-    dto.fullname = student.fullname;
+    dto.fullname = user.fullname;
     dto.techStack = student.techStack;
     dto.resume = student.resume;
     dto.transcript = student.transcript;
