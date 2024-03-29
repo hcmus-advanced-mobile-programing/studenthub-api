@@ -4,6 +4,7 @@ import { ApiTags } from '@nestjs/swagger';
 import { Auth } from 'src/decorators/http.decorators';
 import { CreateStudentProfileDto } from 'src/modules/student/dto/create-student-profile.dto';
 import { UpdateStudentProfileDto } from 'src/modules/student/dto/update-student-profile.dto';
+import { GetStudentProfileDto } from 'src/modules/student/dto/get-student-profile.dto';
 import { StudentProfileService } from 'src/modules/student/student.service';
 import { TechStack } from 'src/modules/techStack/techStack.entity';
 
@@ -24,8 +25,15 @@ export class StudentProfileController {
     return this.studentProfileService.updateStudentProfile(id, studentProfileDto);
   }
 
+  @Auth()
   @Get(':studentId/techStack')
-  async getTechStackByUserId(@Param('studentId') studentId: number): Promise<TechStack | null> {
+  async getTechStackByStudentId(@Param('studentId') studentId: number): Promise<TechStack | null> {
     return await this.studentProfileService.getTechStackByUserId(studentId);
+  }
+
+  @Auth()
+  @Get(':studentId')
+  async getStudentProfile(@Param('studentId') studentId: number | string): Promise<GetStudentProfileDto> {
+    return this.studentProfileService.getStudentProfile(studentId);
   }
 }
