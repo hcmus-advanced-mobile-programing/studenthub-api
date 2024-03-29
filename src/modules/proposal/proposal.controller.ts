@@ -5,18 +5,25 @@ import { ApiTags } from '@nestjs/swagger';
 import { Auth } from 'src/decorators/http.decorators';
 import { PaginateProposalDto } from 'src/modules/proposal/dto/paginate-proposal.dto';
 import { ProposalFindArgs } from 'src/modules/proposal/dto/proposal-find-args.dto';
+import { ProposalResDto } from 'src/modules/proposal/dto/proposal-res.dto';
 
 @ApiTags('proposal')
-@Controller('proposal')
+@Controller('api/proposal')
 export class ProposalController {
   constructor(private proposalService: ProposalService) {}
 
   @Auth()
-  @Get(':projectId')
+  @Get('getByProjectId/:projectId')
   searchProjectId(
     @Param('projectId') projectId: string,
     @Query() args: ProposalFindArgs
   ): Promise<PaginateProposalDto> {
     return this.proposalService.searchProjectId(projectId, args);
+  }
+
+  @Auth()
+  @Get(':id')
+  findOne(@Param('id') id: string): Promise<ProposalResDto> {
+    return this.proposalService.findOne(id);
   }
 }

@@ -13,10 +13,6 @@ export class Company extends Base {
   @ApiProperty({ description: 'userId' })
   userId: number | string;
 
-  @Column()
-  @ApiProperty({ description: 'fullname' })
-  fullname: string;
-
   @Column({ name: 'company_name', nullable: true })
   @ApiProperty({ description: 'companyName' })
   companyName: string;
@@ -33,7 +29,7 @@ export class Company extends Base {
   @ApiProperty({ description: 'description' })
   description: string;
 
-  @OneToOne(() => User, (user) => user.company)
-  @JoinColumn()
+  @OneToOne(() => User)
+  @JoinColumn({ name: 'user_id' })
   user: User;
 }

@@ -1,7 +1,8 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { Base } from 'src/common/base.entity';
+import { SkillSet } from 'src/modules/skillSet/skillSet.entity';
 import { Student } from 'src/modules/student/student.entity';
-import { Column, Entity, JoinColumn, ManyToOne } from 'typeorm';
+import { Column, Entity, JoinColumn, JoinTable, ManyToMany, ManyToOne } from 'typeorm';
 
 @Entity({
   name: 'experience',
@@ -30,4 +31,8 @@ export class Experience extends Base {
   @ManyToOne(() => Student)
   @JoinColumn({ name: 'student_id' })
   student: Student;
+
+  @ManyToMany(() => SkillSet, (skillSet) => skillSet.experiences)
+  @JoinTable()
+  skillSets: SkillSet[];
 }

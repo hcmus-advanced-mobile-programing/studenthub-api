@@ -1,12 +1,12 @@
 import { ApiProperty } from '@nestjs/swagger';
+import { IsNotEmpty } from 'class-validator';
 
 export class CreateStudentProfileDto {
-  @ApiProperty({ required: true })
-  fullname: string;
 
-  @ApiProperty({ required: true })
+  @ApiProperty()
+  @IsNotEmpty()
   techStackId: number | string;
 
   @ApiProperty()
-  skillSetId: number[] | string[];
+  skillSets: number[] | string[];
 }

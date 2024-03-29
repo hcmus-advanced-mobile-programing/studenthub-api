@@ -8,8 +8,4 @@ export class StudentProfileResDto {
   @IsNotEmpty()
   @ApiProperty()
   userId: string | number;
-
-  @IsString()
-  @ApiProperty({ description: 'fullname' })
-  fullname: string;
 }

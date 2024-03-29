@@ -1,4 +1,4 @@
-import { Injectable, Logger, UnprocessableEntityException } from '@nestjs/common';
+import { Injectable, Logger, UnprocessableEntityException, NotFoundException } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import * as bcrypt from 'bcrypt';
 import { CreateCredentialDto, AuthCredentialsDto } from 'src/modules/auth/dto/credentials.dto';
@@ -23,6 +23,7 @@ export class AuthService {
 
     const dto: UserResDto = {
       id: user.id,
+      fullname: user.fullname,
       roles: user.roles,
       student: user.student,
       company: user.company,
@@ -35,6 +36,10 @@ export class AuthService {
     const user = await this.usersService.findOne({
       email: loginDto.email,
     });
+
+    if(!user) {
+      throw new NotFoundException('Not found user')
+    }
     const isValidPassword = await bcrypt.compare(loginDto.password, user.password);
 
     if (!isValidPassword) {
@@ -43,6 +48,7 @@ export class AuthService {
 
     const token = this.jwtService.sign({
       id: user.id,
+      fullname: user.fullname,
       email: user.email,
       roles: user.roles,
     });
@@ -53,14 +59,14 @@ export class AuthService {
   }
 
   async register(userDto: CreateCredentialDto): Promise<void> {
-    const { email, password, role, fullName } = userDto;
+    const { email, password, role, fullname } = userDto;
     const salt = await bcrypt.genSalt();
     const hashedPassword = await bcrypt.hash(password, salt);
     await this.usersService.create({
       email,
       password: hashedPassword,
       roles: [role],
-      fullName: fullName,
+      fullname: fullname,
     });
   }
 }

@@ -28,3 +28,8 @@ export enum TypeFlag {
   Working = 0,
   Archieved = 1,
 }
+
+export enum ProjectScopeFlag {
+  OneToThreeMonth = 0,
+  ThreeToSixMonth = 1
+}
