@@ -39,4 +39,15 @@ export class ProposalService {
 
     return genPaginationResult(items, count, args.offset, args.limit);
   }
+
+  async findOne(id: string): Promise<ProposalResDto> {
+    const proposal = await this.proposalRepository.findOne({
+      where: {
+        id,
+      },
+      relations: ['student', 'student.techStack', 'student.educations'],
+    });
+
+    return proposal;
+  }
 }
