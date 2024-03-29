@@ -11,10 +11,6 @@ export class CompanyProfileResDto {
   @ApiProperty()
   userId: string | number;
 
-  @IsString()
-  @ApiProperty({ description: 'fullname' })
-  fullname: string;
-
   @Type(() => Number)
   @IsNumber()
   @IsEnum(CompanySize, { message: 'Please enter a valid company size' })

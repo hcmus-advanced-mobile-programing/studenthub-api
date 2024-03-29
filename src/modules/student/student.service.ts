@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { Injectable, NotFoundException, UnprocessableEntityException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { SkillSet } from 'src/modules/skillSet/skillSet.entity';
 import { CreateStudentProfileDto } from 'src/modules/student/dto/create-student-profile.dto';
@@ -34,7 +34,17 @@ export class StudentProfileService {
   ) {}
 
   async createStudentProfile(studentProfileDto: CreateStudentProfileDto) {
-    const userId = this.httpContext.getUser().id;
+    const {id, roles} = this.httpContext.getUser();
+
+    const checkExist = await this.StudentRepository.findOneBy({userId: id});
+
+    if(checkExist) {
+      throw new UnprocessableEntityException('Role student existed');
+    }
+
+    roles.push(0);
+    await this.UserRepository.update(id, { roles});
+
     const techStack = studentProfileDto.techStackId
       ? await this.TechStackRepository.findOne({ where: { id: studentProfileDto.techStackId } })
       : null;
@@ -44,7 +54,7 @@ export class StudentProfileService {
 
     const student = this.StudentRepository.create({
       ...studentProfileDto,
-      userId,
+      userId: id,
       techStack,
       skillSets,
     });

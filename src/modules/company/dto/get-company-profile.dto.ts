@@ -33,7 +33,7 @@ export class GetCompanyProfileDto {
     dto.id = company.id;
     dto.userId = company.userId;
     dto.email = user.email;
-    dto.fullname = company.fullname;
+    dto.fullname = user.fullname;
     dto.companyName = company.companyName;
     dto.website = company.website;
     dto.size = company.size;

@@ -15,5 +15,5 @@ export class UpdateUserDto {
   @IsOptional()
   @IsNotEmpty()
   @MaxLength(100)
-  fullName: string;
+  fullname: string;
 }

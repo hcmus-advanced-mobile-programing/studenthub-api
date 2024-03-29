@@ -12,5 +12,5 @@ export class CreateUserDto extends BaseUserResDto {
   password: string;
 
   @ApiProperty()
-  fullName: string;
+  fullname: string;
 }

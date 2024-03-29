@@ -44,6 +44,7 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
 
     const currUser: UserResDto = {
       id: user.id,
+      fullname: user.fullname,
       roles: user.roles,
       student: user.student,
       company: user.company,

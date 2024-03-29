@@ -31,10 +31,7 @@ export class UserService {
   ) {}
 
   async create(createUserDto: CreateUserDto) {
-    const { roles, fullName } = createUserDto;
     const user = await this.usersRepository.save(this.usersRepository.create(createUserDto));
-    roles.includes(UserRole.STUDENT) && (await this.studentRepository.save({ userId: user.id, fullname: fullName }));
-    roles.includes(UserRole.COMPANY) && (await this.companyRepository.save({ userId: user.id, fullname: fullName }));
     return user;
   }
 
@@ -51,11 +48,11 @@ export class UserService {
 
     const record = this.usersRepository
       .createQueryBuilder('user')
-      .select(['user.id', 'user.fullName', 'user.email', 'user.roles', 'user.isActive', 'user.createdAt'])
+      .select(['user.id', 'user.fullname', 'user.email', 'user.roles', 'user.isActive', 'user.createdAt'])
       .where('user.id != :userId', { userId });
 
     if (q) {
-      record.andWhere('LOWER(CONCAT(user.fullName, user.email)) ILIKE LOWER(:keyword)', {
+      record.andWhere('LOWER(CONCAT(user.fullname, user.email)) ILIKE LOWER(:keyword)', {
         keyword: `%${q}%`,
       });
     }
