@@ -8,7 +8,7 @@ import { StudentProfileService } from 'src/modules/student/student.service';
 import { TechStack } from 'src/modules/techStack/techStack.entity';
 
 @ApiTags('profile/student')
-@Controller('profile/student')
+@Controller('api/profile/student')
 export class StudentProfileController {
   constructor(private studentProfileService: StudentProfileService) {}
 
@@ -24,8 +24,8 @@ export class StudentProfileController {
     return this.studentProfileService.updateStudentProfile(id, studentProfileDto);
   }
 
-  @Get(':userId/techStack')
-  async getTechStackByUserId(@Param('userId') userId: number): Promise<TechStack | null> {
-    return await this.studentProfileService.getTechStackByUserId(userId);
+  @Get(':studentId/techStack')
+  async getTechStackByUserId(@Param('studentId') studentId: number): Promise<TechStack | null> {
+    return await this.studentProfileService.getTechStackByUserId(studentId);
   }
 }

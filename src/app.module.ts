@@ -11,8 +11,12 @@ import { LoggerModule } from 'nestjs-pino';
 import configuration from 'src/config/configuration';
 import { TypeOrmConfigService } from 'src/database/typeorm-config.service';
 import loggerConfig from 'src/logger/config';
+import { MailService } from 'src/mail/mail.service';
 import { AuthModule } from 'src/modules/auth/auth.module';
 import { CompanyModule } from 'src/modules/company/company.module';
+import { EducationModule } from 'src/modules/education/education.module';
+import { ExperienceModule } from 'src/modules/experience/experience.module';
+import { LanguageModule } from 'src/modules/language/language.module';
 import { ProposalModule } from 'src/modules/proposal/proposal.module';
 import { SkillSetModule } from 'src/modules/skillSet/skillSet.module';
 import { StudentModule } from 'src/modules/student/student.module';
@@ -24,7 +28,6 @@ import { RequestIdHeaderMiddleware } from 'src/shared/middlewares/request-id-hea
 import { DataSource } from 'typeorm';
 import { MailModule } from './mail/mail.module';
 import { ProjectModule } from './modules/project/project.module';
-import { MailService } from 'src/mail/mail.service';
 
 @Module({
   imports: [
@@ -56,6 +59,9 @@ import { MailService } from 'src/mail/mail.service';
     StudentModule,
     TechStackModule,
     SkillSetModule,
+    LanguageModule,
+    EducationModule,
+    ExperienceModule,,
     MailModule,
   ],
   providers: [MailService],

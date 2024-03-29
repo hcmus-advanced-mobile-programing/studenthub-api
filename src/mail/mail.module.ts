@@ -12,8 +12,8 @@ import { MailService } from './mail.service';
         port: 587,
         secure: false,
         auth: {
-          user: 'tqlucitvn@gmail.com',
-          pass: '~01012kaZZ',
+          user: 'username_placeholder',
+          pass: 'password_placeholder',
         },
       },
       defaults: {

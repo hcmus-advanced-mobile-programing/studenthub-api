@@ -5,9 +5,11 @@ import { IsEmailAlreadyExist } from 'src/class.validator';
 import { UserRole } from 'src/common/common.enum';
 
 export class CreateCredentialDto {
-  @IsString()
-  @IsEmail()
+  
   @IsEmailAlreadyExist({ message: 'Email already exists' })
+  @IsEmail()
+  @IsString()
+  @IsNotEmpty()
   @ApiProperty()
   email: string;
 
@@ -16,6 +18,7 @@ export class CreateCredentialDto {
   @Matches(/((?=.*\d)|(?=.*\W+))(?![.\n])(?=.*[A-Z])(?=.*[a-z]).*$/, {
     message: 'password is too weak',
   })
+  @IsNotEmpty()
   @ApiProperty()
   password: string;
 
@@ -26,17 +29,22 @@ export class CreateCredentialDto {
 
   @Type(() => Number)
   @IsEnum(UserRole, { message: 'Please enter a valid role' })
+  @IsNotEmpty()
   @ApiProperty()
   role: UserRole;
 }
 
 export class AuthCredentialsDto {
-  @IsString()
   @IsEmail()
+  @IsString()
+  @IsNotEmpty()
   @ApiProperty()
   email: string;
 
   @IsString()
+  @MinLength(8)
+  @MaxLength(32)
+  @IsNotEmpty()
   @ApiProperty()
   password: string;
 }
