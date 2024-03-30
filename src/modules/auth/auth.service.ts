@@ -19,8 +19,24 @@ export class AuthService {
   ) {}
 
   async getCurrentUser(): Promise<UserResDto> {
-    const userId = this.httpContext.getUser().id;
+    const userId = this.httpContext.getUser()?.id;
+    if (!userId) {
+      return null;
+    }
     const user = await this.usersService.findOne({ id: userId });
+
+    // const req = this.httpContext.getRequest();
+    // const authorizationHeader = req?.headers.authorization;
+
+    // if (!authorizationHeader) {
+    //   return null;
+    // }
+
+    // const token = authorizationHeader.split(' ')[1];
+    // console.log('token: ' + token)
+    // if (token && this.isTokenBlacklisted(token)) {
+    //   return null;
+    // }
 
     const dto: UserResDto = {
       id: user.id,

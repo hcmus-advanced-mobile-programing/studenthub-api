@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Post } from '@nestjs/common';
+import { Body, Controller, Get, Post, Headers, UseGuards } from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
 import { Auth } from 'src/decorators/http.decorators';
 import { AuthService } from 'src/modules/auth/auth.service';
@@ -27,7 +27,8 @@ export class AuthController {
 
   @Auth()
   @Post('/logout')
-  logout(@Body('token') token: string) {
-    return this.authService.logout(token);
+  logout(@Headers('authorization') token: string) {
+    return this.authService.logout(token.split(' ')[1]);
   }
+
 }
