@@ -2,6 +2,8 @@ import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Project } from './project.entity';
+import { ProjectCreateDto } from 'src/modules/project/dto/project-create.dto';
+import { ProjectUpdateDto } from 'src/modules/project/dto/project-update.dto';
 
 @Injectable()
 export class ProjectService {
@@ -22,7 +24,7 @@ export class ProjectService {
     return projects;
   }
 
-  async create(project: Project): Promise<Project> {
+  async create(project: ProjectCreateDto): Promise<Project> {
     return this.projectRepository.save(project);
   }
   async findAll(): Promise<Project[]> {
@@ -43,7 +45,7 @@ export class ProjectService {
     await this.projectRepository.update(id, { deletedAt: new Date() });
   }
 
-  async update(id: number, updatedProject: Project): Promise<void> {
+  async update(id: number, updatedProject: ProjectUpdateDto): Promise<void> {
     await this.projectRepository.update(id, updatedProject);
   }
 }
