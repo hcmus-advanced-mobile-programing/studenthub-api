@@ -22,16 +22,16 @@ export class CompanyProfileService {
   ) {}
 
   async createCompanyProfile(companyProfileDto: CreateCompanyProfileDto): Promise<CompanyProfileResDto> {
-    const {id, roles} = this.httpContext.getUser();
+    const { id, roles } = this.httpContext.getUser();
 
-    const checkExist = await this.CompanyRepository.findOneBy({userId: id});
+    const checkExist = await this.CompanyRepository.findOneBy({ userId: id });
 
-    if(checkExist) {
+    if (checkExist) {
       throw new UnprocessableEntityException('Role company existed');
     }
 
     roles.push(1);
-    await this.UserRepository.update(id, { roles});
+    await this.UserRepository.update(id, { roles });
 
     const company = this.CompanyRepository.create({
       ...companyProfileDto,
@@ -43,33 +43,34 @@ export class CompanyProfileService {
   async updateCompanyProfile(id: string, companyProfileDto: UpdateCompanyProfileDto) {
     const userId = this.httpContext.getUser().id;
     const company = await this.CompanyRepository.findOneBy({ id });
-    if(!company) {
+    if (!company) {
       throw new Error(`Not found: companyId = ${id}`);
     }
     if (company.userId !== userId) {
       throw new Error('You do not have permission to update this company profile');
     }
-    return await this.CompanyRepository.update(id, companyProfileDto);
+    Object.assign(company, companyProfileDto);
+    return await this.CompanyRepository.save(company);
   }
 
   async getCompanyProfile(id: number | string): Promise<GetCompanyProfileDto> {
     const userId = this.httpContext.getUser().id;
     const company = await this.CompanyRepository.findOneBy({ id });
-    
-    if(!company) {
+
+    if (!company) {
       throw new Error(`Not found: companyId = ${id}`);
     }
     if (company.userId !== userId) {
       throw new Error('You do not have permission to update this company profile');
     }
-    
+
     const user = await this.UserRepository.findOne({ where: { id: userId } });
     if (!user) {
       throw new Error(`Not found: userId = ${userId}`);
     }
 
     const CompanySize = company.size;
-    
+
     return GetCompanyProfileDto.fromEntities(company, user, CompanySize);
   }
 }
