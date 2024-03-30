@@ -9,7 +9,8 @@ export class HttpRequestContext {
   constructor(
     public requestId?: string,
     public user?: CurrentUser,
-    public systemId?: string
+    public systemId?: string,
+    public request?: Request
   ) {}
 }
 
@@ -67,5 +68,10 @@ export class HttpRequestContextService {
   getUserId(): string | number | undefined {
     const currentUser = this.getUser();
     return currentUser?.id;
+  }
+
+  getRequest(): Request | undefined {
+    const reqContext = HttpRequestContextService.asyncLocalStorage.getStore();
+    return reqContext?.request;
   }
 }

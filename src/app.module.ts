@@ -27,6 +27,8 @@ import { LanguageModule } from 'src/modules/language/language.module';
 import { EducationModule } from 'src/modules/education/education.module';
 import { ExperienceModule } from 'src/modules/experience/experience.module';
 import { FavoriteProjectModule } from 'src/modules/favoriteProject/favoriteProject.module';
+import { APP_INTERCEPTOR } from '@nestjs/core';
+import { IsLoggedOutInterceptor } from 'src/interceptor/isLoggedOut.interceptor';
 
 @Module({
   imports: [
@@ -62,6 +64,12 @@ import { FavoriteProjectModule } from 'src/modules/favoriteProject/favoriteProje
     EducationModule,
     ExperienceModule,
     FavoriteProjectModule,
+  ],
+  providers: [
+    {
+      provide: APP_INTERCEPTOR,  // Add this line
+      useClass: IsLoggedOutInterceptor,  // Add this line
+    },
   ],
 })
 export class AppModule implements NestModule {
