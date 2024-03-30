@@ -10,6 +10,7 @@ import { HttpRequestContextService } from 'src/shared/http-request-context/http-
 @Injectable()
 export class AuthService {
   private readonly logger = new Logger(AuthService.name);
+  private readonly blacklistedTokens: string[] = [];
 
   constructor(
     private readonly httpContext: HttpRequestContextService,
@@ -69,4 +70,33 @@ export class AuthService {
       fullname: fullname,
     });
   }
+
+  async logout(token: string): Promise<void> {
+    await this.addToBlacklist(token);
+  }
+  
+  private async addToBlacklist(token: string): Promise<void> {
+    this.blacklistedTokens.push(token);
+    this.cleanUpBlacklistedTokens();
+  }
+  
+  private cleanUpBlacklistedTokens(): void {
+    const now = Date.now();
+    const expiredTokens = this.blacklistedTokens.filter((t) => {
+      const decodedToken = this.jwtService.decode(t);
+      return typeof decodedToken === 'object' && decodedToken?.exp * 1000 < now;
+    });
+  
+    expiredTokens.forEach((t) => {
+      const index = this.blacklistedTokens.indexOf(t);
+      if (index > -1) {
+        this.blacklistedTokens.splice(index, 1);
+      }
+    });
+  }
+  
+  isTokenBlacklisted(token: string): boolean {
+    return this.blacklistedTokens.includes(token);
+  }
+  
 }

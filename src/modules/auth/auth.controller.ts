@@ -24,4 +24,10 @@ export class AuthController {
   getCurrentUser() {
     return this.authService.getCurrentUser();
   }
+
+  @Auth()
+  @Post('/logout')
+  logout(@Body('token') token: string) {
+    return this.authService.logout(token);
+  }
 }
