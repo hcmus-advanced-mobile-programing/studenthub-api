@@ -61,7 +61,7 @@ import { FavoriteProjectModule } from 'src/modules/favoriteProject/favoriteProje
     LanguageModule,
     EducationModule,
     ExperienceModule,
-    FavoriteProjectModule
+    FavoriteProjectModule,
   ],
 })
 export class AppModule implements NestModule {
