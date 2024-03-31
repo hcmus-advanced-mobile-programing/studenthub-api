@@ -6,7 +6,7 @@ import { CreateCredentialDto, AuthCredentialsDto } from 'src/modules/auth/dto/cr
 import { UserResDto } from 'src/modules/user/dto/user-res.dto';
 import { UserService } from 'src/modules/user/user.service';
 import { HttpRequestContextService } from 'src/shared/http-request-context/http-request-context.service';
-import { MailService } from 'src/mail/mail.service';
+import { MailService } from 'src/modules/mail/mail.service'
 
 @Injectable()
 export class AuthService {
@@ -17,7 +17,7 @@ export class AuthService {
     private readonly httpContext: HttpRequestContextService,
     private jwtService: JwtService,
     private usersService: UserService,
-    private mailService: MailService
+    private MailService: MailService
   ) {}
 
   async getCurrentUser(): Promise<UserResDto> {
@@ -60,7 +60,7 @@ export class AuthService {
     });
 
     if (!user.isConfirmed) {
-      await this.mailService.sendUserConfirmation(user, token);
+      await this.MailService.sendUserConfirmation(user, token);
       return 'We have sent you a verification email, please check your Inbox and verify your email address to continue using StudentHUB';
     }
 
@@ -87,7 +87,7 @@ export class AuthService {
       roles: user.roles,
     });
 
-    await this.mailService.sendUserConfirmation(user, token);
+    await this.MailService.sendUserConfirmation(user, token);
     return 'We have sent you a verification email, please check your Inbox and verify your email address to continue using StudentHUB';
   }
 

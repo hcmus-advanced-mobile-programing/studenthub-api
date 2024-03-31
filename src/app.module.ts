@@ -11,14 +11,12 @@ import { LoggerModule } from 'nestjs-pino';
 import configuration from 'src/config/configuration';
 import { TypeOrmConfigService } from 'src/database/typeorm-config.service';
 import loggerConfig from 'src/logger/config';
-import { MailService } from 'src/mail/mail.service';
 import { AuthModule } from 'src/modules/auth/auth.module';
 import { UserModule } from 'src/modules/user/user.module';
 import { HttRequestContextMiddleware } from 'src/shared/http-request-context/http-request-context.middleware';
 import { HttRequestContextModule } from 'src/shared/http-request-context/http-request-context.module';
 import { RequestIdHeaderMiddleware } from 'src/shared/middlewares/request-id-header.middleware';
 import { DataSource } from 'typeorm';
-import { MailModule } from './mail/mail.module';
 import { ProjectModule } from './modules/project/project.module';
 import { ProposalModule } from 'src/modules/proposal/proposal.module';
 import { CompanyModule } from 'src/modules/company/company.module';
@@ -29,6 +27,7 @@ import { LanguageModule } from 'src/modules/language/language.module';
 import { EducationModule } from 'src/modules/education/education.module';
 import { ExperienceModule } from 'src/modules/experience/experience.module';
 import { FavoriteProjectModule } from 'src/modules/favoriteProject/favoriteProject.module';
+import { MailModule } from 'src/modules/mail/mail.module';
 import { APP_INTERCEPTOR } from '@nestjs/core';
 import { IsLoggedOutInterceptor } from 'src/interceptor/isLoggedOut.interceptor';
 
@@ -67,13 +66,13 @@ import { IsLoggedOutInterceptor } from 'src/interceptor/isLoggedOut.interceptor'
     MailModule,
     ExperienceModule,
     FavoriteProjectModule,
+    MailModule
   ],
   providers: [
     {
       provide: APP_INTERCEPTOR,  // Add this line
       useClass: IsLoggedOutInterceptor,  // Add this line
     },
-    MailService
   ],
 })
 export class AppModule implements NestModule {
