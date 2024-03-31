@@ -27,6 +27,7 @@ import { LanguageModule } from 'src/modules/language/language.module';
 import { EducationModule } from 'src/modules/education/education.module';
 import { ExperienceModule } from 'src/modules/experience/experience.module';
 import { FavoriteProjectModule } from 'src/modules/favoriteProject/favoriteProject.module';
+import { MailModule } from 'src/modules/mail/mail.module';
 
 @Module({
   imports: [
@@ -61,7 +62,8 @@ import { FavoriteProjectModule } from 'src/modules/favoriteProject/favoriteProje
     LanguageModule,
     EducationModule,
     ExperienceModule,
-    FavoriteProjectModule
+    FavoriteProjectModule,
+    MailModule
   ],
 })
 export class AppModule implements NestModule {
