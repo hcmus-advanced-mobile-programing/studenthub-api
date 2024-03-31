@@ -1,4 +1,4 @@
-import { ConflictException, ForbiddenException, Injectable, Logger } from '@nestjs/common';
+import { ConflictException, ForbiddenException, Injectable, Logger, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import * as bcrypt from 'bcrypt';
@@ -31,10 +31,7 @@ export class UserService {
   ) {}
 
   async create(createUserDto: CreateUserDto) {
-    const { roles, fullName } = createUserDto;
     const user = await this.usersRepository.save(this.usersRepository.create(createUserDto));
-    roles.includes(UserRole.STUDENT) && (await this.studentRepository.save({ userId: user.id, fullname: fullName }));
-    roles.includes(UserRole.COMPANY) && (await this.companyRepository.save({ userId: user.id, fullname: fullName }));
     return user;
   }
 
@@ -51,11 +48,11 @@ export class UserService {
 
     const record = this.usersRepository
       .createQueryBuilder('user')
-      .select(['user.id', 'user.fullName', 'user.email', 'user.roles', 'user.isActive', 'user.createdAt'])
+      .select(['user.id', 'user.fullname', 'user.email', 'user.roles', 'user.isActive', 'user.createdAt'])
       .where('user.id != :userId', { userId });
 
     if (q) {
-      record.andWhere('LOWER(CONCAT(user.fullName, user.email)) ILIKE LOWER(:keyword)', {
+      record.andWhere('LOWER(CONCAT(user.fullname, user.email)) ILIKE LOWER(:keyword)', {
         keyword: `%${q}%`,
       });
     }
@@ -126,12 +123,17 @@ export class UserService {
 
     const currentUser = this.httpContext.getUser();
     const user = await this.findOne({ id: currentUser.id });
+
+    if (!user) {
+      throw new NotFoundException('User not found');
+    }
+
     const isValidPassword = await bcrypt.compare(oldPassword, user.password);
 
-    if (isValidPassword && newPassword !== oldPassword)
+    if (isValidPassword && newPassword !== oldPassword) {
       await this.usersRepository.update(currentUser.id, { password: hashedPassword });
-    else {
-      throw new ConflictException();
+    } else {
+      throw new ForbiddenException('Invalid password');
     }
   }
 
@@ -139,4 +141,16 @@ export class UserService {
     const currentUser = this.httpContext.getUser();
     await this.usersRepository.update(currentUser.id, updateProfileDto);
   }
+
+  async updateConfirm(email: string, isConfirmed: boolean): Promise<User> {
+    const user = await this.usersRepository.findOne({ where: { email } });
+    if (!user) {
+        throw new NotFoundException('User not found');
+    }
+    user.isConfirmed = isConfirmed;
+    user.verified = isConfirmed;
+    await this.usersRepository.save(user);
+    return user;
+}
+
 }

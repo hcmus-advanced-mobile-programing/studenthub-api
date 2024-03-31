@@ -14,6 +14,10 @@ export class User extends Base {
   email: string;
 
   @Column()
+  @ApiProperty({ description: 'fullname' })
+  fullname: string;
+
+  @Column()
   @ApiProperty({ description: 'password' })
   password: string;
 

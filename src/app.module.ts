@@ -13,14 +13,6 @@ import { TypeOrmConfigService } from 'src/database/typeorm-config.service';
 import loggerConfig from 'src/logger/config';
 import { MailService } from 'src/mail/mail.service';
 import { AuthModule } from 'src/modules/auth/auth.module';
-import { CompanyModule } from 'src/modules/company/company.module';
-import { EducationModule } from 'src/modules/education/education.module';
-import { ExperienceModule } from 'src/modules/experience/experience.module';
-import { LanguageModule } from 'src/modules/language/language.module';
-import { ProposalModule } from 'src/modules/proposal/proposal.module';
-import { SkillSetModule } from 'src/modules/skillSet/skillSet.module';
-import { StudentModule } from 'src/modules/student/student.module';
-import { TechStackModule } from 'src/modules/techStack/techStack.module';
 import { UserModule } from 'src/modules/user/user.module';
 import { HttRequestContextMiddleware } from 'src/shared/http-request-context/http-request-context.middleware';
 import { HttRequestContextModule } from 'src/shared/http-request-context/http-request-context.module';
@@ -28,6 +20,17 @@ import { RequestIdHeaderMiddleware } from 'src/shared/middlewares/request-id-hea
 import { DataSource } from 'typeorm';
 import { MailModule } from './mail/mail.module';
 import { ProjectModule } from './modules/project/project.module';
+import { ProposalModule } from 'src/modules/proposal/proposal.module';
+import { CompanyModule } from 'src/modules/company/company.module';
+import { StudentModule } from 'src/modules/student/student.module';
+import { TechStackModule } from 'src/modules/techStack/techStack.module';
+import { SkillSetModule } from 'src/modules/skillSet/skillSet.module';
+import { LanguageModule } from 'src/modules/language/language.module';
+import { EducationModule } from 'src/modules/education/education.module';
+import { ExperienceModule } from 'src/modules/experience/experience.module';
+import { FavoriteProjectModule } from 'src/modules/favoriteProject/favoriteProject.module';
+import { APP_INTERCEPTOR } from '@nestjs/core';
+import { IsLoggedOutInterceptor } from 'src/interceptor/isLoggedOut.interceptor';
 
 @Module({
   imports: [
@@ -61,10 +64,17 @@ import { ProjectModule } from './modules/project/project.module';
     SkillSetModule,
     LanguageModule,
     EducationModule,
-    ExperienceModule,,
     MailModule,
+    ExperienceModule,
+    FavoriteProjectModule,
   ],
-  providers: [MailService],
+  providers: [
+    {
+      provide: APP_INTERCEPTOR,  // Add this line
+      useClass: IsLoggedOutInterceptor,  // Add this line
+    },
+    MailService
+  ],
 })
 export class AppModule implements NestModule {
   configure(consumer: MiddlewareConsumer) {

@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Post } from '@nestjs/common';
+import { Body, Controller, Get, Post, Headers, Param } from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
 import { Auth } from 'src/decorators/http.decorators';
 import { AuthService } from 'src/modules/auth/auth.service';
@@ -24,4 +24,16 @@ export class AuthController {
   getCurrentUser() {
     return this.authService.getCurrentUser();
   }
+
+  @Auth()
+  @Post('/logout')
+  logout(@Headers('authorization') token: string) {
+    return this.authService.logout(token.split(' ')[1]);
+  }
+
+  @Get('/confirm/:token')
+  async confirmEmail(@Param('token') token: string): Promise<string> {
+    return this.authService.confirmEmail(token);
+  }
+
 }

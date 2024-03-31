@@ -6,6 +6,8 @@ import { HttpRequestContextService } from 'src/shared/http-request-context/http-
 import { Proposal } from 'src/modules/proposal/proposal.entity';
 import { ProposalResDto } from 'src/modules/proposal/dto/proposal-res.dto';
 import { ProposalFindArgs } from 'src/modules/proposal/dto/proposal-find-args.dto';
+import { ProposalCreateDto } from 'src/modules/proposal/dto/proposal-create.dto';
+import { ProposalUpdateDto } from 'src/modules/proposal/dto/proposal-update.dto';
 
 @Injectable()
 export class ProposalService {
@@ -38,5 +40,34 @@ export class ProposalService {
       .getManyAndCount();
 
     return genPaginationResult(items, count, args.offset, args.limit);
+  }
+
+  async findOne(id: string): Promise<ProposalResDto> {
+    const proposal = await this.proposalRepository.findOne({
+      where: {
+        id,
+      },
+      relations: ['student', 'student.techStack', 'student.educations'],
+    });
+
+    return proposal;
+  }
+
+  async createProposal(proposal: ProposalCreateDto): Promise<ProposalCreateDto> {
+    return this.proposalRepository.save(proposal);
+  }
+
+  async updateProposal(proposal: ProposalUpdateDto): Promise<ProposalResDto> {
+    return this.proposalRepository.save(proposal);
+  }
+
+  async findByStudentId(studentId: string): Promise<ProposalResDto[]> {
+    return this.proposalRepository.find({
+      where: {
+        student: {
+          id: studentId,
+        },
+      },
+    });
   }
 }

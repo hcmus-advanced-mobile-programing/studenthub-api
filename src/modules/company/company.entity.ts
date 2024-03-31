@@ -13,10 +13,6 @@ export class Company extends Base {
   @ApiProperty({ description: 'userId' })
   userId: number | string;
 
-  @Column()
-  @ApiProperty({ description: 'fullname' })
-  fullname: string;
-
   @Column({ name: 'company_name', nullable: true })
   @ApiProperty({ description: 'companyName' })
   companyName: string;
@@ -25,7 +21,7 @@ export class Company extends Base {
   @ApiProperty({ description: 'website' })
   website: string;
 
-  @Column({ name: 'size', nullable: false })
+  @Column({ name: 'size', nullable: true })
   @ApiProperty({ description: 'Size of the company' })
   size: CompanySize;
 

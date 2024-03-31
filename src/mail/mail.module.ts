@@ -8,24 +8,16 @@ import { MailService } from './mail.service';
   imports: [
     MailerModule.forRoot({
       transport: {
-        host: 'in-v3.mailjet.com',
-        port: 587,
-        secure: false,
+        service: 'gmail',
         auth: {
-          user: 'username_placeholder',
-          pass: 'password_placeholder',
+          user: 'studenthub109@gmail.com',
+          pass: 'fjdk orig xxnf nkgc',
         },
       },
       defaults: {
         from: '"No Reply" <noreply@studenthubapi.com>',
       },
-      template: {
-        dir: join(__dirname, 'templates'),
-        adapter: new HandlebarsAdapter(), // or new PugAdapter() or new EjsAdapter()
-        options: {
-          strict: true,
-        },
-      },
+    
     }),
   ],
   providers: [MailService],

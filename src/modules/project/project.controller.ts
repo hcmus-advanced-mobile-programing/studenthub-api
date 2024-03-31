@@ -3,6 +3,8 @@ import { ApiTags } from '@nestjs/swagger';
 import { ProjectService } from './project.service';
 import { ProjectSearchCompanyId } from './dto/project-search.dto';
 import { Project } from './project.entity';
+import { ProjectCreateDto } from 'src/modules/project/dto/project-create.dto';
+import { ProjectUpdateDto } from 'src/modules/project/dto/project-update.dto';
 
 @ApiTags('project')
 @Controller('api/project')
@@ -15,12 +17,12 @@ export class ProjectController {
   }
 
   @Get(':projectId')
-  async projectSearchId(@Param('id') id: number): Promise<Project> {
+  async projectSearchId(@Param('projectId') id: number): Promise<Project> {
     return this.projectService.findById(id);
   }
 
   @Post()
-  async createNewProject(@Body() project: Project): Promise<Project> {
+  async createNewProject(@Body() project: ProjectCreateDto): Promise<Project> {
     const newProject = await this.projectService.create(project);
     return newProject;
   }
@@ -35,7 +37,7 @@ export class ProjectController {
   }
 
   @Patch(':id')
-  async update(@Param('id') id: number, @Body() updatedProject: Project): Promise<void> {
+  async update(@Param('id') id: number, @Body() updatedProject: ProjectUpdateDto): Promise<void> {
     await this.projectService.update(id, updatedProject);
   }
 }
