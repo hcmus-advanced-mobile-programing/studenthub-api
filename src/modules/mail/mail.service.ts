@@ -1,5 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { MailerService } from '@nestjs-modules/mailer';
+import { User } from 'src/modules/user/user.entity';
 
 @Injectable()
 export class MailService {
@@ -17,5 +18,16 @@ export class MailService {
     const subject = 'New Password';
     const text = `Your new password is: ${newPassword}. Please change it after login.`;
     await this.sendEmail(to, subject, text);
+  }
+
+  async sendUserConfirmation(user: User, token: string) {
+    const url = `http://localhost:4400/api/auth/confirm/${token}`;
+
+    await this.mailerService.sendMail({
+      to: user.email,
+      // from: '"Support Team" <support@example.com>', // override default from
+      subject: 'Verify a new account',
+      text: `Please click below to confirm your email. \n${url}\nIf you did not request this email you can safely ignore it.`
+    });
   }
 }

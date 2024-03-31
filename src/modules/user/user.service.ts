@@ -145,6 +145,17 @@ export class UserService {
     await this.usersRepository.update(currentUser.id, updateProfileDto);
   }
 
+  async updateConfirm(email: string, isConfirmed: boolean): Promise<User> {
+    const user = await this.usersRepository.findOne({ where: { email } });
+    if (!user) {
+        throw new NotFoundException('User not found');
+    }
+    user.isConfirmed = isConfirmed;
+    user.verified = isConfirmed;
+    await this.usersRepository.save(user);
+    return user;
+}
+
   async forgotPassword(forgotPasswordDto: ForgotPasswordDto): Promise<void> {
     const { email } = forgotPasswordDto;
 

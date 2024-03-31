@@ -1,11 +1,12 @@
 import { Injectable, Logger, UnprocessableEntityException, NotFoundException } from '@nestjs/common';
+import { InjectRepository } from '@nestjs/typeorm';
 import { JwtService } from '@nestjs/jwt';
 import * as bcrypt from 'bcrypt';
 import { CreateCredentialDto, AuthCredentialsDto } from 'src/modules/auth/dto/credentials.dto';
 import { UserResDto } from 'src/modules/user/dto/user-res.dto';
 import { UserService } from 'src/modules/user/user.service';
-import { UserRole } from 'src/common/common.enum';
 import { HttpRequestContextService } from 'src/shared/http-request-context/http-request-context.service';
+import { MailService } from 'src/modules/mail/mail.service'
 
 @Injectable()
 export class AuthService {
@@ -15,7 +16,8 @@ export class AuthService {
   constructor(
     private readonly httpContext: HttpRequestContextService,
     private jwtService: JwtService,
-    private usersService: UserService
+    private usersService: UserService,
+    private MailService: MailService
   ) {}
 
   async getCurrentUser(): Promise<UserResDto> {
@@ -24,19 +26,6 @@ export class AuthService {
       return null;
     }
     const user = await this.usersService.findOne({ id: userId });
-
-    // const req = this.httpContext.getRequest();
-    // const authorizationHeader = req?.headers.authorization;
-
-    // if (!authorizationHeader) {
-    //   return null;
-    // }
-
-    // const token = authorizationHeader.split(' ')[1];
-    // console.log('token: ' + token)
-    // if (token && this.isTokenBlacklisted(token)) {
-    //   return null;
-    // }
 
     const dto: UserResDto = {
       id: user.id,
@@ -49,7 +38,7 @@ export class AuthService {
     return dto;
   }
 
-  async validateLogin(loginDto: AuthCredentialsDto): Promise<{ token: string }> {
+  async validateLogin(loginDto: AuthCredentialsDto): Promise<{ token: string } | string> {
     const user = await this.usersService.findOne({
       email: loginDto.email,
     });
@@ -70,22 +59,56 @@ export class AuthService {
       roles: user.roles,
     });
 
+    if (!user.isConfirmed) {
+      await this.MailService.sendUserConfirmation(user, token);
+      return 'We have sent you a verification email, please check your Inbox and verify your email address to continue using StudentHUB';
+    }
+
     return {
       token,
     };
   }
 
-  async register(userDto: CreateCredentialDto): Promise<void> {
+  async register(userDto: CreateCredentialDto): Promise<string> {
     const { email, password, role, fullname } = userDto;
     const salt = await bcrypt.genSalt();
     const hashedPassword = await bcrypt.hash(password, salt);
-    await this.usersService.create({
+    const user = await this.usersService.create({
       email,
       password: hashedPassword,
       roles: [role],
       fullname: fullname,
     });
+
+    const token = this.jwtService.sign({
+      id: user.id,
+      fullname: user.fullname,
+      email: user.email,
+      roles: user.roles,
+    });
+
+    await this.MailService.sendUserConfirmation(user, token);
+    return 'We have sent you a verification email, please check your Inbox and verify your email address to continue using StudentHUB';
   }
+
+  async confirmEmail(token: string): Promise<string> {
+    try {
+      const { email } = this.jwtService.verify(token); // Giải mã token để lấy email
+      const user = await this.usersService.updateConfirm(email, true);
+  
+      if (user) {
+        return 'Your email has been verified successfully.';
+      } else {
+        throw new NotFoundException('User not found');
+      }
+    } catch (error) {
+      if (error.name === 'TokenExpiredError') {
+        throw new UnprocessableEntityException('Token has expired');
+      }
+      throw new UnprocessableEntityException('Invalid token');
+    }
+  }
+  
 
   async logout(token: string): Promise<void> {
     await this.addToBlacklist(token);

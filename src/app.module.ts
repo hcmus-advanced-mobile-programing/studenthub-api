@@ -13,11 +13,11 @@ import { TypeOrmConfigService } from 'src/database/typeorm-config.service';
 import loggerConfig from 'src/logger/config';
 import { AuthModule } from 'src/modules/auth/auth.module';
 import { UserModule } from 'src/modules/user/user.module';
-import { ProjectModule } from './modules/project/project.module';
 import { HttRequestContextMiddleware } from 'src/shared/http-request-context/http-request-context.middleware';
 import { HttRequestContextModule } from 'src/shared/http-request-context/http-request-context.module';
 import { RequestIdHeaderMiddleware } from 'src/shared/middlewares/request-id-header.middleware';
 import { DataSource } from 'typeorm';
+import { ProjectModule } from './modules/project/project.module';
 import { ProposalModule } from 'src/modules/proposal/proposal.module';
 import { CompanyModule } from 'src/modules/company/company.module';
 import { StudentModule } from 'src/modules/student/student.module';
@@ -63,6 +63,7 @@ import { IsLoggedOutInterceptor } from 'src/interceptor/isLoggedOut.interceptor'
     SkillSetModule,
     LanguageModule,
     EducationModule,
+    MailModule,
     ExperienceModule,
     FavoriteProjectModule,
     MailModule
