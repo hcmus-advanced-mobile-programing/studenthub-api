@@ -2,7 +2,8 @@ import { ConflictException, ForbiddenException, Injectable, Logger, NotFoundExce
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import * as bcrypt from 'bcrypt';
-
+import { ForgotPasswordDto } from 'src/modules/user/dto/forgot-password.dto';
+import { randomBytes } from 'crypto';
 import { CreateUserDto } from 'src/modules/user/dto/create-user.dto';
 import { UpdateUserDto } from 'src/modules/user/dto/update-user.dto';
 import { User } from 'src/modules/user/user.entity';
@@ -15,6 +16,7 @@ import { UpdateProfileDto } from 'src/modules/user/dto/update-profile.dto';
 import { UserRole } from 'src/common/common.enum';
 import { Student } from 'src/modules/student/student.entity';
 import { Company } from 'src/modules/company/company.entity';
+import { MailService } from 'src/modules/mail/mail.service'
 
 @Injectable()
 export class UserService {
@@ -27,6 +29,7 @@ export class UserService {
     private studentRepository: Repository<Student>,
     @InjectRepository(Company)
     private companyRepository: Repository<Company>,
+    private readonly MailService: MailService,
     private readonly httpContext: HttpRequestContextService
   ) {}
 
@@ -140,5 +143,27 @@ export class UserService {
   async updateProfile(updateProfileDto: UpdateProfileDto): Promise<void> {
     const currentUser = this.httpContext.getUser();
     await this.usersRepository.update(currentUser.id, updateProfileDto);
+  }
+
+  async forgotPassword(forgotPasswordDto: ForgotPasswordDto): Promise<void> {
+    const { email } = forgotPasswordDto;
+
+    const user = await this.usersRepository.findOneBy({ email });
+    if (!user) {
+      throw new NotFoundException('User not found');
+    }
+
+    const newPassword = this.generateRandomPassword();
+
+    const salt = await bcrypt.genSalt();
+    const hashedPassword = await bcrypt.hash(newPassword, salt);
+
+    await this.usersRepository.update(user.id, { password: hashedPassword });
+
+    await this.MailService.sendNewPasswordEmail(email, newPassword);
+  }
+
+  private generateRandomPassword(): string {
+    return randomBytes(8).toString('hex');
   }
 }
