@@ -23,8 +23,8 @@ export class UserController {
     return this.userService.getAllUser(args);
   }
 
-  @Put(':id')
-  @Auth()
+  @Put('changePassword')
+  @Auth() 
   changePassword(@Body() userChangePassDto: UserChangePassDto): Promise<void> {
     return this.userService.changePassword(userChangePassDto);
   }

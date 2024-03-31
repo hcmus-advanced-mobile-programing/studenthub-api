@@ -10,6 +10,7 @@ import { HttpRequestContextService } from 'src/shared/http-request-context/http-
 @Injectable()
 export class AuthService {
   private readonly logger = new Logger(AuthService.name);
+  private readonly blacklistedTokens: string[] = [];
 
   constructor(
     private readonly httpContext: HttpRequestContextService,
@@ -18,8 +19,24 @@ export class AuthService {
   ) {}
 
   async getCurrentUser(): Promise<UserResDto> {
-    const userId = this.httpContext.getUser().id;
+    const userId = this.httpContext.getUser()?.id;
+    if (!userId) {
+      return null;
+    }
     const user = await this.usersService.findOne({ id: userId });
+
+    // const req = this.httpContext.getRequest();
+    // const authorizationHeader = req?.headers.authorization;
+
+    // if (!authorizationHeader) {
+    //   return null;
+    // }
+
+    // const token = authorizationHeader.split(' ')[1];
+    // console.log('token: ' + token)
+    // if (token && this.isTokenBlacklisted(token)) {
+    //   return null;
+    // }
 
     const dto: UserResDto = {
       id: user.id,
@@ -69,4 +86,33 @@ export class AuthService {
       fullname: fullname,
     });
   }
+
+  async logout(token: string): Promise<void> {
+    await this.addToBlacklist(token);
+  }
+  
+  private async addToBlacklist(token: string): Promise<void> {
+    this.blacklistedTokens.push(token);
+    this.cleanUpBlacklistedTokens();
+  }
+  
+  private cleanUpBlacklistedTokens(): void {
+    const now = Date.now();
+    const expiredTokens = this.blacklistedTokens.filter((t) => {
+      const decodedToken = this.jwtService.decode(t);
+      return typeof decodedToken === 'object' && decodedToken?.exp * 1000 < now;
+    });
+  
+    expiredTokens.forEach((t) => {
+      const index = this.blacklistedTokens.indexOf(t);
+      if (index > -1) {
+        this.blacklistedTokens.splice(index, 1);
+      }
+    });
+  }
+  
+  isTokenBlacklisted(token: string): boolean {
+    return this.blacklistedTokens.includes(token);
+  }
+  
 }

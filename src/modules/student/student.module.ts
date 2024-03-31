@@ -10,11 +10,15 @@ import { User } from 'src/modules/user/user.entity';
 import { Education } from 'src/modules/education/education.entity';
 import { Experience } from 'src/modules/experience/experience.entity';
 import { Language } from 'src/modules/language/language.entity';
+import { GCSService } from 'src/modules/gcs/gcs.service';
 
 @Module({
-  imports: [TypeOrmModule.forFeature([Student, SkillSet, TechStack, User, Education, Experience, Language]), ConfigModule],
+  imports: [
+    TypeOrmModule.forFeature([Student, SkillSet, TechStack, User, Education, Experience, Language]),
+    ConfigModule,
+  ],
   controllers: [StudentProfileController],
-  providers: [StudentProfileService],
+  providers: [StudentProfileService, GCSService],
   exports: [StudentProfileService],
 })
 export class StudentModule {}

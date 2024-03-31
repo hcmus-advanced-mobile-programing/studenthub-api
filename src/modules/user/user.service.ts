@@ -126,12 +126,17 @@ export class UserService {
 
     const currentUser = this.httpContext.getUser();
     const user = await this.findOne({ id: currentUser.id });
+
+    if (!user) {
+      throw new NotFoundException('User not found');
+    }
+
     const isValidPassword = await bcrypt.compare(oldPassword, user.password);
 
-    if (isValidPassword && newPassword !== oldPassword)
+    if (isValidPassword && newPassword !== oldPassword) {
       await this.usersRepository.update(currentUser.id, { password: hashedPassword });
-    else {
-      throw new ConflictException();
+    } else {
+      throw new ForbiddenException('Invalid password');
     }
   }
 
