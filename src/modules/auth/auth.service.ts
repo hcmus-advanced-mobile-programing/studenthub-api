@@ -1,4 +1,4 @@
-import { Injectable, Logger, UnprocessableEntityException, NotFoundException, ForbiddenException } from '@nestjs/common';
+import { Injectable, Logger, UnprocessableEntityException, NotFoundException, } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { JwtService } from '@nestjs/jwt';
 import * as bcrypt from 'bcrypt';
@@ -38,7 +38,7 @@ export class AuthService {
     return dto;
   }
 
-  async validateLogin(loginDto: AuthCredentialsDto): Promise<{ token: string } | { statusCode: number, message: string }> {
+  async validateLogin(loginDto: AuthCredentialsDto): Promise<{ token: string } | string> {
     const user = await this.usersService.findOne({
       email: loginDto.email,
     });
@@ -60,29 +60,28 @@ export class AuthService {
       roles: user.roles,
     });
   
-    if (user.isConfirmed || user.verified) {
-      return {
-        token,
-      };
-    } else {
-      await this.MailService.sendUserConfirmation(user, token);
-      return {
-        statusCode: 403,
-        message: 'We have sent you a verification email, please check your Inbox and verify your email address to continue using StudentHUB'
-      };
+    if (!user.isConfirmed) {
+      const sendEmail = await this.MailService.sendUserConfirmation(user, token);
+      throw new NotFoundException('We have sent you a verification email, please check your Inbox and verify your email address to continue using StudentHUB');
     }
+
+    return {
+      token,
+    };
   }
   
+async register(userDto: CreateCredentialDto): Promise<{ message: string }> {
+  const { email, password, role, fullname } = userDto;
 
-  async register(userDto: CreateCredentialDto): Promise<string> {
-    const { email, password, role, fullname } = userDto;
+  try {
     const salt = await bcrypt.genSalt();
     const hashedPassword = await bcrypt.hash(password, salt);
+    
     const user = await this.usersService.create({
       email,
       password: hashedPassword,
       roles: [role],
-      fullname: fullname,
+      fullname,
     });
 
     const token = this.jwtService.sign({
@@ -93,8 +92,15 @@ export class AuthService {
     });
 
     await this.MailService.sendUserConfirmation(user, token);
-    return 'We have sent you a verification email, please check your Inbox and verify your email address to continue using StudentHUB';
+
+    return {
+      message: 'We have sent you a verification email, please check your Inbox and verify your email address to continue using StudentHUB',
+    };
+  } catch (error) {
+    throw new UnprocessableEntityException(`Failed to register user: ${error.message}`);
   }
+}
+
 
   async confirmEmail(token: string): Promise<string> {
     try {
@@ -113,7 +119,6 @@ export class AuthService {
       throw new UnprocessableEntityException('Invalid token');
     }
   }
-  
 
   async logout(token: string): Promise<void> {
     await this.addToBlacklist(token);

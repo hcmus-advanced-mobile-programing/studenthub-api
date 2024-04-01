@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Post, Headers, Param } from '@nestjs/common';
+import { Body, Controller, Get, Post, Headers, Param, HttpException } from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
 import { Auth } from 'src/decorators/http.decorators';
 import { AuthService } from 'src/modules/auth/auth.service';
