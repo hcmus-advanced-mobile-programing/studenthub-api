@@ -27,8 +27,9 @@ export class AuthController {
 
   @Auth()
   @Post('/logout')
-  logout(@Headers('authorization') token: string) {
-    return this.authService.logout(token.split(' ')[1]);
+  logout(@Headers('authorization') authorizationHeader: string) {
+    const token = authorizationHeader.split(' ')[1];
+    return this.authService.logout(token);
   }
 
   @Get('/confirm/:token')

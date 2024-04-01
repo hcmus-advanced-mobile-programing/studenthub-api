@@ -170,7 +170,7 @@ export class StudentProfileService {
       throw new NotFoundException(`Student with student ${studentId} not found`);
     }
 
-    if (student.transcript) return await this.gcsService.getFile(student.resume);
+    if (student.resume) return await this.gcsService.getFile(student.resume);
     else return null;
   }
 

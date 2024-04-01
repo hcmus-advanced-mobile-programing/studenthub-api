@@ -1,4 +1,4 @@
-import { Injectable, Logger, UnprocessableEntityException, NotFoundException } from '@nestjs/common';
+import { Injectable, Logger, UnprocessableEntityException, NotFoundException, ForbiddenException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { JwtService } from '@nestjs/jwt';
 import * as bcrypt from 'bcrypt';
@@ -38,36 +38,41 @@ export class AuthService {
     return dto;
   }
 
-  async validateLogin(loginDto: AuthCredentialsDto): Promise<{ token: string } | string> {
+  async validateLogin(loginDto: AuthCredentialsDto): Promise<{ token: string } | { statusCode: number, message: string }> {
     const user = await this.usersService.findOne({
       email: loginDto.email,
     });
-
-    if(!user) {
-      throw new NotFoundException('Not found user')
+  
+    if (!user) {
+      throw new NotFoundException('Not found user');
     }
+  
     const isValidPassword = await bcrypt.compare(loginDto.password, user.password);
-
+  
     if (!isValidPassword) {
       throw new UnprocessableEntityException('Incorrect password');
     }
-
+  
     const token = this.jwtService.sign({
       id: user.id,
       fullname: user.fullname,
       email: user.email,
       roles: user.roles,
     });
-
-    if (!user.isConfirmed) {
+  
+    if (user.isConfirmed || user.verified) {
+      return {
+        token,
+      };
+    } else {
       await this.MailService.sendUserConfirmation(user, token);
-      return 'We have sent you a verification email, please check your Inbox and verify your email address to continue using StudentHUB';
+      return {
+        statusCode: 403,
+        message: 'We have sent you a verification email, please check your Inbox and verify your email address to continue using StudentHUB'
+      };
     }
-
-    return {
-      token,
-    };
   }
+  
 
   async register(userDto: CreateCredentialDto): Promise<string> {
     const { email, password, role, fullname } = userDto;
