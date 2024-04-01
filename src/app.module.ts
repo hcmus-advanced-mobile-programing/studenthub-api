@@ -30,6 +30,7 @@ import { FavoriteProjectModule } from 'src/modules/favoriteProject/favoriteProje
 import { MailModule } from 'src/modules/mail/mail.module';
 import { APP_INTERCEPTOR } from '@nestjs/core';
 import { IsLoggedOutInterceptor } from 'src/interceptor/isLoggedOut.interceptor';
+import { NotificationModule } from './modules/notification/notification.module';
 
 @Module({
   imports: [
@@ -66,12 +67,13 @@ import { IsLoggedOutInterceptor } from 'src/interceptor/isLoggedOut.interceptor'
     MailModule,
     ExperienceModule,
     FavoriteProjectModule,
-    MailModule
+    MailModule,
+    NotificationModule,
   ],
   providers: [
     {
-      provide: APP_INTERCEPTOR,  // Add this line
-      useClass: IsLoggedOutInterceptor,  // Add this line
+      provide: APP_INTERCEPTOR, // Add this line
+      useClass: IsLoggedOutInterceptor, // Add this line
     },
   ],
 })
