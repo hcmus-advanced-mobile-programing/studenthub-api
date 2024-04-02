@@ -31,9 +31,12 @@
     "test:debug": "node --inspect-brk -r tsconfig-paths/register -r ts-node/register node_modules/.bin/jest --runInBand",
     "test:e2e": "jest --config ./test/jest-e2e.json"
   },
+  "resolutions": {
+    "@types/mime": "3.0.4"
+  },
   "dependencies": {
-    "@nestjs-modules/mailer": "^1.11.2",
     "@google-cloud/storage": "^7.9.0",
+    "@nestjs-modules/mailer": "^1.11.2",
     "@nestjs/bull": "^10.0.1",
     "@nestjs/common": "^10.2.7",
     "@nestjs/config": "^3.1.1",
@@ -41,8 +44,10 @@
     "@nestjs/jwt": "^10.1.1",
     "@nestjs/passport": "^10.0.2",
     "@nestjs/platform-express": "^10.2.7",
+    "@nestjs/platform-socket.io": "^10.3.7",
     "@nestjs/swagger": "^7.1.13",
     "@nestjs/typeorm": "^10.0.0",
+    "@nestjs/websockets": "^10.3.7",
     "@sentry/node": "^7.74.0",
     "@sentry/tracing": "^7.74.0",
     "@slack/webhook": "^7.0.0",

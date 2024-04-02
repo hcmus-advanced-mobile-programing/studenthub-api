@@ -31,6 +31,7 @@ import { MailModule } from 'src/modules/mail/mail.module';
 import { APP_INTERCEPTOR } from '@nestjs/core';
 import { IsLoggedOutInterceptor } from 'src/interceptor/isLoggedOut.interceptor';
 import { NotificationModule } from './modules/notification/notification.module';
+import { EventModule } from './modules/event/event.module';
 
 @Module({
   imports: [
@@ -69,6 +70,7 @@ import { NotificationModule } from './modules/notification/notification.module';
     FavoriteProjectModule,
     MailModule,
     NotificationModule,
+    EventModule,
   ],
   providers: [
     {
