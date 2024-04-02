@@ -37,8 +37,8 @@ export class ProposalController {
 
   // @Auth()
   @Patch(':id')
-  updateProposal(@Body() proposal: ProposalUpdateDto): Promise<ProposalResDto> {
-    return this.proposalService.updateProposal(proposal);
+  updateProposal(@Param('id') id: number | string, @Body() proposal: ProposalUpdateDto): Promise<void> {
+    return this.proposalService.updateProposal(id, proposal);
   }
 
   // @Auth()
