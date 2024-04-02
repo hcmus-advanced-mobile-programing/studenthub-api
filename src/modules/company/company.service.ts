@@ -69,8 +69,8 @@ export class CompanyProfileService {
       throw new Error(`Not found: userId = ${userId}`);
     }
 
-    const CompanySize = company.size;
+    // const CompanySize = company.size;
 
-    return GetCompanyProfileDto.fromEntities(company, user, CompanySize);
+    return GetCompanyProfileDto.fromEntities(company, user);
   }
 }

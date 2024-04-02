@@ -28,13 +28,14 @@ export class GetCompanyProfileDto {
   @ApiProperty({ description: 'description' })
   description: string;
 
-  static fromEntities(company: Company, user: User, size: CompanySize): GetCompanyProfileDto {
+  static fromEntities(company: Company, user: User): GetCompanyProfileDto {
     const dto = new GetCompanyProfileDto();
     dto.id = company.id;
     dto.userId = company.userId;
     dto.email = user.email;
     dto.fullname = user.fullname;
     dto.companyName = company.companyName;
+    dto.description = company.description;
     dto.website = company.website;
     dto.size = company.size;
     return dto;
