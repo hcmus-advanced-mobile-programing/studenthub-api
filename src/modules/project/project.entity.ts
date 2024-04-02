@@ -3,6 +3,7 @@ import { ProjectScopeFlag, TypeFlag } from 'src/common/common.enum';
 import { Base } from 'src/common/base.entity';
 import { Proposal } from 'src/modules/proposal/proposal.entity';
 import { Column, Entity, OneToMany } from 'typeorm';
+import { Message } from 'src/modules/message/message.entity';
 
 @Entity({
   name: 'project',
@@ -30,4 +31,7 @@ export class Project extends Base {
 
   @OneToMany(() => Proposal, (proposal) => proposal.student)
   proposals: Proposal[];
+
+  @OneToMany(() => Message, message => message.project)
+  messages: Message[];
 }
