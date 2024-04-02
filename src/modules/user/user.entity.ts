@@ -1,9 +1,10 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { Base } from 'src/common/base.entity';
 import { UserRole } from 'src/common/common.enum';
-import { Column, Entity, OneToOne } from 'typeorm';
+import { Column, Entity, OneToMany, OneToOne } from 'typeorm';
 import { Student } from 'src/modules/student/student.entity';
 import { Company } from 'src/modules/company/company.entity';
+import { Message } from 'src/modules/message/message.entity';
 
 @Entity({
   name: 'user',
@@ -37,4 +38,10 @@ export class User extends Base {
 
   @OneToOne(() => Company, (company) => company.user)
   company: Company;
+
+  @OneToMany(() => Message, message => message.sender)
+  sentMessages: Message[];
+
+  @OneToMany(() => Message, message => message.receiver)
+  receivedMessages: Message[];
 }
