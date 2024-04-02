@@ -23,7 +23,13 @@ export class MessageController {
 
   @Auth()
   @Get(':projectId/user/:userId')
-  async searchUserId(@Param('projectId') projectId: number, @Param('userId') userId: number): Promise<MessageResDto[]> {
-    return await this.messageSerive.searchUserId(projectId, userId);
+  async searchProjectUserId(@Param('projectId') projectId: number, @Param('userId') userId: number): Promise<MessageResDto[]> {
+    return await this.messageSerive.searchProjectUserId(projectId, userId);
+  }
+
+  @Auth()
+  @Get('')
+  async searchUserId(): Promise<MessageResDto[]> {
+    return await this.messageSerive.searchUserId();
   }
 }
