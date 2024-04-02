@@ -25,6 +25,10 @@ export class Project extends Base {
   @ApiProperty({ description: 'description' })
   description: string;
 
+  @Column()
+  @ApiProperty({ description: 'Number of Students' })
+  numberOfStudents: number;
+
   @Column({ name: 'type_flag' })
   @ApiProperty({ description: 'typeFlag' })
   typeFlag: TypeFlag;
@@ -32,6 +36,6 @@ export class Project extends Base {
   @OneToMany(() => Proposal, (proposal) => proposal.student)
   proposals: Proposal[];
 
-  @OneToMany(() => Message, message => message.project)
+  @OneToMany(() => Message, (message) => message.project)
   messages: Message[];
 }
