@@ -62,7 +62,7 @@ export class MessageService {
     return uniqueMessages;
   }
 
-  async searchUserId(projectId: number, userId: number): Promise<MessageResDto[] | any> {
+  async searchProjectUserId(projectId: number, userId: number): Promise<MessageResDto[] | any> {
     const loginUserId = this.httpContext.getUser().id;
 
     const messages = await this.messageRepository
@@ -86,4 +86,40 @@ export class MessageService {
 
     return messages;
   }
+
+  async searchUserId(): Promise<MessageResDto[] | any> {
+    const loginUserId = this.httpContext.getUser().id;
+
+    const messages = await this.messageRepository
+      .createQueryBuilder('message')
+      .leftJoinAndSelect('message.sender', 'sender')
+      .leftJoinAndSelect('message.receiver', 'receiver')
+      .leftJoinAndSelect('message.interview', 'interview')
+      .leftJoinAndSelect('message.project', 'project')
+      .select(['message.id', 'message.content', 'message.createdAt', 'sender.id', 'sender.fullname', 'receiver.id', 'receiver.fullname', 'interview', 'project'])
+      .andWhere(new Brackets(qb => {
+        qb.where('message.receiverId = :loginUserId', { loginUserId: loginUserId })
+          .orWhere('message.senderId = :loginUserId', { loginUserId: loginUserId });
+      }))
+      .orderBy('message.createdAt', 'ASC')
+      .getMany();
+
+    const groupedMessages = messages.reduce((acc, message) => {
+      const projectId = message.project.id;
+      if (!acc[projectId]) {
+        acc[projectId] = {
+          project: message.project,
+          messages: []
+        };
+      }
+      message.project = undefined;
+      acc[projectId].messages.push(message);
+      return acc;
+    }, {});
+
+    const groupedMessagesArray = Object.values(groupedMessages);
+
+    return groupedMessagesArray;
+  }
+
 }
