@@ -13,7 +13,7 @@ export class Project extends Base {
   @ApiProperty({ description: 'company_id' })
   companyId: number | string;
 
-  @Column({ name: 'project_scope_flag', default: ProjectScopeFlag.OneToThreeMonth })
+  @Column({ name: 'project_scope_flag', default: ProjectScopeFlag.LessThanOneMOnth })
   @ApiProperty({ description: 'projectScopeFlag' })
   projectScopeFlag: ProjectScopeFlag;
 
@@ -25,6 +25,10 @@ export class Project extends Base {
   @ApiProperty({ description: 'description' })
   description: string;
 
+  @Column({ name: 'number_of_students', default: 0 })
+  @ApiProperty({ description: 'Number of Students' })
+  numberOfStudents: number;
+
   @Column({ name: 'type_flag' })
   @ApiProperty({ description: 'typeFlag' })
   typeFlag: TypeFlag;
@@ -32,6 +36,6 @@ export class Project extends Base {
   @OneToMany(() => Proposal, (proposal) => proposal.student)
   proposals: Proposal[];
 
-  @OneToMany(() => Message, message => message.project)
+  @OneToMany(() => Message, (message) => message.project)
   messages: Message[];
 }
