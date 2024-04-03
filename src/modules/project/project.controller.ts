@@ -28,7 +28,7 @@ export class ProjectController {
   }
 
   @Get()
-  async findAll(): Promise<Project[]> {
+  async findAll(): Promise<any[]> {
     return this.projectService.findAll();
   }
 

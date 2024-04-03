@@ -25,15 +25,64 @@ export class ProjectService {
       throw new NotFoundException(`No projects found for company ID: ${companyId}`);
     }
 
-    return projects;
+    const projectsWithDetails = await Promise.all(
+      projects.map(async (project) => {
+        // Đếm số lượng proposal
+        const proposalCount = project.proposals ? project.proposals.length : 0;
+
+        // Đếm số lượng proposal có StatusFlag = 2
+        const hiredCount = project.proposals ? project.proposals.filter(proposal => proposal.statusFlag === 2).length : 0;
+
+        // Tính khoảng thời gian mà project đã được tạo
+        const projectAge = formatDistanceToNow(new Date(project.createdAt), { addSuffix: true });
+
+        // Đếm số lượng message của project
+        const messageCount = await this.messageRepository.countBy({ projectId: project.id });
+
+        return {
+          ...project,
+          projectAge,
+          proposalCount,
+          messageCount,
+          hiredCount
+        };
+      })
+    );
+
+    return projectsWithDetails;
   }
 
   async create(project: ProjectCreateDto): Promise<Project> {
     return this.projectRepository.save(project);
   }
-  async findAll(): Promise<Project[]> {
+  async findAll(): Promise<any[]> {
     const projects = (await this.projectRepository.find()) || [];
-    return projects;
+
+    const projectsWithDetails = await Promise.all(
+      projects.map(async (project) => {
+        // Đếm số lượng proposal
+        const proposalCount = project.proposals ? project.proposals.length : 0;
+
+        // Đếm số lượng proposal có StatusFlag = 2
+        const hiredCount = project.proposals ? project.proposals.filter(proposal => proposal.statusFlag === 2).length : 0;
+
+        // Tính khoảng thời gian mà project đã được tạo
+        const projectAge = formatDistanceToNow(new Date(project.createdAt), { addSuffix: true });
+
+        // Đếm số lượng message của project
+        const messageCount = await this.messageRepository.countBy({ projectId: project.id });
+
+        return {
+          ...project,
+          projectAge,
+          proposalCount,
+          messageCount,
+          hiredCount
+        };
+      })
+    );
+
+    return projectsWithDetails;
   }
   async findById(id: number): Promise<any> {
     const project = await this.projectRepository.findOne({ 
@@ -45,14 +94,14 @@ export class ProjectService {
       throw new NotFoundException(`No project found with ID: ${id}`);
     }
 
-    const proposalCount = project.proposals.length;
+    const proposalCount = project.proposals ? project.proposals.length : 0;
 
     // Tính khoảng thời gian mà project đã được tạo
     const projectAge = formatDistanceToNow(new Date(project.createdAt), { addSuffix: true });
 
     const messageCount = await this.messageRepository.countBy({ projectId: id });
 
-    const hiredCount = project.proposals.filter(proposal => proposal.statusFlag === 2).length;
+    const hiredCount = project.proposals ? project.proposals.filter(proposal => proposal.statusFlag === 2).length : 0;
 
     return {project, projectAge, proposalCount, messageCount, hiredCount};
   }
