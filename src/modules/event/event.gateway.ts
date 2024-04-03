@@ -31,9 +31,16 @@ export class EventGateway implements OnGatewayInit, OnGatewayConnection, OnGatew
     this.messageQueue = new Queue('messageQueue');
     this.messageQueue
       .process(async (job: Queue.Job<MessageDto>, done) => {
-        const { projectId, content, senderId, receiverId, messageFlag } = job.data;
+        const { projectId, content, senderId, receiverId, messageFlag, senderSocketId } = job.data;
 
-        await messageService.createMessage({ projectId, content, senderId, receiverId, messageFlag });
+        const resultAdd = await messageService.createMessage({ projectId, content, senderId, receiverId, messageFlag });
+        if (!resultAdd) {
+          console.log('==============');
+          console.error(senderSocketId, 'Error occurred while adding message');
+          this.server.to(senderSocketId).emit('ERROR', { content: 'Error occurred in message queue' });
+          // throw new Error('Error occurred while adding message');
+          return done();
+        }
 
         // Send message to all clients in the room
         this.server.to([senderId.toString(), receiverId.toString()]).emit('SEND_MESSAGE', { content });
@@ -60,11 +67,13 @@ export class EventGateway implements OnGatewayInit, OnGatewayConnection, OnGatew
         throw new Error('Invalid data');
       }
 
-      const { project_id: projectId, content, receiverId, senderId, type } = data;
+      const { projectId, content, receiverId, senderId, type } = data;
 
-      this.messageQueue.add({ projectId, content, clientId: client.id, receiverId, senderId, type }).catch((error) => {
-        throw new Error(error);
-      });
+      this.messageQueue
+        .add({ projectId, content, senderSocketId: client.id, receiverId, senderId, type })
+        .catch((error) => {
+          throw new Error(error);
+        });
     } catch (error) {
       console.error('Error occurred in message queue: ', error);
       this.server.to(client.id).emit('ERROR', { content: 'Error occurred in message queue' });

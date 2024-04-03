@@ -11,12 +11,10 @@ export class MessageGetDto {
   receiverId: number | string;
 
   @ApiProperty({ description: 'Page' })
-  @IsNumber()
   @IsOptional()
-  page: number = 1;
+  page: number | string = 1;
 
   @ApiProperty({ description: 'Page size' })
-  @IsNumber()
   @IsOptional()
-  pageSize: number = 10;
+  pageSize: number | string = 10;
 }

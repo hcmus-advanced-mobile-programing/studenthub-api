@@ -1,7 +1,9 @@
-import { Body, Controller, Param, Post, Put, Get } from '@nestjs/common';
+import { Body, Controller, Param, Post, Put, Get, ValidationPipe, Query } from '@nestjs/common';
 
 import { ApiTags } from '@nestjs/swagger';
+import { Validate, ValidationTypes } from 'class-validator';
 import { Auth } from 'src/decorators/http.decorators';
+import { MessageDto } from 'src/modules/event/dto/message.dto';
 import { MessageResDto } from 'src/modules/message/dto/message-res.dto';
 import { MessageGetDto } from 'src/modules/message/dto/message_get.dto';
 import { MessageGet } from 'src/modules/message/interface/message_get.interface';
@@ -16,6 +18,13 @@ import { TechStack } from 'src/modules/techStack/techStack.entity';
 @Controller('api/message')
 export class MessageController {
   constructor(private messageService: MessageService) {}
+
+  //TODO: Group seminar by project
+  @Auth()
+  @Get('get')
+  findMessage(@Query() messageGetDto: MessageGetDto): any {
+    return this.messageService.findMessage(messageGetDto);
+  }
 
   @Auth()
   @Get(':projectId')
@@ -37,23 +46,4 @@ export class MessageController {
   async searchUserId(): Promise<MessageResDto[]> {
     return await this.messageService.searchUserId();
   }
-
-  //TODO: Group seminar by project
-  @Auth()
-  @Get()
-  findMessage(@Param() messageGetDto: MessageGetDto): Promise<MessageGet> {
-    return this.messageService.findMessage(messageGetDto);
-  }
-
-  // @Auth()
-  // @Delete(':id')
-  // deleteMessage(@Param('id') id: string) {
-  //   return id;
-  // }
-
-  // @Auth()
-  // @Put(':id')
-  // updateMessage(@Param('id') id: string, @Body() message: any) {
-  //   return message;
-  // }
 }

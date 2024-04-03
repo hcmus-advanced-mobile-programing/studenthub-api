@@ -6,6 +6,7 @@ import { MessageResDto } from 'src/modules/message/dto/message-res.dto';
 import { MessageGetDto } from 'src/modules/message/dto/message_get.dto';
 import { MessageGet } from 'src/modules/message/interface/message_get.interface';
 import { Message } from 'src/modules/message/message.entity';
+import { Project } from 'src/modules/project/project.entity';
 import { Student } from 'src/modules/student/student.entity';
 import { HttpRequestContextService } from 'src/shared/http-request-context/http-request-context.service';
 import { Brackets, In, Repository } from 'typeorm';
@@ -21,7 +22,9 @@ export class MessageService {
     private studentRepository: Repository<Student>,
     @InjectRepository(Company)
     private companyRepository: Repository<Company>,
-    private readonly httpContext: HttpRequestContextService
+    private readonly httpContext: HttpRequestContextService,
+    @InjectRepository(Project)
+    private projectRepository: Repository<Project>
   ) {}
 
   async searchProjectId(projectId: number): Promise<MessageResDto[] | any> {
@@ -182,9 +185,9 @@ export class MessageService {
       throw new BadRequestException(`User not found in the request context.`);
     }
 
-    const listFilterId = [messageGetDto.projectId, messageGetDto.receiverId, userId];
-    const page = messageGetDto.page || 1;
-    const pageSize = messageGetDto.pageSize || 10;
+    const listFilterId = [Number(messageGetDto.receiverId), userId];
+    const page = Number(messageGetDto.page) || 1;
+    const pageSize = Number(messageGetDto.pageSize) || 10;
 
     // find message with limit page and pageSize
     const message = await this.messageRepository.find({
@@ -195,6 +198,9 @@ export class MessageService {
       },
       skip: (page - 1) * pageSize,
       take: pageSize,
+      order: {
+        createdAt: 'DESC',
+      },
     });
 
     // count total message
@@ -210,14 +216,14 @@ export class MessageService {
     const totalPage = Math.ceil(totalMessages / pageSize);
 
     return {
-      messages: message,
+      messages: message.reverse(),
       page,
       totalPage,
       pageSize,
     };
   }
 
-  async createMessage(data: any): Promise<string> {
+  async createMessage(data: any): Promise<boolean> {
     const senderId = Number(data.senderId);
     const receiverId = Number(data.receiverId);
     const projectId = Number(data.projectId);
@@ -225,6 +231,11 @@ export class MessageService {
     const messageFlag = data.messageFlag;
 
     try {
+      // Check project exist
+      if (!(await this.projectRepository.findOne({ where: { id: projectId } }))) {
+        throw new NotFoundException(`Project not found`);
+      }
+
       const newMessage = this.messageRepository.create({
         senderId,
         receiverId,
@@ -232,14 +243,14 @@ export class MessageService {
         content,
         messageFlag,
       });
-      
+
       await this.messageRepository.save(newMessage);
     } catch (Exception) {
       this.logger.error(`Error when create message: ${Exception}`);
-      throw new BadRequestException(`Error when create message`);
+      return false;
     }
 
-    return 'success';
+    return true;
   }
 
   async deleteMessage(id: string): Promise<string> {
