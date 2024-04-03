@@ -31,12 +31,15 @@ export class EventGateway implements OnGatewayInit, OnGatewayConnection, OnGatew
     this.messageQueue = new Queue('messageQueue');
     this.messageQueue
       .process(async (job: Queue.Job<MessageDto>, done) => {
-        const { projectId, content, senderId } = job.data;
+        const { projectId, content, senderId, receiverId, messageFlag } = job.data;
 
-        await messageService.createMessage({ projectId, content, senderId });
-        this.server.to(projectId.toString()).emit('SEND_MESSAGE', { content });
-        this.sendNotificationToUidByProject(senderId.toString(), projectId.toString(), content);
+        await messageService.createMessage({ projectId, content, senderId, receiverId, messageFlag });
 
+        // Send message to all clients in the room
+        this.server.to([senderId.toString(), receiverId.toString()]).emit('SEND_MESSAGE', { content });
+
+        // Send notification to receiver
+        this.server.emit(`NOTI_${receiverId}`, { content });
         done();
       })
       .catch((error) => {
@@ -95,11 +98,13 @@ export class EventGateway implements OnGatewayInit, OnGatewayConnection, OnGatew
 
   // eslint-disable-next-line @typescript-eslint/no-unused-vars, @typescript-eslint/require-await
   async handleConnection(socket: Socket): Promise<void> {
+    console.log('Connected');
     try {
       const { email, id } = await this.jwtService.verify(socket.handshake.headers.authorization.split(' ')[1]);
       const { project_id } = socket.handshake.query;
 
       console.log('Email: ', email, 'Id: ', id, 'Project id: ', project_id);
+      console.log('Socket id: ', socket.id);
 
       socket.data = { email, id };
       if (project_id) await socket.join(project_id.toString());

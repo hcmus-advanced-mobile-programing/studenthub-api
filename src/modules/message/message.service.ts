@@ -218,18 +218,22 @@ export class MessageService {
   }
 
   async createMessage(data: any): Promise<string> {
-    const senderId = data.senderId;
-    const receiverId = data.receiverId;
-    const projectId = data.projectId;
+    const senderId = Number(data.senderId);
+    const receiverId = Number(data.receiverId);
+    const projectId = Number(data.projectId);
+    const content = data.content;
+    const messageFlag = data.messageFlag;
 
     try {
-      await this.messageRepository.create({
+      const newMessage = this.messageRepository.create({
         senderId,
         receiverId,
         projectId,
-        content: data.content,
-        messageFlag: data.messageFlag,
+        content,
+        messageFlag,
       });
+      
+      await this.messageRepository.save(newMessage);
     } catch (Exception) {
       this.logger.error(`Error when create message: ${Exception}`);
       throw new BadRequestException(`Error when create message`);
