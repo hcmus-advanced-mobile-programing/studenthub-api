@@ -987,7 +987,7 @@
     multer "1.4.4-lts.1"
     tslib "2.6.2"
 
-"@nestjs/platform-socket.io@^10.3.7":
+"@nestjs/platform-socket.io@^10.2.7":
   version "10.3.7"
   resolved "https://registry.yarnpkg.com/@nestjs/platform-socket.io/-/platform-socket.io-10.3.7.tgz#d814da88f289f32d07d84db8a7e838c4f9cc5ef2"
   integrity sha512-T9VbVgEUnbid/RiywN9/8YQ8pAGDP++0nX73l4kIWeDWkz5DEh4aLB7O/JvLA3/xRHdjTZ4RiRZazwqSWi1Sog==
@@ -1031,7 +1031,7 @@
   dependencies:
     uuid "9.0.0"
 
-"@nestjs/websockets@^10.3.7":
+"@nestjs/websockets@^10.2.7":
   version "10.3.7"
   resolved "https://registry.yarnpkg.com/@nestjs/websockets/-/websockets-10.3.7.tgz#10837e9f370be348dea6fd4f9c6428843891dbf8"
   integrity sha512-iYdsWiRNPUy0XzPoW44bx2MW1griuraTr5fNhoe2rUSNO0mEW1aeXp4v56KeZDLAss31WbeckC5P3N223Fys5g==
