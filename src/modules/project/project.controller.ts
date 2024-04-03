@@ -1,4 +1,4 @@
-import { Body, Controller, Delete, Get, Param, Patch, Post } from '@nestjs/common';
+import { Body, Controller, Delete, Get, HttpCode, Param, Patch, Post } from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
 import { ProjectService } from './project.service';
 import { ProjectSearchCompanyId } from './dto/project-search.dto';
@@ -31,13 +31,16 @@ export class ProjectController {
   async findAll(): Promise<Project[]> {
     return this.projectService.findAll();
   }
+
   @Delete(':id')
+  @HttpCode(200)
   async delete(@Param('id') id: number): Promise<void> {
     await this.projectService.delete(id);
   }
 
   @Patch(':id')
-  async update(@Param('id') id: number, @Body() updatedProject: ProjectUpdateDto): Promise<void> {
+  async update(@Param('id') id: number, @Body() updatedProject: ProjectUpdateDto): Promise<Project> {
     await this.projectService.update(id, updatedProject);
+    return this.projectService.findById(id);
   }
 }

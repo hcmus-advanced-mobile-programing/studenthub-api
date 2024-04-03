@@ -57,8 +57,10 @@ export class ProposalService {
     return this.proposalRepository.save(proposal);
   }
 
-  async updateProposal(proposal: ProposalUpdateDto): Promise<ProposalResDto> {
-    return this.proposalRepository.save(proposal);
+  async updateProposal(id: number | string, proposal: ProposalUpdateDto): Promise<void> {
+    const proposalToUpdate = await this.proposalRepository.findOneBy({ id });
+    if (!proposalToUpdate) throw new Error('Proposal not found');
+    await this.proposalRepository.update(id, proposal);
   }
 
   async findByStudentId(studentId: string): Promise<ProposalResDto[]> {
