@@ -17,7 +17,7 @@ export class ProjectController {
   }
 
   @Get(':projectId')
-  async projectSearchId(@Param('projectId') id: number): Promise<Project> {
+  async projectSearchId(@Param('projectId') id: number): Promise<any> {
     return this.projectService.findById(id);
   }
 

@@ -4,12 +4,16 @@ import { Repository } from 'typeorm';
 import { Project } from './project.entity';
 import { ProjectCreateDto } from 'src/modules/project/dto/project-create.dto';
 import { ProjectUpdateDto } from 'src/modules/project/dto/project-update.dto';
+import { formatDistanceToNow } from 'date-fns';
+import { Message } from 'src/modules/message/message.entity';
 
 @Injectable()
 export class ProjectService {
   constructor(
     @InjectRepository(Project)
-    private readonly projectRepository: Repository<Project>
+    private readonly projectRepository: Repository<Project>,
+    @InjectRepository(Message)
+    private readonly messageRepository: Repository<Message>
   ) {}
 
   async findByCompanyId(companyId: number): Promise<Project[]> {
@@ -31,14 +35,26 @@ export class ProjectService {
     const projects = (await this.projectRepository.find()) || [];
     return projects;
   }
-  async findById(id: number): Promise<Project> {
-    const project = await this.projectRepository.findOne({ where: { id } });
-
+  async findById(id: number): Promise<any> {
+    const project = await this.projectRepository.findOne({ 
+      where: { id },
+      relations: ['proposals'] 
+    });
+    
     if (!project) {
       throw new NotFoundException(`No project found with ID: ${id}`);
     }
 
-    return project;
+    const proposalCount = project.proposals.length;
+
+    // Tính khoảng thời gian mà project đã được tạo
+    const projectAge = formatDistanceToNow(new Date(project.createdAt), { addSuffix: true });
+
+    const messageCount = await this.messageRepository.countBy({ projectId: id });
+
+    const hiredCount = project.proposals.filter(proposal => proposal.statusFlag === 2).length;
+
+    return {project, projectAge, proposalCount, messageCount, hiredCount};
   }
 
   async delete(id: number): Promise<void> {
