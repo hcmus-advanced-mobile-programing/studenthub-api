@@ -14,6 +14,9 @@ import {
 import { Server, Socket } from 'socket.io';
 
 import * as Queue from 'bull';
+import { checkObjectMatchesDto } from 'src/utils/validators/dto.validator';
+import { MessageDto } from 'src/modules/event/dto/message.dto';
+import { MessageService } from 'src/modules/message/message.service';
 
 @Injectable()
 @WebSocketGateway()
@@ -21,27 +24,21 @@ export class EventGateway implements OnGatewayInit, OnGatewayConnection, OnGatew
   @WebSocketServer() private server: Server;
   private messageQueue: Queue.Queue;
 
-  constructor(private readonly jwtService: JwtService) {
+  constructor(
+    private readonly jwtService: JwtService,
+    private messageService: MessageService
+  ) {
     this.messageQueue = new Queue('messageQueue');
-
     this.messageQueue
-      .process(
-        (
-          job: Queue.Job<{
-            projectId: string;
-            content: string;
-            clientId: string;
-          }>, 
-          done
-        ) => {
-          const { projectId, content, clientId } = job.data;
+      .process(async (job: Queue.Job<MessageDto>, done) => {
+        const { projectId, content, senderId } = job.data;
 
-          this.server.to(projectId.toString()).emit('SEND_MESSAGE', { content });
-          this.sendNotificationToUidByProject(clientId, projectId.toString(), content);
+        await messageService.createMessage({ projectId, content, senderId });
+        this.server.to(projectId.toString()).emit('SEND_MESSAGE', { content });
+        this.sendNotificationToUidByProject(senderId.toString(), projectId.toString(), content);
 
-          done();
-        }
-      )
+        done();
+      })
       .catch((error) => {
         throw new Error(error);
       });
@@ -52,11 +49,17 @@ export class EventGateway implements OnGatewayInit, OnGatewayConnection, OnGatew
   }
 
   @SubscribeMessage('SEND_MESSAGE')
-  handleMessage(@ConnectedSocket() client: Socket, @MessageBody() data): void {
+  async handleMessage(@ConnectedSocket() client: Socket, @MessageBody() data): Promise<void> {
     try {
-      const { project_id: projectId, content } = data;
+      const checkValidate = await checkObjectMatchesDto(data, MessageDto);
 
-      this.messageQueue.add({ projectId, content, clientId: client.id }).catch((error) => {
+      if (!checkValidate) {
+        throw new Error('Invalid data');
+      }
+
+      const { project_id: projectId, content, receiverId, senderId, type } = data;
+
+      this.messageQueue.add({ projectId, content, clientId: client.id, receiverId, senderId, type }).catch((error) => {
         throw new Error(error);
       });
     } catch (error) {

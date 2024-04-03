@@ -10,5 +10,6 @@ import { Company } from 'src/modules/company/company.entity';
   imports: [TypeOrmModule.forFeature([Message, Student, Company])],
   providers: [MessageService],
   controllers: [MessageController],
+  exports: [MessageService],
 })
 export class MessageModule {}
