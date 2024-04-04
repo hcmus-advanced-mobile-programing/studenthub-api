@@ -17,6 +17,7 @@ import * as Queue from 'bull';
 import { checkObjectMatchesDto } from 'src/utils/validators/dto.validator';
 import { MessageDto } from 'src/modules/event/dto/message.dto';
 import { MessageService } from 'src/modules/message/message.service';
+import { UserService } from 'src/modules/user/user.service';
 
 @Injectable()
 @WebSocketGateway()
@@ -27,7 +28,8 @@ export class EventGateway implements OnGatewayInit, OnGatewayConnection, OnGatew
 
   constructor(
     private readonly jwtService: JwtService,
-    private messageService: MessageService
+    private messageService: MessageService,
+    private userService: UserService
   ) {
     this.messageQueue = new Queue('messageQueue');
     this.messageQueue
@@ -42,13 +44,15 @@ export class EventGateway implements OnGatewayInit, OnGatewayConnection, OnGatew
           return done();
         }
 
+        const sender = await userService.findOne({ id: senderId });
+
         // Send message to all clients in the room
         this.server
           .to([senderId.toString(), receiverId.toString()])
-          .emit('RECEIVE_MESSAGE', { content, senderId, receiverId });
+          .emit('RECEIVE_MESSAGE', { content, senderId, receiverId, messageFlag });
 
         // Send notification to receiver
-        this.server.emit(`NOTI_${receiverId}`, { content });
+        this.server.emit(`NOTI_${receiverId}`, { content, title: `New message from ${sender.fullname}`, messageFlag });
         done();
       })
       .catch((error) => {

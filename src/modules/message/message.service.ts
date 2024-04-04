@@ -216,7 +216,7 @@ export class MessageService {
     const totalPage = Math.ceil(totalMessages / pageSize);
 
     return {
-      messages: message.reverse(),
+      messages: message,
       page,
       totalPage,
       pageSize,
@@ -241,7 +241,7 @@ export class MessageService {
         receiverId,
         projectId,
         content,
-        messageFlag: messageFlag === 'text' ? 0 : 1,
+        messageFlag: messageFlag,
       });
 
       await this.messageRepository.save(newMessage);

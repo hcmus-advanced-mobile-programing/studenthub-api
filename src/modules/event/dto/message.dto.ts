@@ -17,6 +17,6 @@ export class MessageDto {
   content: string;
 
   @IsNotEmpty()
-  @IsIn(['Schedule an interview', 'text'], { message: 'Invalid value' })
-  messageFlag: string;
+  @IsIn([0, 1], { message: 'Invalid value' })
+  messageFlag: number;
 }
