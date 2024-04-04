@@ -12,6 +12,11 @@ import { ProjectFilterDto } from 'src/modules/project/dto/project-filter.dto';
 export class ProjectController {
   constructor(private readonly projectService: ProjectService) {}
 
+  @Get()
+  async findAll(@Query() filterDto: ProjectFilterDto): Promise<any[]> {
+    return this.projectService.findAll(filterDto);
+  }
+  
   @Get('/company/:companyId')
   async projectSearchCompanyId(@Param() params: ProjectSearchCompanyId): Promise<Project[]> {
     return this.projectService.findByCompanyId(params.companyId);
@@ -28,11 +33,6 @@ export class ProjectController {
     return newProject;
   }
 
-  @Get()
-  async findAll(): Promise<any[]> {
-    return this.projectService.findAll();
-  }
-
   @Delete(':id')
   @HttpCode(200)
   async delete(@Param('id') id: number): Promise<void> {
@@ -43,10 +43,5 @@ export class ProjectController {
   async update(@Param('id') id: number, @Body() updatedProject: ProjectUpdateDto): Promise<Project> {
     await this.projectService.update(id, updatedProject);
     return this.projectService.findById(id);
-  }
-
-  @Get('search')
-  async search(@Query() filterDto: ProjectFilterDto): Promise<any[]> {
-    return this.projectService.search(filterDto);
   }
 }
