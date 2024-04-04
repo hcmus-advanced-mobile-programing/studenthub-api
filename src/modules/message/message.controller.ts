@@ -19,13 +19,6 @@ import { TechStack } from 'src/modules/techStack/techStack.entity';
 export class MessageController {
   constructor(private messageService: MessageService) {}
 
-  //TODO: Group seminar by project
-  @Auth()
-  @Get('get')
-  findMessage(@Query() messageGetDto: MessageGetDto): any {
-    return this.messageService.findMessage(messageGetDto);
-  }
-
   @Auth()
   @Get(':projectId')
   async searchProjectId(@Param('projectId') projectId: number): Promise<MessageResDto[]> {
@@ -45,5 +38,12 @@ export class MessageController {
   @Get('')
   async searchUserId(): Promise<MessageResDto[]> {
     return await this.messageService.searchUserId();
+  }
+
+  //TODO: Group seminar by project
+  @Auth()
+  @Get('get/page')
+  findMessage(@Query(new ValidationPipe()) messageGetDto: MessageGetDto): any {
+    return this.messageService.findMessage(messageGetDto);
   }
 }

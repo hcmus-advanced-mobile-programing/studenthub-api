@@ -241,7 +241,7 @@ export class MessageService {
         receiverId,
         projectId,
         content,
-        messageFlag,
+        messageFlag: messageFlag === 'text' ? 0 : 1,
       });
 
       await this.messageRepository.save(newMessage);

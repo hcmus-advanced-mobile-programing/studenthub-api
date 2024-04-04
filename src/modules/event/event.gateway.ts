@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, Logger } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import {
   ConnectedSocket,
@@ -23,6 +23,7 @@ import { MessageService } from 'src/modules/message/message.service';
 export class EventGateway implements OnGatewayInit, OnGatewayConnection, OnGatewayDisconnect {
   @WebSocketServer() private server: Server;
   private messageQueue: Queue.Queue;
+  private readonly logger = new Logger(MessageService.name);
 
   constructor(
     private readonly jwtService: JwtService,
@@ -34,23 +35,24 @@ export class EventGateway implements OnGatewayInit, OnGatewayConnection, OnGatew
         const { projectId, content, senderId, receiverId, messageFlag, senderSocketId } = job.data;
 
         const resultAdd = await messageService.createMessage({ projectId, content, senderId, receiverId, messageFlag });
+
         if (!resultAdd) {
-          console.log('==============');
           console.error(senderSocketId, 'Error occurred while adding message');
           this.server.to(senderSocketId).emit('ERROR', { content: 'Error occurred in message queue' });
-          // throw new Error('Error occurred while adding message');
           return done();
         }
 
         // Send message to all clients in the room
-        this.server.to([senderId.toString(), receiverId.toString()]).emit('SEND_MESSAGE', { content });
+        this.server
+          .to([senderId.toString(), receiverId.toString()])
+          .emit('RECEIVE_MESSAGE', { content, senderId, receiverId });
 
         // Send notification to receiver
         this.server.emit(`NOTI_${receiverId}`, { content });
         done();
       })
       .catch((error) => {
-        throw new Error(error);
+        console.error(error);
       });
 
     this.messageQueue.on('error', (error) => {
@@ -67,10 +69,10 @@ export class EventGateway implements OnGatewayInit, OnGatewayConnection, OnGatew
         throw new Error('Invalid data');
       }
 
-      const { projectId, content, receiverId, senderId, type } = data;
+      const { projectId, content, receiverId, senderId, messageFlag } = data;
 
       this.messageQueue
-        .add({ projectId, content, senderSocketId: client.id, receiverId, senderId, type })
+        .add({ projectId, content, senderSocketId: client.id, receiverId, senderId, messageFlag })
         .catch((error) => {
           throw new Error(error);
         });
@@ -107,13 +109,11 @@ export class EventGateway implements OnGatewayInit, OnGatewayConnection, OnGatew
 
   // eslint-disable-next-line @typescript-eslint/no-unused-vars, @typescript-eslint/require-await
   async handleConnection(socket: Socket): Promise<void> {
-    console.log('Connected');
     try {
       const { email, id } = await this.jwtService.verify(socket.handshake.headers.authorization.split(' ')[1]);
       const { project_id } = socket.handshake.query;
 
-      console.log('Email: ', email, 'Id: ', id, 'Project id: ', project_id);
-      console.log('Socket id: ', socket.id);
+      console.debug('Email: ', email, 'Id: ', id, 'Project id: ', project_id);
 
       socket.data = { email, id };
       if (project_id) await socket.join(project_id.toString());
