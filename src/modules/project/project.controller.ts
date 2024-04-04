@@ -1,10 +1,11 @@
-import { Body, Controller, Delete, Get, HttpCode, Param, Patch, Post } from '@nestjs/common';
+import { Body, Controller, Delete, Get, HttpCode, Param, Patch, Post, Query } from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
 import { ProjectService } from './project.service';
 import { ProjectSearchCompanyId } from './dto/project-search.dto';
 import { Project } from './project.entity';
 import { ProjectCreateDto } from 'src/modules/project/dto/project-create.dto';
 import { ProjectUpdateDto } from 'src/modules/project/dto/project-update.dto';
+import { ProjectFilterDto } from 'src/modules/project/dto/project-filter.dto';
 
 @ApiTags('project')
 @Controller('api/project')
@@ -42,5 +43,10 @@ export class ProjectController {
   async update(@Param('id') id: number, @Body() updatedProject: ProjectUpdateDto): Promise<Project> {
     await this.projectService.update(id, updatedProject);
     return this.projectService.findById(id);
+  }
+
+  @Get('search')
+  async search(@Query() filterDto: ProjectFilterDto): Promise<any[]> {
+    return this.projectService.search(filterDto);
   }
 }
