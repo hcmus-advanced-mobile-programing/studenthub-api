@@ -31,11 +31,8 @@ export class ProjectService {
       const proposalCount = project.proposals ? project.proposals.length : 0;
       const hiredCount = project.proposals ? project.proposals.filter(proposal => proposal.statusFlag === 2).length : 0;
       const projectAge = formatDistanceToNow(new Date(project.createdAt), { addSuffix: true });
-      
-      let messageCount = 0;
-      if (project.id) {
-        messageCount = await this.MessageService.searchProjectId(Number(project.id));
-      }
+      const messageList = await this.MessageService.searchProjectId(Number(project.id));
+      const messageCount = messageList.length;
   
       projectsWithDetails.push({
         ...project,
@@ -75,10 +72,8 @@ export class ProjectService {
         const proposalCount = project.proposals ? project.proposals.length : 0;
         const hiredCount = project.proposals ? project.proposals.filter(proposal => proposal.statusFlag === 2).length : 0;
         const projectAge = formatDistanceToNow(new Date(project.createdAt), { addSuffix: true });
-        let messageCount = 0;
-        if (project.id) {
-          messageCount = await this.MessageService.searchProjectId(Number(project.id));
-        }
+        const messageList = await this.MessageService.searchProjectId(Number(project.id));
+        const messageCount = messageList.length;
 
         return {
           ...project,
@@ -107,7 +102,8 @@ export class ProjectService {
     // Tính khoảng thời gian mà project đã được tạo
     const projectAge = formatDistanceToNow(new Date(project.createdAt), { addSuffix: true });
 
-    const messageCount = await this.MessageService.searchProjectId(id);
+    const messageList = await this.MessageService.searchProjectId(Number(project.id));
+    const messageCount = messageList.length;
 
     const hiredCount = project.proposals ? project.proposals.filter(proposal => proposal.statusFlag === 2).length : 0;
 
