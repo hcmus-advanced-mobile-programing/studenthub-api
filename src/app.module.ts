@@ -31,9 +31,11 @@ import { MailModule } from 'src/modules/mail/mail.module';
 import { APP_INTERCEPTOR } from '@nestjs/core';
 import { IsLoggedOutInterceptor } from 'src/interceptor/isLoggedOut.interceptor';
 import { MessageModule } from 'src/modules/message/message.module';
+import { InterviewModule } from './modules/interview/interview.module';
 
 @Module({
   imports: [
+    InterviewModule,
     ConfigModule.forRoot({
       isGlobal: true,
       load: [configuration],
@@ -68,12 +70,13 @@ import { MessageModule } from 'src/modules/message/message.module';
     ExperienceModule,
     FavoriteProjectModule,
     MailModule,
-    MessageModule
+    MessageModule,
+    InterviewModule,
   ],
   providers: [
     {
-      provide: APP_INTERCEPTOR,  // Add this line
-      useClass: IsLoggedOutInterceptor,  // Add this line
+      provide: APP_INTERCEPTOR, // Add this line
+      useClass: IsLoggedOutInterceptor, // Add this line
     },
   ],
 })
