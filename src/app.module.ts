@@ -13,6 +13,7 @@ import { TypeOrmConfigService } from 'src/database/typeorm-config.service';
 import loggerConfig from 'src/logger/config';
 import { AuthModule } from 'src/modules/auth/auth.module';
 import { UserModule } from 'src/modules/user/user.module';
+import { MeetingRoomModule } from 'src/modules/meeting-room/meeting-room.module';
 import { HttRequestContextMiddleware } from 'src/shared/http-request-context/http-request-context.middleware';
 import { HttRequestContextModule } from 'src/shared/http-request-context/http-request-context.module';
 import { RequestIdHeaderMiddleware } from 'src/shared/middlewares/request-id-header.middleware';
@@ -44,6 +45,7 @@ import { ProposalModule } from 'src/modules/proposal/proposal.module';
     AuthModule,
     UserModule,
     ProposalModule,
+    MeetingRoomModule,
   ],
 })
 export class AppModule implements NestModule {

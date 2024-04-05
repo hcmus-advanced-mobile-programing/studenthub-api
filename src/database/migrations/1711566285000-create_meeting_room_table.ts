@@ -14,37 +14,37 @@ export class CreateMeetingRoomTable1711566285000 implements MigrationInterface {
                         generationStrategy: 'increment',
                     },
                     {
-                        name: 'meetingRoomCode',
+                        name: 'meeting_room_code',
                         type: 'varchar',
                         length: '255',
                         isNullable: false,
                     },
                     {
-                        name: 'meetingRoomID',
+                        name: 'meeting_room_id',
                         type: 'varchar',
                         length: '255',
                         isNullable: false,
                     },
                     {
-                        name: 'expiredAt',
+                        name: 'expired_at',
                         type: 'timestamp',
                         isNullable: true, // Set based on whether expiration is optional
                     },
                     {
-                        name: 'createdAt',
+                        name: 'created_at',
                         type: 'timestamp',
                         isNullable: true, // Typically not nullable, but defaults are often set at the DB level
                         default: 'CURRENT_TIMESTAMP',
                     },
                     {
-                        name: 'updatedAt',
+                        name: 'updated_at',
                         type: 'timestamp',
                         isNullable: true, // Typically not nullable; consider triggers for auto-updating
                         onUpdate: 'CURRENT_TIMESTAMP',
                         default: 'CURRENT_TIMESTAMP',
                     },
                     {
-                        name: 'deletedAt',
+                        name: 'deleted_at',
                         type: 'timestamp',
                         isNullable: true, // Nullable because not all records will be soft deleted
                     },
