@@ -2,6 +2,7 @@ import { Body, Controller, Get, Param, Put } from '@nestjs/common';
 import { Experience } from 'src/modules/experience/experience.entity';
 import { UpdateStudentExperienceDto } from 'src/modules/experience/dto/update-student-experience.dto';
 import { ExperienceService } from 'src/modules/experience/experience.service';
+import { Auth } from 'src/decorators/http.decorators';
 
 @Controller('api/experience')
 export class ExperienceController {
@@ -13,6 +14,7 @@ export class ExperienceController {
   }
 
   @Put('updateByStudentId/:studentId')
+  @Auth()
   update(@Param('studentId') studentId: string, @Body() experience: UpdateStudentExperienceDto): Promise<Experience[]> {
     return this.experienceService.update(studentId, experience);
   }

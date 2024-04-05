@@ -1,5 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsArray, IsDate, IsNotEmpty, IsString } from 'class-validator';
+import { IsArray, IsNotEmpty, IsString, Min } from 'class-validator';
 
 export class StudentEducationDto {
   @ApiProperty({ default: null })
@@ -11,12 +11,14 @@ export class StudentEducationDto {
   schoolName: string;
 
   @ApiProperty()
-  @IsDate()
-  startYear: Date;
+  @IsNotEmpty()
+  @Min(1900)
+  startYear: number;
 
   @ApiProperty()
-  @IsDate()
-  endYear: Date;
+  @IsNotEmpty()
+  @Min(1900)
+  endYear: number;
 }
 
 export class UpdateStudentEducationDto {

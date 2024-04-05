@@ -18,11 +18,11 @@ export class Experience extends Base {
 
   @Column({ name: 'start_month' })
   @ApiProperty({ description: 'startMonth' })
-  startMonth: Date;
+  startMonth: string;
 
   @Column({ name: 'end_month' })
   @ApiProperty({ description: 'endMonth' })
-  endMonth: Date;
+  endMonth: string;
 
   @Column({ name: 'description', nullable: true })
   @ApiProperty({ description: 'description' })

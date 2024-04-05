@@ -33,10 +33,15 @@ export enum ProjectScopeFlag {
   LessThanOneMOnth = 0,
   OneToThreeMonth = 1,
   ThreeToSixMonth = 2,
-  MoreThanSixMOnth = 3
+  MoreThanSixMOnth = 3,
 }
 
 export enum MessageFlag {
   Message = 0,
   Interview = 1,
+}
+
+export enum NotifyFlag {
+  Unread = 0,
+  Read = 1,
 }

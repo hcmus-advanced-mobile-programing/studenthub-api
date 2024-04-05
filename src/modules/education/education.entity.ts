@@ -1,4 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
+import { Min } from 'class-validator';
 import { Base } from 'src/common/base.entity';
 import { Student } from 'src/modules/student/student.entity';
 import { Column, Entity, JoinColumn, ManyToOne } from 'typeorm';
@@ -15,13 +16,15 @@ export class Education extends Base {
   @ApiProperty({ description: 'schoolName' })
   schoolName: string;
 
-  @Column({ name: 'start_year' })
+  @Column({ name: 'start_year', type: 'int' })
+  @Min(1900)
   @ApiProperty({ description: 'startYear' })
-  startYear: Date;
+  startYear: number;
 
-  @Column({ name: 'end_year' })
+  @Column({ name: 'end_year', type: 'int' })
+  @Min(1900)
   @ApiProperty({ description: 'endYear' })
-  endYear: Date;
+  endYear: number;
 
   @ManyToOne(() => Student)
   @JoinColumn({ name: 'student_id' })
