@@ -6,52 +6,49 @@ import { ProjectCreateDto } from 'src/modules/project/dto/project-create.dto';
 import { ProjectUpdateDto } from 'src/modules/project/dto/project-update.dto';
 import { ProjectFilterDto } from 'src/modules/project/dto/project-filter.dto';
 import { formatDistanceToNow } from 'date-fns';
-import { Message } from 'src/modules/message/message.entity';
+import { MessageService } from 'src/modules/message/message.service';
 
 @Injectable()
 export class ProjectService {
   constructor(
     @InjectRepository(Project)
     private readonly projectRepository: Repository<Project>,
-    @InjectRepository(Message)
-    private readonly messageRepository: Repository<Message>
+    private MessageService: MessageService
   ) {}
 
   async findByCompanyId(companyId: number): Promise<Project[]> {
     const projects = await this.projectRepository.find({
       where: { companyId: companyId },
     });
-
+  
     if (!projects || projects.length === 0) {
       throw new NotFoundException(`No projects found for company ID: ${companyId}`);
     }
-
-    const projectsWithDetails = await Promise.all(
-      projects.map(async (project) => {
-        // Đếm số lượng proposal
-        const proposalCount = project.proposals ? project.proposals.length : 0;
-
-        // Đếm số lượng proposal có StatusFlag = 2
-        const hiredCount = project.proposals ? project.proposals.filter(proposal => proposal.statusFlag === 2).length : 0;
-
-        // Tính khoảng thời gian mà project đã được tạo
-        const projectAge = formatDistanceToNow(new Date(project.createdAt), { addSuffix: true });
-
-        // Đếm số lượng message của project
-        const messageCount = await this.messageRepository.countBy({ projectId: project.id });
-
-        return {
-          ...project,
-          projectAge,
-          proposalCount,
-          messageCount,
-          hiredCount
-        };
-      })
-    );
-
+  
+    const projectsWithDetails: any[] = [];
+  
+    for (const project of projects) {
+      const proposalCount = project.proposals ? project.proposals.length : 0;
+      const hiredCount = project.proposals ? project.proposals.filter(proposal => proposal.statusFlag === 2).length : 0;
+      const projectAge = formatDistanceToNow(new Date(project.createdAt), { addSuffix: true });
+      
+      let messageCount = 0;
+      if (project.id) {
+        messageCount = await this.MessageService.searchProjectId(Number(project.id));
+      }
+  
+      projectsWithDetails.push({
+        ...project,
+        projectAge,
+        proposalCount,
+        messageCount,
+        hiredCount
+      });
+    }
+  
     return projectsWithDetails;
   }
+
 
   async create(project: ProjectCreateDto): Promise<Project> {
     return this.projectRepository.save(project);
@@ -78,7 +75,10 @@ export class ProjectService {
         const proposalCount = project.proposals ? project.proposals.length : 0;
         const hiredCount = project.proposals ? project.proposals.filter(proposal => proposal.statusFlag === 2).length : 0;
         const projectAge = formatDistanceToNow(new Date(project.createdAt), { addSuffix: true });
-        const messageCount = await this.messageRepository.countBy({ projectId: project.id });
+        let messageCount = 0;
+        if (project.id) {
+          messageCount = await this.MessageService.searchProjectId(Number(project.id));
+        }
 
         return {
           ...project,
@@ -107,7 +107,7 @@ export class ProjectService {
     // Tính khoảng thời gian mà project đã được tạo
     const projectAge = formatDistanceToNow(new Date(project.createdAt), { addSuffix: true });
 
-    const messageCount = await this.messageRepository.countBy({ projectId: id });
+    const messageCount = await this.MessageService.searchProjectId(id);
 
     const hiredCount = project.proposals ? project.proposals.filter(proposal => proposal.statusFlag === 2).length : 0;
 
