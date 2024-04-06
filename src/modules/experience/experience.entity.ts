@@ -16,13 +16,13 @@ export class Experience extends Base {
   @ApiProperty({ description: 'title' })
   title: string;
 
-  @Column({ name: 'start_month' })
+  @Column({ name: 'start_month', nullable: true })
   @ApiProperty({ description: 'startMonth' })
-  startMonth: Date;
+  startMonth: string;
 
-  @Column({ name: 'end_month' })
+  @Column({ name: 'end_month', nullable: true })
   @ApiProperty({ description: 'endMonth' })
-  endMonth: Date;
+  endMonth: string;
 
   @Column({ name: 'description', nullable: true })
   @ApiProperty({ description: 'description' })
