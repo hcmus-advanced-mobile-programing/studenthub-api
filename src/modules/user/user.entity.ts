@@ -22,7 +22,7 @@ export class User extends Base {
   @ApiProperty({ description: 'password' })
   password: string;
 
-  @Column('text', { array: true, default: ['USER'] })
+  @Column('int', { array: true })
   @ApiProperty({ description: 'roles' })
   roles: UserRole[];
 
