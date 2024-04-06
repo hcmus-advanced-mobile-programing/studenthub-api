@@ -26,6 +26,7 @@ export class ProposalService {
 
     record
       .where('proposal.project_id = :projectId', { projectId })
+      .andWhere('proposal.deleted_at IS NULL')
       .leftJoinAndSelect('proposal.student', 'student')
       .leftJoinAndSelect('student.techStack', 'techStack')
       .leftJoinAndSelect('student.educations', 'education');
