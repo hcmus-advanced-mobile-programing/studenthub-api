@@ -14,7 +14,9 @@ export class InterviewService {
   ) {}
 
   async findAll(): Promise<Interview[]> {
-    return await this.projectRepository.find();
+    return await this.projectRepository.find({
+      where: { deletedAt: null },
+    });
   }
 
   async findById(id: number): Promise<Interview> {
@@ -33,7 +35,14 @@ export class InterviewService {
   }
 
   async delete(id: number): Promise<void> {
-    await this.projectRepository.update(id, { deletedAt: new Date() });
+    await this.projectRepository.update(
+      {
+        id: id,
+      },
+      {
+        deletedAt: new Date(),
+      }
+    );
   }
 
   async disable(id: number): Promise<void> {

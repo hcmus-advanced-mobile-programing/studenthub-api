@@ -1,6 +1,5 @@
-import { Injectable, Logger, NotFoundException } from '@nestjs/common';
+import { Injectable, Logger } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { UserRole } from 'src/common/common.enum';
 import { Company } from 'src/modules/company/company.entity';
 import { MessageResDto } from 'src/modules/message/dto/message-res.dto';
 import { Message } from 'src/modules/message/message.entity';
@@ -20,7 +19,7 @@ export class MessageService {
     @InjectRepository(Company)
     private companyRepository: Repository<Company>,
     private readonly httpContext: HttpRequestContextService
-  ) { }
+  ) {}
 
   async searchProjectId(projectId: number): Promise<MessageResDto[] | any> {
     const userId = this.httpContext.getUser().id;
@@ -30,7 +29,16 @@ export class MessageService {
       .leftJoin('message.sender', 'sender')
       .leftJoin('message.receiver', 'receiver')
       .leftJoinAndSelect('message.interview', 'interview')
-      .select(['message.id', 'message.content', 'message.createdAt', 'sender.id', 'sender.fullname', 'receiver.id', 'receiver.fullname', 'interview'])
+      .select([
+        'message.id',
+        'message.content',
+        'message.createdAt',
+        'sender.id',
+        'sender.fullname',
+        'receiver.id',
+        'receiver.fullname',
+        'interview',
+      ])
       .where('message.projectId = :projectId', { projectId })
       .andWhere('message.senderId = :userId', { userId })
       .distinct(true)
@@ -41,7 +49,16 @@ export class MessageService {
       .leftJoin('message.sender', 'sender')
       .leftJoin('message.receiver', 'receiver')
       .leftJoinAndSelect('message.interview', 'interview')
-      .select(['message.id', 'message.content', 'message.createdAt', 'sender.id', 'sender.fullname', 'receiver.id', 'receiver.fullname', 'interview'])
+      .select([
+        'message.id',
+        'message.content',
+        'message.createdAt',
+        'sender.id',
+        'sender.fullname',
+        'receiver.id',
+        'receiver.fullname',
+        'interview',
+      ])
       .where('message.projectId = :projectId', { projectId })
       .andWhere('message.receiverId = :userId', { userId })
       .distinct(true)
@@ -50,8 +67,10 @@ export class MessageService {
     const allMessages = [...receiverMessages, ...senderMessages];
 
     const uniqueMessagesMap = new Map<number | string, MessageResDto>();
-    allMessages.forEach(message => {
-      const existingMessage = uniqueMessagesMap.get(message.receiver.id === userId ? message.sender.id : message.receiver.id);
+    allMessages.forEach((message) => {
+      const existingMessage = uniqueMessagesMap.get(
+        message.receiver.id === userId ? message.sender.id : message.receiver.id
+      );
       if (!existingMessage || message.createdAt > existingMessage.createdAt) {
         uniqueMessagesMap.set(message.receiver.id === userId ? message.sender.id : message.receiver.id, message);
       }
@@ -70,16 +89,31 @@ export class MessageService {
       .leftJoin('message.sender', 'sender')
       .leftJoin('message.receiver', 'receiver')
       .leftJoinAndSelect('message.interview', 'interview')
-      .select(['message.id', 'message.content', 'message.createdAt', 'sender.id', 'sender.fullname', 'receiver.id', 'receiver.fullname', 'interview'])
+      .select([
+        'message.id',
+        'message.content',
+        'message.createdAt',
+        'sender.id',
+        'sender.fullname',
+        'receiver.id',
+        'receiver.fullname',
+        'interview',
+      ])
       .where('message.projectId = :projectId', { projectId })
-      .andWhere(new Brackets(qb => {
-        qb.where('message.senderId = :userId', { userId })
-          .andWhere('message.receiverId = :loginUserId', { loginUserId: loginUserId })
-          .orWhere(new Brackets(qb => {
-            qb.where('message.senderId = :loginUserId', { loginUserId: loginUserId })
-              .andWhere('message.receiverId = :userId', { userId });
-          }));
-      }))
+      .andWhere(
+        new Brackets((qb) => {
+          qb.where('message.senderId = :userId', { userId })
+            .andWhere('message.receiverId = :loginUserId', { loginUserId: loginUserId })
+            .orWhere(
+              new Brackets((qb) => {
+                qb.where('message.senderId = :loginUserId', { loginUserId: loginUserId }).andWhere(
+                  'message.receiverId = :userId',
+                  { userId }
+                );
+              })
+            );
+        })
+      )
       .orderBy('message.createdAt', 'ASC')
       .distinct(true)
       .getMany();
@@ -96,11 +130,25 @@ export class MessageService {
       .leftJoinAndSelect('message.receiver', 'receiver')
       .leftJoinAndSelect('message.interview', 'interview')
       .leftJoinAndSelect('message.project', 'project')
-      .select(['message.id', 'message.content', 'message.createdAt', 'sender.id', 'sender.fullname', 'receiver.id', 'receiver.fullname', 'interview', 'project'])
-      .andWhere(new Brackets(qb => {
-        qb.where('message.receiverId = :loginUserId', { loginUserId: loginUserId })
-          .orWhere('message.senderId = :loginUserId', { loginUserId: loginUserId });
-      }))
+      .select([
+        'message.id',
+        'message.content',
+        'message.createdAt',
+        'sender.id',
+        'sender.fullname',
+        'receiver.id',
+        'receiver.fullname',
+        'interview',
+        'project',
+      ])
+      .andWhere(
+        new Brackets((qb) => {
+          qb.where('message.receiverId = :loginUserId', { loginUserId: loginUserId }).orWhere(
+            'message.senderId = :loginUserId',
+            { loginUserId: loginUserId }
+          );
+        })
+      )
       .orderBy('message.createdAt', 'ASC')
       .getMany();
 
@@ -109,7 +157,7 @@ export class MessageService {
       if (!acc[projectId]) {
         acc[projectId] = {
           project: message.project,
-          messages: []
+          messages: [],
         };
       }
       message.project = undefined;
@@ -121,5 +169,4 @@ export class MessageService {
 
     return groupedMessagesArray;
   }
-
 }
