@@ -25,17 +25,17 @@ export class InterviewController {
   }
 
   @Get(':id')
-  async findInterviewById(id: number) {
+  async findInterviewById(@Param('id') id: number) {
     return await this.interviewService.findById(id);
   }
 
   @Delete(':id')
-  async deleteInterviewById(id: number) {
+  async deleteInterviewById(@Param('id') id: number) {
     return await this.interviewService.delete(id);
   }
 
   @Patch(':id/disable')
-  async disableInterviewById(id: number) {
+  async disableInterviewById(@Param('id') id: number) {
     return await this.interviewService.disable(id);
   }
 }
