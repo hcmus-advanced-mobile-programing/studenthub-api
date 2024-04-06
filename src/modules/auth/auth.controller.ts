@@ -1,10 +1,10 @@
-import { Body, Controller, Get, Post } from '@nestjs/common';
+import { Body, Controller, Get, Post, Headers, Param, HttpException } from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
 import { Auth } from 'src/decorators/http.decorators';
 import { AuthService } from 'src/modules/auth/auth.service';
 import { AuthCredentialsDto, CreateCredentialDto } from 'src/modules/auth/dto/credentials.dto';
 
-@Controller('auth')
+@Controller('api/auth')
 @ApiTags('auth')
 export class AuthController {
   constructor(private readonly authService: AuthService) {}
@@ -24,4 +24,17 @@ export class AuthController {
   getCurrentUser() {
     return this.authService.getCurrentUser();
   }
+
+  @Auth()
+  @Post('/logout')
+  logout(@Headers('authorization') authorizationHeader: string) {
+    const token = authorizationHeader.split(' ')[1];
+    return this.authService.logout(token);
+  }
+
+  @Get('/confirm/:token')
+  async confirmEmail(@Param('token') token: string): Promise<string> {
+    return this.authService.confirmEmail(token);
+  }
+
 }

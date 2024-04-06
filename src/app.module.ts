@@ -17,10 +17,25 @@ import { HttRequestContextMiddleware } from 'src/shared/http-request-context/htt
 import { HttRequestContextModule } from 'src/shared/http-request-context/http-request-context.module';
 import { RequestIdHeaderMiddleware } from 'src/shared/middlewares/request-id-header.middleware';
 import { DataSource } from 'typeorm';
+import { ProjectModule } from './modules/project/project.module';
 import { ProposalModule } from 'src/modules/proposal/proposal.module';
+import { CompanyModule } from 'src/modules/company/company.module';
+import { StudentModule } from 'src/modules/student/student.module';
+import { TechStackModule } from 'src/modules/techStack/techStack.module';
+import { SkillSetModule } from 'src/modules/skillSet/skillSet.module';
+import { LanguageModule } from 'src/modules/language/language.module';
+import { EducationModule } from 'src/modules/education/education.module';
+import { ExperienceModule } from 'src/modules/experience/experience.module';
+import { FavoriteProjectModule } from 'src/modules/favoriteProject/favoriteProject.module';
+import { MailModule } from 'src/modules/mail/mail.module';
+import { APP_INTERCEPTOR } from '@nestjs/core';
+import { IsLoggedOutInterceptor } from 'src/interceptor/isLoggedOut.interceptor';
+import { MessageModule } from 'src/modules/message/message.module';
+import { InterviewModule } from './modules/interview/interview.module';
 
 @Module({
   imports: [
+    InterviewModule,
     ConfigModule.forRoot({
       isGlobal: true,
       load: [configuration],
@@ -43,7 +58,26 @@ import { ProposalModule } from 'src/modules/proposal/proposal.module';
     LoggerModule.forRootAsync(loggerConfig),
     AuthModule,
     UserModule,
+    ProjectModule,
     ProposalModule,
+    CompanyModule,
+    StudentModule,
+    TechStackModule,
+    SkillSetModule,
+    LanguageModule,
+    EducationModule,
+    MailModule,
+    ExperienceModule,
+    FavoriteProjectModule,
+    MailModule,
+    MessageModule,
+    InterviewModule,
+  ],
+  providers: [
+    {
+      provide: APP_INTERCEPTOR, // Add this line
+      useClass: IsLoggedOutInterceptor, // Add this line
+    },
   ],
 })
 export class AppModule implements NestModule {

@@ -12,26 +12,29 @@
 - [x] E2E and units tests.
 - [x] Docker.
 
-## Quick start
+## Run source code local
+
+Download postgre (https://www.postgresql.org/download/)
+
+Config database follow file env (reference env.example)
 
 ```bash
 cp env.example .env
+```
 
+Install package
+```bash
 yarn install
 ```
 
-### Install Redis
-
-From the terminal, run:
-
-```
-brew install redis
+Run migration to create tables
+```bash
+yarn run migration:run
 ```
 
-Starting Redis using launchd
-
-```
-brew services start redis
+Run source code
+```bash
+yarn run start
 ```
 
 ## Development
@@ -52,15 +55,11 @@ $ npm run start:prod
 
 ## Swagger
 
-nest API description available at: [localhost:4088/api-docs](http://localhost:4088/api-docs)
+nest API description available at: [localhost:4400/api-docs](http://localhost:4400/api-docs)
 
 ## Database utils
 
-Generate migration
-
-```bash
-yarn run migration:generate
-```
+Create database (config .env)
 
 Run migration
 
@@ -74,39 +73,10 @@ Revert migration
 yarn run migration:revert
 ```
 
-Drop all tables in database
-
-```bash
-yarn run schema:drop
-```
-
 ## Tests
 
 ```bash
-# unit tests
 npm run test
-
-# e2e tests
-npm run test:e2e
-```
-
-## Nest CLI
-
-### New resources
-
-```
-npx nest g resource modules/<resource name>
-```
-
-## Deployment
-
-1. Prepare environment file
-2. Run docker build and up command by using `production-dc.yml`
-
-```bash
-docker-compose -f production-dc.yml build
-
-docker-compose -f production-dc.yml up -d
 ```
 
 ## TEMPLATE SOURCE: <https://github.com/KuaqSon/nestjs-starter>

@@ -1,8 +1,9 @@
-import { ConflictException, ForbiddenException, Injectable, Logger } from '@nestjs/common';
+import { ConflictException, ForbiddenException, Injectable, Logger, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import * as bcrypt from 'bcrypt';
-
+import { ForgotPasswordDto } from 'src/modules/user/dto/forgot-password.dto';
+import { randomBytes } from 'crypto';
 import { CreateUserDto } from 'src/modules/user/dto/create-user.dto';
 import { UpdateUserDto } from 'src/modules/user/dto/update-user.dto';
 import { User } from 'src/modules/user/user.entity';
@@ -13,6 +14,9 @@ import { UserFindArgs } from 'src/modules/user/dto/user-find-args.dto';
 import { UserChangePassDto } from 'src/modules/user/dto/change-pass-user.dto';
 import { UpdateProfileDto } from 'src/modules/user/dto/update-profile.dto';
 import { UserRole } from 'src/common/common.enum';
+import { Student } from 'src/modules/student/student.entity';
+import { Company } from 'src/modules/company/company.entity';
+import { MailService } from 'src/modules/mail/mail.service'
 
 @Injectable()
 export class UserService {
@@ -21,17 +25,24 @@ export class UserService {
   constructor(
     @InjectRepository(User)
     private usersRepository: Repository<User>,
+    @InjectRepository(Student)
+    private studentRepository: Repository<Student>,
+    @InjectRepository(Company)
+    private companyRepository: Repository<Company>,
+    private readonly MailService: MailService,
     private readonly httpContext: HttpRequestContextService
   ) {}
 
   async create(createUserDto: CreateUserDto) {
-    return await this.usersRepository.save(this.usersRepository.create(createUserDto));
+    const user = await this.usersRepository.save(this.usersRepository.create(createUserDto));
+    return user;
   }
 
   async findOne(fields: EntityCondition<User>): Promise<User> {
-    return this.usersRepository.findOne({
+    return await this.usersRepository.findOne({
+      relations: ['student', 'company'],
       where: fields,
-    });
+    },);
   }
 
   async getAllUser(args: UserFindArgs): Promise<PaginationResult<User>> {
@@ -40,11 +51,11 @@ export class UserService {
 
     const record = this.usersRepository
       .createQueryBuilder('user')
-      .select(['user.id', 'user.fullName', 'user.email', 'user.roles', 'user.isActive', 'user.createdAt'])
+      .select(['user.id', 'user.fullname', 'user.email', 'user.roles', 'user.isActive', 'user.createdAt'])
       .where('user.id != :userId', { userId });
 
     if (q) {
-      record.andWhere('LOWER(CONCAT(user.fullName, user.email)) ILIKE LOWER(:keyword)', {
+      record.andWhere('LOWER(CONCAT(user.fullname, user.email)) ILIKE LOWER(:keyword)', {
         keyword: `%${q}%`,
       });
     }
@@ -72,7 +83,7 @@ export class UserService {
   }
 
   async add(userDto: CreateUserDto): Promise<void> {
-    const currentUserRoles = this.httpContext.getUser()?.roles || [];
+    // const currentUserRoles = this.httpContext.getUser()?.roles || [];
     const { email, roles, password } = userDto;
 
     const existed = await this.usersRepository.findOneBy({ email });
@@ -80,9 +91,9 @@ export class UserService {
       throw new ConflictException('This email is already associated with an account');
     }
 
-    if (currentUserRoles.includes(UserRole.MANAGER) && roles.includes(UserRole.ADMIN)) {
-      throw new ForbiddenException();
-    }
+    // if (currentUserRoles.includes(UserRole.MANAGER) && roles.includes(UserRole.ADMIN)) {
+    //   throw new ForbiddenException();
+    // }
     const salt = await bcrypt.genSalt();
     const hashedPassword = await bcrypt.hash(password, salt);
     const user = this.usersRepository.create({
@@ -115,17 +126,55 @@ export class UserService {
 
     const currentUser = this.httpContext.getUser();
     const user = await this.findOne({ id: currentUser.id });
+
+    if (!user) {
+      throw new NotFoundException('User not found');
+    }
+
     const isValidPassword = await bcrypt.compare(oldPassword, user.password);
 
-    if (isValidPassword && newPassword !== oldPassword)
+    if (isValidPassword && newPassword !== oldPassword) {
       await this.usersRepository.update(currentUser.id, { password: hashedPassword });
-    else {
-      throw new ConflictException();
+    } else {
+      throw new ForbiddenException('Invalid password');
     }
   }
 
   async updateProfile(updateProfileDto: UpdateProfileDto): Promise<void> {
     const currentUser = this.httpContext.getUser();
     await this.usersRepository.update(currentUser.id, updateProfileDto);
+  }
+
+  async updateConfirm(email: string, isConfirmed: boolean): Promise<User> {
+    const user = await this.usersRepository.findOne({ where: { email } });
+    if (!user) {
+        throw new NotFoundException('User not found');
+    }
+    user.isConfirmed = isConfirmed;
+    user.verified = isConfirmed;
+    await this.usersRepository.save(user);
+    return user;
+}
+
+  async forgotPassword(forgotPasswordDto: ForgotPasswordDto): Promise<void> {
+    const { email } = forgotPasswordDto;
+
+    const user = await this.usersRepository.findOneBy({ email });
+    if (!user) {
+      throw new NotFoundException('User not found');
+    }
+
+    const newPassword = this.generateRandomPassword();
+
+    const salt = await bcrypt.genSalt();
+    const hashedPassword = await bcrypt.hash(newPassword, salt);
+
+    await this.usersRepository.update(user.id, { password: hashedPassword });
+
+    await this.MailService.sendNewPasswordEmail(email, newPassword);
+  }
+
+  private generateRandomPassword(): string {
+    return randomBytes(8).toString('hex');
   }
 }

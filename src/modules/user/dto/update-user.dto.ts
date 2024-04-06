@@ -1,10 +1,12 @@
-import { IsBoolean, IsNotEmpty, IsOptional } from 'class-validator';
+import { IsBoolean, IsEmail, IsNotEmpty, IsOptional, MaxLength } from 'class-validator';
 import { UserRole } from 'src/common/common.enum';
 
 export class UpdateUserDto {
   @IsOptional()
-  @IsBoolean()
-  isActive: boolean;
+  @IsNotEmpty()
+  @IsEmail()
+  @MaxLength(255)
+  email: string;
 
   @IsOptional()
   @IsNotEmpty()
@@ -12,9 +14,6 @@ export class UpdateUserDto {
 
   @IsOptional()
   @IsNotEmpty()
-  fullName: string;
-
-  @IsOptional()
-  @IsBoolean()
-  isConfirm: boolean;
+  @MaxLength(100)
+  fullname: string;
 }
