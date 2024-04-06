@@ -13,7 +13,6 @@ import { Auth } from 'src/decorators/http.decorators';
 export class ProjectController {
   constructor(private readonly projectService: ProjectService) {}
 
-  @Auth()
   @Get()
   async findAll(@Query() filterDto: ProjectFilterDto): Promise<any[]> {
     return this.projectService.findAll(filterDto);

@@ -73,15 +73,10 @@ export class ProjectService {
     const projectsWithDetails = await Promise.all(
       projects.map(async (project) => {
         const countProposals = project.proposals ? project.proposals.length : 0;
-        const countHired = project.proposals ? project.proposals.filter(proposal => proposal.statusFlag === 2).length : 0;
-        const messageList = await this.MessageService.searchProjectId(Number(project.id));
-        const countMessages = messageList.length;
 
         return {
           ...project,
           countProposals,
-          countMessages,
-          countHired
         };
       })
     );
