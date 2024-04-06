@@ -16,12 +16,12 @@ export class Education extends Base {
   @ApiProperty({ description: 'schoolName' })
   schoolName: string;
 
-  @Column({ name: 'start_year', type: 'int' })
+  @Column({ name: 'start_year', type: 'int', nullable: true })
   @Min(1900)
   @ApiProperty({ description: 'startYear' })
   startYear: number;
 
-  @Column({ name: 'end_year', type: 'int' })
+  @Column({ name: 'end_year', type: 'int', nullable: true })
   @Min(1900)
   @ApiProperty({ description: 'endYear' })
   endYear: number;
