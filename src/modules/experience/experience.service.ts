@@ -40,7 +40,7 @@ export class ExperienceService {
       if (MM_YYYY_FORMAT_REGEX.test(expe.startMonth) === false && new Date(expe.startMonth) <= new Date()) {
         throw new Error('Start month should be in MM-YYYY format or should be less than or equal now');
       }
-      if (MM_YYYY_FORMAT_REGEX.test(expe.endMonth) === false || expe.endMonth !== 'Present') {
+      if (MM_YYYY_FORMAT_REGEX.test(expe.endMonth) === false && expe.endMonth !== 'Present') {
         throw new Error('Start month and end month should be in MM-YYYY format');
       }
       if (expe.endMonth !== 'Present' && new Date(expe.startMonth) > new Date(expe.endMonth)) {

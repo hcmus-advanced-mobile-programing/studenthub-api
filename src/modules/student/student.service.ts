@@ -13,6 +13,7 @@ import { Experience } from 'src/modules/experience/experience.entity';
 import { Language } from 'src/modules/language/language.entity';
 import { HttpRequestContextService } from 'src/shared/http-request-context/http-request-context.service';
 import { Repository } from 'typeorm';
+import { UserRole } from 'src/common/common.enum';
 
 @Injectable()
 export class StudentProfileService {
@@ -33,7 +34,7 @@ export class StudentProfileService {
     private readonly LanguageRepository: Repository<Language>,
     private readonly httpContext: HttpRequestContextService,
     private readonly gcsService: GCSService
-  ) {}
+  ) { }
 
   async createStudentProfile(studentProfileDto: CreateStudentProfileDto) {
     const { id, roles } = this.httpContext.getUser();
@@ -55,15 +56,23 @@ export class StudentProfileService {
       ? await this.SkillSetRepository.findByIds(studentProfileDto.skillSets)
       : [];
 
-    const student = this.StudentRepository.create({
+    let student = this.StudentRepository.create({
       ...studentProfileDto,
       userId: id,
       techStack,
       skillSets,
     });
-    roles.push(0);
-    await this.UserRepository.update(id, { roles });
-    return await this.StudentRepository.save(student);
+
+    student = await this.StudentRepository.save(student);
+
+    if (student) {
+      if (!roles.includes(UserRole.STUDENT)) {
+        roles.push(UserRole.STUDENT);
+        await this.UserRepository.update(id, { roles });
+      }
+    }
+
+    return student;
   }
 
   async updateStudentProfile(id: string, studentProfileDto: UpdateStudentProfileDto) {
