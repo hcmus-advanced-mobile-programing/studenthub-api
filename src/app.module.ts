@@ -32,10 +32,10 @@ import { APP_INTERCEPTOR } from '@nestjs/core';
 import { IsLoggedOutInterceptor } from 'src/interceptor/isLoggedOut.interceptor';
 import { MessageModule } from 'src/modules/message/message.module';
 import { InterviewModule } from './modules/interview/interview.module';
+import { MeetingRoomModule } from 'src/modules/meeting-room/meeting-room.module';
 
 @Module({
   imports: [
-    InterviewModule,
     ConfigModule.forRoot({
       isGlobal: true,
       load: [configuration],
@@ -72,6 +72,7 @@ import { InterviewModule } from './modules/interview/interview.module';
     MailModule,
     MessageModule,
     InterviewModule,
+    MeetingRoomModule
   ],
   providers: [
     {
