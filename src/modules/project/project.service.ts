@@ -19,6 +19,7 @@ export class ProjectService {
   async findByCompanyId(companyId: number): Promise<Project[]> {
     const projects = await this.projectRepository.find({
       where: { companyId: companyId },
+      relations: ['proposals'],
     });
   
     if (!projects || projects.length === 0) {
@@ -28,19 +29,19 @@ export class ProjectService {
     const projectsWithDetails: any[] = [];
   
     for (const project of projects) {
-      const proposalCount = project.proposals ? project.proposals.length : 0;
-      const hiredCount = project.proposals ? project.proposals.filter(proposal => proposal.statusFlag === 2).length : 0;
-      const projectAge = formatDistanceToNow(new Date(project.createdAt), { addSuffix: true });
-      const messageList = await this.MessageService.searchProjectId(Number(project.id));
-      const messageCount = messageList.length;
-  
-      projectsWithDetails.push({
-        ...project,
-        projectAge,
-        proposalCount,
-        messageCount,
-        hiredCount
-      });
+      if (project.deletedAt === null) {
+        const countProposals = project.proposals ? project.proposals.length : 0;
+        const countHired = project.proposals ? project.proposals.filter(proposal => proposal.statusFlag === 2).length : 0;
+        const messageList = await this.MessageService.searchProjectId(Number(project.id));
+        const countMessages = messageList.length;
+
+        projectsWithDetails.push({
+          ...project,
+          countProposals,
+          countMessages,
+          countHired,
+        });
+      }
     }
   
     return projectsWithDetails;
@@ -52,6 +53,8 @@ export class ProjectService {
   }
   async findAll(filterDto: ProjectFilterDto): Promise<any[]> {
     let query = this.projectRepository.createQueryBuilder('project');
+
+    query = query.andWhere('project.deletedAt IS NULL');
 
     if (filterDto.numberOfStudents !== undefined) {
       query = query.andWhere('project.numberOfStudents = :numberOfStudents', { numberOfStudents: filterDto.numberOfStudents });
@@ -69,18 +72,16 @@ export class ProjectService {
 
     const projectsWithDetails = await Promise.all(
       projects.map(async (project) => {
-        const proposalCount = project.proposals ? project.proposals.length : 0;
-        const hiredCount = project.proposals ? project.proposals.filter(proposal => proposal.statusFlag === 2).length : 0;
-        const projectAge = formatDistanceToNow(new Date(project.createdAt), { addSuffix: true });
+        const countProposals = project.proposals ? project.proposals.length : 0;
+        const countHired = project.proposals ? project.proposals.filter(proposal => proposal.statusFlag === 2).length : 0;
         const messageList = await this.MessageService.searchProjectId(Number(project.id));
-        const messageCount = messageList.length;
+        const countMessages = messageList.length;
 
         return {
           ...project,
-          projectAge,
-          proposalCount,
-          messageCount,
-          hiredCount
+          countProposals,
+          countMessages,
+          countHired
         };
       })
     );
@@ -93,21 +94,18 @@ export class ProjectService {
       relations: ['proposals'] 
     });
     
-    if (!project) {
+    if (!project || project.deletedAt != null) {
       throw new NotFoundException(`No project found with ID: ${id}`);
     }
 
-    const proposalCount = project.proposals ? project.proposals.length : 0;
+    const countProposals = project.proposals ? project.proposals.length : 0;
 
-    // Tính khoảng thời gian mà project đã được tạo
-    const projectAge = formatDistanceToNow(new Date(project.createdAt), { addSuffix: true });
+    const messageList = await this.MessageService.searchProjectId(id);
+    const countMessages = messageList.length;
 
-    const messageList = await this.MessageService.searchProjectId(Number(project.id));
-    const messageCount = messageList.length;
+    const countHired = project.proposals ? project.proposals.filter(proposal => proposal.statusFlag === 2).length : 0;
 
-    const hiredCount = project.proposals ? project.proposals.filter(proposal => proposal.statusFlag === 2).length : 0;
-
-    return {project, projectAge, proposalCount, messageCount, hiredCount};
+    return {project, countProposals, countMessages, countHired};
   }
 
   async delete(id: number): Promise<void> {
