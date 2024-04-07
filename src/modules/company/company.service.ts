@@ -8,6 +8,7 @@ import { UpdateCompanyProfileDto } from 'src/modules/company/dto/update-company-
 import { GetCompanyProfileDto } from 'src/modules/company/dto/get-company-profile.dto';
 import { HttpRequestContextService } from 'src/shared/http-request-context/http-request-context.service';
 import { Repository } from 'typeorm';
+import { UserRole } from 'src/common/common.enum';
 
 @Injectable()
 export class CompanyProfileService {
@@ -19,7 +20,7 @@ export class CompanyProfileService {
     @InjectRepository(User)
     private UserRepository: Repository<User>,
     private readonly httpContext: HttpRequestContextService
-  ) {}
+  ) { }
 
   async createCompanyProfile(companyProfileDto: CreateCompanyProfileDto): Promise<CompanyProfileResDto> {
     const { id, roles } = this.httpContext.getUser();
@@ -30,14 +31,20 @@ export class CompanyProfileService {
       throw new UnprocessableEntityException('Role company existed');
     }
 
-    roles.push(1);
-    await this.UserRepository.update(id, { roles });
-
-    const company = this.CompanyRepository.create({
+    let company = this.CompanyRepository.create({
       ...companyProfileDto,
       userId: id,
     });
-    return await this.CompanyRepository.save(company);
+    company = await this.CompanyRepository.save(company);
+
+    if (company) {
+      if (!roles.includes(UserRole.COMPANY)) {
+        roles.push(UserRole.COMPANY);
+        await this.UserRepository.update(id, { roles });
+      }
+    }
+
+    return company;
   }
 
   async updateCompanyProfile(id: string, companyProfileDto: UpdateCompanyProfileDto) {

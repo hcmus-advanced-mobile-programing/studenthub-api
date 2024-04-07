@@ -141,3 +141,7 @@ dist
 .tern-port
 
 mount-data
+
+docker/data
+docker/db-data
+docker/metabase-data

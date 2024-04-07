@@ -2,13 +2,18 @@ import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { UpdateStudentLanguageDto } from 'src/modules/language/dto/update-student-language.dto';
 import { Language } from 'src/modules/language/language.entity';
+import { Student } from 'src/modules/student/student.entity';
+import { HttpRequestContextService } from 'src/shared/http-request-context/http-request-context.service';
 import { Repository } from 'typeorm';
 
 @Injectable()
 export class LanguageService {
   constructor(
     @InjectRepository(Language)
-    private languageRepository: Repository<Language>
+    private languageRepository: Repository<Language>,
+    @InjectRepository(Student)
+    private studentRepository: Repository<Student>,
+    private readonly httpContext: HttpRequestContextService
   ) {}
 
   async findByStudentId(studentId: string): Promise<Language[]> {
@@ -16,6 +21,14 @@ export class LanguageService {
   }
 
   async update(studentId: string, language: UpdateStudentLanguageDto): Promise<Language[]> {
+    const { id } = this.httpContext.getUser();
+
+    const student = await this.studentRepository.findOne({ where: { id: studentId, userId: id } });
+
+    if (!student) {
+      throw new Error('You are not authorized to update this student language');
+    }
+
     const existingLanguages = await this.languageRepository.findBy({ studentId });
     const newLanguages: Language[] = [];
     for (const lang of language.languages) {

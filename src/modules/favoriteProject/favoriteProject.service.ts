@@ -40,6 +40,12 @@ export class FavoriteProjectService {
   }
 
   async disable(studentId: string | number, params: DisableFavorityProjectDto): Promise<void> {
-    await this.favoriteProjectRepository.update({ studentId, projectId: params.projectId }, { disableFlag: params.disableFlag })
+    const check = await this.favoriteProjectRepository.findOneBy({studentId, projectId: params.projectId})
+    if(check) {
+      await this.favoriteProjectRepository.update({ studentId, projectId: params.projectId }, { disableFlag: params.disableFlag })
+    } else {
+      await this.favoriteProjectRepository.save({ studentId, projectId: params.projectId, disableFlag: params.disableFlag })
+    }
+    return;
   }
 }

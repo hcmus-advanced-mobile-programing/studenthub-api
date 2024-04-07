@@ -33,6 +33,8 @@ import { IsLoggedOutInterceptor } from 'src/interceptor/isLoggedOut.interceptor'
 import { NotificationModule } from './modules/notification/notification.module';
 import { EventModule } from './modules/event/event.module';
 import { MessageModule } from 'src/modules/message/message.module';
+import { InterviewModule } from './modules/interview/interview.module';
+import { MeetingRoomModule } from 'src/modules/meeting-room/meeting-room.module';
 
 @Module({
   imports: [
@@ -73,7 +75,9 @@ import { MessageModule } from 'src/modules/message/message.module';
     NotificationModule,
     EventModule,
     MailModule,
-    MessageModule,
+    MessageModule,,
+    InterviewModule,
+    MeetingRoomModule
   ],
   providers: [
     {

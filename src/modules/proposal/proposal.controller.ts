@@ -29,19 +29,19 @@ export class ProposalController {
     return this.proposalService.findOne(id);
   }
 
-  // @Auth()
+  @Auth()
   @Post()
   createProposal(@Body() proposal: ProposalCreateDto): Promise<ProposalCreateDto> {
     return this.proposalService.createProposal(proposal);
   }
 
-  // @Auth()
+  @Auth()
   @Patch(':id')
   updateProposal(@Param('id') id: number | string, @Body() proposal: ProposalUpdateDto): Promise<void> {
     return this.proposalService.updateProposal(id, proposal);
   }
 
-  // @Auth()
+  @Auth()
   @Get('student/:studentId')
   findByStudentId(@Param('studentId') studentId: string): Promise<ProposalResDto[]> {
     return this.proposalService.findByStudentId(studentId);
