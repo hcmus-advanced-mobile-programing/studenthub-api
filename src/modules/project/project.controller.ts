@@ -17,14 +17,14 @@ export class ProjectController {
   async findAll(@Query() filterDto: ProjectFilterDto): Promise<any[]> {
     return this.projectService.findAll(filterDto);
   }
-  
+
   @Auth()
   @Get('/company/:companyId')
   async projectSearchCompanyId(@Param() params: ProjectSearchCompanyId): Promise<Project[]> {
     return this.projectService.findByCompanyId(params.companyId);
   }
 
-  @Auth()
+  // @Auth()
   @Get(':projectId')
   async projectSearchId(@Param('projectId') id: number): Promise<any> {
     return this.projectService.findById(id);

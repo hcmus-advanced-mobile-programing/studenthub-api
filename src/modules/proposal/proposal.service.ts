@@ -47,6 +47,7 @@ export class ProposalService {
     const proposal = await this.proposalRepository.findOne({
       where: {
         id,
+        deletedAt: null,
       },
       relations: ['student', 'student.techStack', 'student.educations'],
     });
@@ -70,6 +71,7 @@ export class ProposalService {
         student: {
           id: studentId,
         },
+        deletedAt: null,
       },
     });
   }
