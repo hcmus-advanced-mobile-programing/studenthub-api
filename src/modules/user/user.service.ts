@@ -31,7 +31,7 @@ export class UserService {
     private companyRepository: Repository<Company>,
     private readonly MailService: MailService,
     private readonly httpContext: HttpRequestContextService
-  ) {}
+  ) { }
 
   async create(createUserDto: CreateUserDto) {
     const user = await this.usersRepository.save(this.usersRepository.create(createUserDto));
@@ -40,7 +40,7 @@ export class UserService {
 
   async findOne(fields: EntityCondition<User>): Promise<User> {
     return await this.usersRepository.findOne({
-      relations: ['student', 'company'],
+      relations: ['student', 'company', 'student.techStack', 'student.proposals', 'student.educations', 'student.languages',  'student.experiences', 'student.skillSets'],
       where: fields,
     },);
   }
@@ -148,13 +148,13 @@ export class UserService {
   async updateConfirm(email: string, isConfirmed: boolean): Promise<User> {
     const user = await this.usersRepository.findOne({ where: { email } });
     if (!user) {
-        throw new NotFoundException('User not found');
+      throw new NotFoundException('User not found');
     }
     user.isConfirmed = isConfirmed;
     user.verified = isConfirmed;
     await this.usersRepository.save(user);
     return user;
-}
+  }
 
   async forgotPassword(forgotPasswordDto: ForgotPasswordDto): Promise<void> {
     const { email } = forgotPasswordDto;
