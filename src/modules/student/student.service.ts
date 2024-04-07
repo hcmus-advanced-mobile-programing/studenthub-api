@@ -73,7 +73,7 @@ export class StudentProfileService {
     }
 
     return await this.StudentRepository.findOne({
-      relations: ['techStack', 'proposals', 'educations', 'languages',  'experiences', 'skillSets'],
+      relations: ['techStack', 'proposals', 'educations', 'languages',  'experiences', 'experiences.skillSets', 'skillSets'],
       where: {id: student.id},
     },);
   }

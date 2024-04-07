@@ -40,7 +40,7 @@ export class UserService {
 
   async findOne(fields: EntityCondition<User>): Promise<User> {
     return await this.usersRepository.findOne({
-      relations: ['student', 'company', 'student.techStack', 'student.proposals', 'student.educations', 'student.languages',  'student.experiences', 'student.skillSets'],
+      relations: ['student', 'company', 'student.techStack', 'student.proposals', 'student.educations', 'student.languages',  'student.experiences', 'student.experiences.skillSets','student.skillSets'],
       where: fields,
     },);
   }
