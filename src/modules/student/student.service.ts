@@ -72,7 +72,10 @@ export class StudentProfileService {
       }
     }
 
-    return student;
+    return await this.StudentRepository.findOne({
+      relations: ['techStack', 'proposals', 'educations', 'languages',  'experiences', 'skillSets'],
+      where: {id: student.id},
+    },);
   }
 
   async updateStudentProfile(id: string, studentProfileDto: UpdateStudentProfileDto) {
