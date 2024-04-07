@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { Injectable, NotFoundException, BadRequestException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Project } from './project.entity';
@@ -6,6 +6,7 @@ import { ProjectCreateDto } from 'src/modules/project/dto/project-create.dto';
 import { ProjectUpdateDto } from 'src/modules/project/dto/project-update.dto';
 import { ProjectFilterDto } from 'src/modules/project/dto/project-filter.dto';
 import { MessageService as _MessageService } from 'src/modules/message/message.service';
+import { TypeFlag } from 'src/common/common.enum';
 
 @Injectable()
 export class ProjectService {
@@ -15,9 +16,18 @@ export class ProjectService {
     private MessageService: _MessageService
   ) {}
 
-  async findByCompanyId(companyId: number): Promise<Project[]> {
+  async findByCompanyId(companyId: number, typeFlag: TypeFlag): Promise<Project[]> {
+    console.log('type: ' + typeFlag)
+    console.log('companyId: ' + companyId)
+    
+    const whereCondition: any = { companyId: companyId };
+    
+    if (typeFlag !== undefined) {
+      whereCondition.typeFlag = typeFlag;
+    }
+
     const projects = await this.projectRepository.find({
-      where: { companyId: companyId },
+      where: whereCondition,
       relations: ['proposals'],
     });
 
@@ -51,10 +61,17 @@ export class ProjectService {
   async create(project: ProjectCreateDto): Promise<Project> {
     return this.projectRepository.save(project);
   }
+
   async findAll(filterDto: ProjectFilterDto): Promise<any[]> {
     let query = this.projectRepository.createQueryBuilder('project');
 
     query = query.andWhere('project.deletedAt IS NULL');
+
+    if (filterDto.title !== undefined) {
+      query = query.andWhere('project.title = :title', {
+        title: filterDto.title,
+      });
+    }
 
     if (filterDto.numberOfStudents !== undefined) {
       query = query.andWhere('project.numberOfStudents = :numberOfStudents', {
@@ -89,6 +106,7 @@ export class ProjectService {
 
     return projectsWithDetails;
   }
+
   async findById(id: number): Promise<any> {
     const project = await this.projectRepository.findOne({
       where: { id },
