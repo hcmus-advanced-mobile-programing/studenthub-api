@@ -14,6 +14,7 @@ import { Language } from 'src/modules/language/language.entity';
 import { HttpRequestContextService } from 'src/shared/http-request-context/http-request-context.service';
 import { Repository } from 'typeorm';
 import { UserRole } from 'src/common/common.enum';
+import { UserRole } from 'src/common/common.enum';
 
 @Injectable()
 export class StudentProfileService {
@@ -72,7 +73,10 @@ export class StudentProfileService {
       }
     }
 
-    return student;
+    return await this.StudentRepository.findOne({
+      relations: ['techStack', 'proposals', 'educations', 'languages',  'experiences', 'experiences.skillSets', 'skillSets'],
+      where: {id: student.id},
+    },);
   }
 
   async updateStudentProfile(id: string, studentProfileDto: UpdateStudentProfileDto) {

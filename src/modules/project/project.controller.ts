@@ -13,11 +13,12 @@ import { Auth } from 'src/decorators/http.decorators';
 export class ProjectController {
   constructor(private readonly projectService: ProjectService) {}
 
+  @Auth()
   @Get()
   async findAll(@Query() filterDto: ProjectFilterDto): Promise<any[]> {
     return this.projectService.findAll(filterDto);
   }
-  
+
   @Auth()
   @Get('/company/:companyId')
   async projectSearchCompanyId(@Param() params: ProjectSearchCompanyId): Promise<Project[]> {
@@ -30,18 +31,21 @@ export class ProjectController {
     return this.projectService.findById(id);
   }
 
+  @Auth()
   @Post()
   async createNewProject(@Body() project: ProjectCreateDto): Promise<Project> {
     const newProject = await this.projectService.create(project);
     return newProject;
   }
 
+  @Auth()
   @Delete(':id')
   @HttpCode(200)
   async delete(@Param('id') id: number): Promise<void> {
     await this.projectService.delete(id);
   }
 
+  @Auth()
   @Patch(':id')
   async update(@Param('id') id: number, @Body() updatedProject: ProjectUpdateDto): Promise<Project> {
     await this.projectService.update(id, updatedProject);

@@ -35,6 +35,8 @@ import { EventModule } from './modules/event/event.module';
 import { MessageModule } from 'src/modules/message/message.module';
 import { InterviewModule } from './modules/interview/interview.module';
 import { MeetingRoomModule } from 'src/modules/meeting-room/meeting-room.module';
+import { InterviewModule } from './modules/interview/interview.module';
+import { MeetingRoomModule } from 'src/modules/meeting-room/meeting-room.module';
 
 @Module({
   imports: [

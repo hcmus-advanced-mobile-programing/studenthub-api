@@ -1,6 +1,5 @@
 import { BadRequestException, Injectable, Logger, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { UserRole } from 'src/common/common.enum';
 import { Company } from 'src/modules/company/company.entity';
 import { MessageResDto } from 'src/modules/message/dto/message-res.dto';
 import { MessageGetDto } from 'src/modules/message/dto/message_get.dto';
