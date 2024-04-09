@@ -74,8 +74,8 @@ export class ProjectService {
   async findAll(filterDto: ProjectFilterDto): Promise<any[]> {
     const userId = this.httpContext.getUser().id;
     const student = await this.studentRepository.findOneBy({userId: userId});
-    const studentId = student.id;
-
+    const studentId = student ? student.id : null;  // Kiểm tra nếu student tồn tại thì lấy studentId, nếu không thì lấy null
+  
     const query = this.projectRepository.createQueryBuilder('project')
       .leftJoinAndSelect('project.proposals', 'proposal')
       .andWhere('project.deletedAt IS NULL');
@@ -108,16 +108,20 @@ export class ProjectService {
       .groupBy('project.id, proposal.id');
   
     const projects = await query.getRawMany();
-
-    const favoriteProjects = await this.favoriteProjectRepository.find({
-      where: {
-        studentId,
-        disableFlag: DisableFlag.Enable,
-      },
-      select: ['projectId'],
-    });
-
-    const favoriteProjectIds = favoriteProjects.map(favorite => favorite.projectId);
+  
+    let favoriteProjectIds: (number | string)[] = [];
+  
+    if (studentId) {  // Kiểm tra nếu studentId tồn tại thì thực hiện truy vấn favoriteProject
+      const favoriteProjects = await this.favoriteProjectRepository.find({
+        where: {
+          studentId,
+          disableFlag: DisableFlag.Enable,
+        },
+        select: ['projectId'],
+      });
+  
+      favoriteProjectIds = favoriteProjects.map(favorite => favorite.projectId);
+    }
   
     const projectsWithDetails = projects.map((project) => ({
       projectId: project.project_id,
@@ -137,7 +141,7 @@ export class ProjectService {
     console.log(projectsWithDetails);
   
     return projectsWithDetails;
-  }
+  }  
   
   async findById(id: number): Promise<any> {
     const project = await this.projectRepository.findOne({
