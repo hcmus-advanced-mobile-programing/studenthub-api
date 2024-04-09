@@ -2,6 +2,8 @@ import { ApiPropertyOptional } from '@nestjs/swagger';
 import { ProjectScopeFlag, TypeFlag } from 'src/common/common.enum';
 
 export class ProjectFilterDto {
+  @ApiPropertyOptional()
+  title: string;
 
   @ApiPropertyOptional()
   projectScopeFlag?: ProjectScopeFlag;
