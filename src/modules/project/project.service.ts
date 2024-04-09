@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException, BadRequestException } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Project } from './project.entity';
@@ -6,14 +6,23 @@ import { ProjectCreateDto } from 'src/modules/project/dto/project-create.dto';
 import { ProjectUpdateDto } from 'src/modules/project/dto/project-update.dto';
 import { ProjectFilterDto } from 'src/modules/project/dto/project-filter.dto';
 import { MessageService as _MessageService } from 'src/modules/message/message.service';
+import { Student } from 'src/modules/student/student.entity';
+import { FavoriteProject } from 'src/modules/favoriteProject/favoriteProject.entity';
+import { HttpRequestContextService } from 'src/shared/http-request-context/http-request-context.service';
 import { TypeFlag } from 'src/common/common.enum';
+import { DisableFlag } from 'src/common/common.enum';
 
 @Injectable()
 export class ProjectService {
   constructor(
     @InjectRepository(Project)
     private readonly projectRepository: Repository<Project>,
-    private MessageService: _MessageService
+    @InjectRepository(Student)
+    private studentRepository: Repository<Student>,
+    @InjectRepository(FavoriteProject)
+    private favoriteProjectRepository: Repository<FavoriteProject>,
+    private MessageService: _MessageService,
+    private readonly httpContext: HttpRequestContextService
   ) {}
 
   async findByCompanyId(companyId: number, typeFlag: TypeFlag): Promise<Project[]> {
@@ -63,6 +72,10 @@ export class ProjectService {
   }
 
   async findAll(filterDto: ProjectFilterDto): Promise<any[]> {
+    const userId = this.httpContext.getUser().id;
+    const student = await this.studentRepository.findOneBy({userId: userId});
+    const studentId = student.id;
+
     const query = this.projectRepository.createQueryBuilder('project')
       .leftJoinAndSelect('project.proposals', 'proposal')
       .andWhere('project.deletedAt IS NULL');
@@ -95,6 +108,16 @@ export class ProjectService {
       .groupBy('project.id, proposal.id');
   
     const projects = await query.getRawMany();
+
+    const favoriteProjects = await this.favoriteProjectRepository.find({
+      where: {
+        studentId,
+        disableFlag: DisableFlag.Enable,
+      },
+      select: ['projectId'],
+    });
+
+    const favoriteProjectIds = favoriteProjects.map(favorite => favorite.projectId);
   
     const projectsWithDetails = projects.map((project) => ({
       projectId: project.project_id,
@@ -108,9 +131,10 @@ export class ProjectService {
       numberOfStudents: project.project_number_of_students,
       typeFlag: project.project_type_flag,
       countProposals: parseInt(project.countProposals, 10) || 0,
+      isFavorite: favoriteProjectIds.includes(project.project_id),
     }));
   
-    console.log(projectsWithDetails);  // Đoạn này sẽ in ra các dự án cùng với số lượng đề xuất liên quan
+    console.log(projectsWithDetails);
   
     return projectsWithDetails;
   }
