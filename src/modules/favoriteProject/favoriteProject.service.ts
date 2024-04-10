@@ -29,9 +29,11 @@ export class FavoriteProjectService {
     const projectsWithProposalCount = projects.map(project => {
       const { proposals, ...projectInfo } = project.project;
       return {
-        project: projectInfo,
+        project: {
+          ...projectInfo,
+          countProposals: proposals ? proposals.length : 0
+        },
         proposals: undefined, // Set proposals to undefined
-        countProposals: proposals ? proposals.length : 0 // Count proposals if they exist, otherwise set to 0
       };
     });
 

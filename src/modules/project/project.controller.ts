@@ -1,4 +1,4 @@
-import { Body, Controller, Delete, Get, HttpCode, Param, Patch, Post, Query } from '@nestjs/common';
+import { Body, Controller, Delete, Get, HttpCode, Param, Patch, Post, Query, BadRequestException } from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
 import { ProjectService } from './project.service';
 import { ProjectSearchCompanyId } from './dto/project-search.dto';
@@ -7,6 +7,8 @@ import { ProjectCreateDto } from 'src/modules/project/dto/project-create.dto';
 import { ProjectUpdateDto } from 'src/modules/project/dto/project-update.dto';
 import { ProjectFilterDto } from 'src/modules/project/dto/project-filter.dto';
 import { Auth } from 'src/decorators/http.decorators';
+import { TypeFlag } from 'src/common/common.enum';
+import { elementAt } from 'rxjs';
 
 @ApiTags('project')
 @Controller('api/project')
@@ -20,9 +22,15 @@ export class ProjectController {
   }
 
   @Auth()
-  @Get('/company/:companyId')
-  async projectSearchCompanyId(@Param() params: ProjectSearchCompanyId): Promise<Project[]> {
-    return this.projectService.findByCompanyId(params.companyId);
+  @Get('company/:companyId')
+  async projectSearchCompanyId(@Param('companyId') companyId: number, @Query('typeFlag') typeFlag?: TypeFlag): Promise<Project[]> {
+    let _typeFlag: TypeFlag | undefined;
+    if (typeFlag === 0 || typeFlag === 1) {
+      _typeFlag = typeFlag;
+    } else {
+      _typeFlag = undefined;
+    }
+    return this.projectService.findByCompanyId(companyId, _typeFlag);
   }
 
   @Auth()

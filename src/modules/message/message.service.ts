@@ -44,6 +44,16 @@ export class MessageService {
         'receiver.fullname',
         'interview',
       ])
+      .select([
+        'message.id',
+        'message.content',
+        'message.createdAt',
+        'sender.id',
+        'sender.fullname',
+        'receiver.id',
+        'receiver.fullname',
+        'interview',
+      ])
       .where('message.projectId = :projectId', { projectId })
       .andWhere('message.senderId = :userId', { userId })
       .distinct(true)
@@ -54,6 +64,16 @@ export class MessageService {
       .leftJoin('message.sender', 'sender')
       .leftJoin('message.receiver', 'receiver')
       .leftJoinAndSelect('message.interview', 'interview')
+      .select([
+        'message.id',
+        'message.content',
+        'message.createdAt',
+        'sender.id',
+        'sender.fullname',
+        'receiver.id',
+        'receiver.fullname',
+        'interview',
+      ])
       .select([
         'message.id',
         'message.content',
