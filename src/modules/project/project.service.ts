@@ -9,7 +9,7 @@ import { MessageService as _MessageService } from 'src/modules/message/message.s
 import { Student } from 'src/modules/student/student.entity';
 import { FavoriteProject } from 'src/modules/favoriteProject/favoriteProject.entity';
 import { HttpRequestContextService } from 'src/shared/http-request-context/http-request-context.service';
-import { TypeFlag } from 'src/common/common.enum';
+import { StatusFlag, TypeFlag } from 'src/common/common.enum';
 import { DisableFlag } from 'src/common/common.enum';
 
 @Injectable()

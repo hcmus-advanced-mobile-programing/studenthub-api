@@ -8,6 +8,7 @@ import { ProposalResDto } from 'src/modules/proposal/dto/proposal-res.dto';
 import { ProposalFindArgs } from 'src/modules/proposal/dto/proposal-find-args.dto';
 import { ProposalCreateDto } from 'src/modules/proposal/dto/proposal-create.dto';
 import { ProposalUpdateDto } from 'src/modules/proposal/dto/proposal-update.dto';
+import { StatusFlag } from 'src/common/common.enum';
 
 @Injectable()
 export class ProposalService {
@@ -88,6 +89,19 @@ export class ProposalService {
         },
         deletedAt: null,
       },
+    });
+  }
+
+  async findProjectByStudentId(studentId: number, statusFlag: StatusFlag): Promise<Proposal[]> {
+    const whereCondition: any = { studentId: studentId };
+    
+    if ([StatusFlag.Waitting, StatusFlag.Offer, StatusFlag.Hired].includes(statusFlag)) {
+      whereCondition.statusFlag = statusFlag;
+    }
+
+    return this.proposalRepository.find({
+      where: whereCondition,
+      relations: ['project']
     });
   }
 }

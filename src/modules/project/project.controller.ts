@@ -7,7 +7,7 @@ import { ProjectCreateDto } from 'src/modules/project/dto/project-create.dto';
 import { ProjectUpdateDto } from 'src/modules/project/dto/project-update.dto';
 import { ProjectFilterDto } from 'src/modules/project/dto/project-filter.dto';
 import { Auth } from 'src/decorators/http.decorators';
-import { TypeFlag } from 'src/common/common.enum';
+import { StatusFlag, TypeFlag } from 'src/common/common.enum';
 import { elementAt } from 'rxjs';
 
 @ApiTags('project')
