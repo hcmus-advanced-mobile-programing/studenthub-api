@@ -1,5 +1,5 @@
-import { Body, Controller, Delete, Get, HttpCode, Param, Patch, Post, Query, BadRequestException } from '@nestjs/common';
-import { ApiTags } from '@nestjs/swagger';
+import { Body, Controller, Delete, Get, HttpCode, Param, Patch, Post, Query, BadRequestException, Optional } from '@nestjs/common';
+import { ApiQuery, ApiTags } from '@nestjs/swagger';
 import { ProjectService } from './project.service';
 import { ProjectSearchCompanyId } from './dto/project-search.dto';
 import { Project } from './project.entity';
@@ -13,7 +13,7 @@ import { elementAt } from 'rxjs';
 @ApiTags('project')
 @Controller('api/project')
 export class ProjectController {
-  constructor(private readonly projectService: ProjectService) {}
+  constructor(private readonly projectService: ProjectService) { }
 
   @Auth()
   @Get()
@@ -23,14 +23,12 @@ export class ProjectController {
 
   @Auth()
   @Get('company/:companyId')
-  async projectSearchCompanyId(@Param('companyId') companyId: number, @Query('typeFlag') typeFlag?: TypeFlag): Promise<Project[]> {
-    let _typeFlag: TypeFlag | undefined;
-    if (typeFlag === 0 || typeFlag === 1) {
-      _typeFlag = typeFlag;
-    } else {
-      _typeFlag = undefined;
-    }
-    return this.projectService.findByCompanyId(companyId, _typeFlag);
+  @ApiQuery({ name: 'typeFlag', required: false })
+  async projectSearchCompanyId(
+    @Param('companyId') companyId: number,
+    @Query('typeFlag') typeFlag?: TypeFlag
+  ): Promise<Project[]> {
+    return this.projectService.findByCompanyId(companyId, typeFlag);
   }
 
   @Auth()

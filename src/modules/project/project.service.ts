@@ -25,13 +25,10 @@ export class ProjectService {
     private readonly httpContext: HttpRequestContextService
   ) {}
 
-  async findByCompanyId(companyId: number, typeFlag: TypeFlag): Promise<Project[]> {
-    console.log('type: ' + typeFlag)
-    console.log('companyId: ' + companyId)
-    
+  async findByCompanyId(companyId: number, typeFlag?: TypeFlag): Promise<Project[]> {
     const whereCondition: any = { companyId: companyId };
     
-    if (typeFlag !== undefined) {
+    if ([TypeFlag.Working, TypeFlag.Archieved].includes(typeFlag)) {
       whereCondition.typeFlag = typeFlag;
     }
 
@@ -160,7 +157,7 @@ export class ProjectService {
 
     const countHired = project.proposals ? project.proposals.filter((proposal) => proposal.statusFlag === 2).length : 0;
 
-    return { project, countProposals, countMessages, countHired };
+    return { ...project, countProposals, countMessages, countHired };
   }
 
   async delete(id: number): Promise<void> {
