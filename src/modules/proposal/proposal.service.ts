@@ -8,6 +8,7 @@ import { ProposalResDto } from 'src/modules/proposal/dto/proposal-res.dto';
 import { ProposalFindArgs } from 'src/modules/proposal/dto/proposal-find-args.dto';
 import { ProposalCreateDto } from 'src/modules/proposal/dto/proposal-create.dto';
 import { ProposalUpdateDto } from 'src/modules/proposal/dto/proposal-update.dto';
+import { StatusFlag } from 'src/common/common.enum';
 
 @Injectable()
 export class ProposalService {
@@ -17,7 +18,7 @@ export class ProposalService {
     @InjectRepository(Proposal)
     private proposalRepository: Repository<Proposal>,
     private readonly httpContext: HttpRequestContextService
-  ) {}
+  ) { }
 
   async searchProjectId(projectId: number | string, args: ProposalFindArgs): Promise<PaginationResult<ProposalResDto>> {
     const { limit, offset, statusFlag } = args;
@@ -25,14 +26,16 @@ export class ProposalService {
     const record = this.proposalRepository.createQueryBuilder('proposal');
 
     record
+      .select(['proposal.id', 'proposal.createdAt', 'proposal.updatedAt', 'proposal.deletedAt', 'proposal.projectId', 'proposal.studentId', 'proposal.coverLetter', 'proposal.statusFlag', 'proposal.disableFlag'])
       .where('proposal.project_id = :projectId', { projectId })
       .andWhere('proposal.deleted_at IS NULL')
       .leftJoinAndSelect('proposal.student', 'student')
+      .leftJoinAndSelect('student.user', 'user', 'user.deleted_at IS NULL')
       .leftJoinAndSelect('student.techStack', 'techStack')
       .leftJoinAndSelect('student.educations', 'education');
 
     if (statusFlag) {
-      record.where('proposal.status_flag = :statusFlag', { statusFlag });
+      record.andWhere('proposal.status_flag = :statusFlag', { statusFlag });
     }
 
     const [items, count] = await record
@@ -40,8 +43,21 @@ export class ProposalService {
       .offset(offset || 0)
       .getManyAndCount();
 
-    return genPaginationResult(items, count, args.offset, args.limit);
+    const resultItems = items.map(item => {
+      return {
+        ...item,
+        student: {
+          ...item.student,
+          user: {
+            fullname: item?.student.user.fullname
+          }
+        }
+      };
+    });
+
+    return genPaginationResult(resultItems as any, count, args.offset, args.limit);
   }
+
 
   async findOne(id: string): Promise<ProposalResDto> {
     const proposal = await this.proposalRepository.findOne({
@@ -73,6 +89,19 @@ export class ProposalService {
         },
         deletedAt: null,
       },
+    });
+  }
+
+  async findProjectByStudentId(studentId: number, statusFlag: StatusFlag): Promise<Proposal[]> {
+    const whereCondition: any = { studentId: studentId };
+    
+    if ([StatusFlag.Waitting, StatusFlag.Offer, StatusFlag.Hired].includes(statusFlag)) {
+      whereCondition.statusFlag = statusFlag;
+    }
+
+    return this.proposalRepository.find({
+      where: whereCondition,
+      relations: ['project']
     });
   }
 }
