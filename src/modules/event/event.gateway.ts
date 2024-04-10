@@ -24,6 +24,7 @@ import { UserService } from 'src/modules/user/user.service';
 export class EventGateway implements OnGatewayInit, OnGatewayConnection, OnGatewayDisconnect {
   @WebSocketServer() private server: Server;
   private messageQueue: Queue.Queue;
+  private interviewQueue: Queue.Queue;
   private readonly logger = new Logger(MessageService.name);
 
   constructor(
@@ -31,6 +32,7 @@ export class EventGateway implements OnGatewayInit, OnGatewayConnection, OnGatew
     private messageService: MessageService,
     private userService: UserService
   ) {
+    // Create message queue and process message
     this.messageQueue = new Queue('messageQueue');
     this.messageQueue
       .process(async (job: Queue.Job<MessageDto>, done) => {
@@ -62,6 +64,21 @@ export class EventGateway implements OnGatewayInit, OnGatewayConnection, OnGatew
     this.messageQueue.on('error', (error) => {
       console.error('Error occurred in message queue: ', error);
     });
+
+    // Create interview queue and process interview
+    this.interviewQueue = new Queue('interviewQueue');
+    this.interviewQueue
+      .process(async (job: Queue.Job, done) => {
+        console.log('Interview processing');
+        await done();
+      })
+      .catch((error) => {
+        console.error(error);
+      });
+
+    this.interviewQueue.on('error', (error) => {
+      console.error('Error occurred in interview queue: ', error);
+    });
   }
 
   @SubscribeMessage('SEND_MESSAGE')
@@ -86,27 +103,43 @@ export class EventGateway implements OnGatewayInit, OnGatewayConnection, OnGatew
     }
   }
 
-  sendNotificationToUidByProject(clientId: string, projectId: string, content: string): void {
+  @SubscribeMessage('SCHEDULE_INTERVIEW')
+  async handleScheduleInterview(@ConnectedSocket() client: Socket, @MessageBody() data): Promise<void> {
     try {
-      const rooms = this.server.sockets.adapter.rooms;
-      const socketsInRooms = rooms.get(projectId);
+      await setTimeout(() => {
+        console.log('Schedule interview: ', data);
+      });
 
-      for (const socketId of socketsInRooms) {
-        if (socketId !== clientId) {
-          const socketDetail = this.server.sockets.sockets.get(socketId);
-
-          if (socketDetail) {
-            this.server.emit(`NOTI_${socketDetail.data.id}`, {
-              content,
-              noti: true,
-            });
-          }
-        }
-      }
+      this.interviewQueue.add({}).catch((error) => {
+        throw new Error(error);
+      });
     } catch (error) {
-      throw new Error(error);
+      console.error('Error occurred in message queue: ', error);
+      this.server.to(client.id).emit('ERROR', { content: 'Error occurred in message queue' });
     }
   }
+
+  // sendNotificationToUidByProject(clientId: string, projectId: string, content: string): void {
+  //   try {
+  //     const rooms = this.server.sockets.adapter.rooms;
+  //     const socketsInRooms = rooms.get(projectId);
+
+  //     for (const socketId of socketsInRooms) {
+  //       if (socketId !== clientId) {
+  //         const socketDetail = this.server.sockets.sockets.get(socketId);
+
+  //         if (socketDetail) {
+  //           this.server.emit(`NOTI_${socketDetail.data.id}`, {
+  //             content,
+  //             noti: true,
+  //           });
+  //         }
+  //       }
+  //     }
+  //   } catch (error) {
+  //     throw new Error(error);
+  //   }
+  // }
 
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   async afterInit(socket: Socket) {}
