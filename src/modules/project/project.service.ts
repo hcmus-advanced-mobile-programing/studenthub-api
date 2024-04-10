@@ -9,7 +9,7 @@ import { MessageService as _MessageService } from 'src/modules/message/message.s
 import { Student } from 'src/modules/student/student.entity';
 import { FavoriteProject } from 'src/modules/favoriteProject/favoriteProject.entity';
 import { HttpRequestContextService } from 'src/shared/http-request-context/http-request-context.service';
-import { TypeFlag } from 'src/common/common.enum';
+import { StatusFlag, TypeFlag } from 'src/common/common.enum';
 import { DisableFlag } from 'src/common/common.enum';
 
 @Injectable()
@@ -25,13 +25,10 @@ export class ProjectService {
     private readonly httpContext: HttpRequestContextService
   ) {}
 
-  async findByCompanyId(companyId: number, typeFlag: TypeFlag): Promise<Project[]> {
-    console.log('type: ' + typeFlag)
-    console.log('companyId: ' + companyId)
-    
+  async findByCompanyId(companyId: number, typeFlag?: TypeFlag): Promise<Project[]> {
     const whereCondition: any = { companyId: companyId };
     
-    if (typeFlag !== undefined) {
+    if ([TypeFlag.Working, TypeFlag.Archieved].includes(typeFlag)) {
       whereCondition.typeFlag = typeFlag;
     }
 
@@ -160,7 +157,7 @@ export class ProjectService {
 
     const countHired = project.proposals ? project.proposals.filter((proposal) => proposal.statusFlag === 2).length : 0;
 
-    return { project, countProposals, countMessages, countHired };
+    return { ...project, countProposals, countMessages, countHired };
   }
 
   async delete(id: number): Promise<void> {

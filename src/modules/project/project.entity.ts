@@ -33,7 +33,7 @@ export class Project extends Base {
   @ApiProperty({ description: 'typeFlag' })
   typeFlag: TypeFlag;
 
-  @OneToMany(() => Proposal, (proposal) => proposal.student)
+  @OneToMany(() => Proposal, (proposal) => proposal.project)
   proposals: Proposal[];
 
   @OneToMany(() => Message, (message) => message.project)
