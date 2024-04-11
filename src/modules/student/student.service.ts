@@ -34,7 +34,7 @@ export class StudentProfileService {
     private readonly LanguageRepository: Repository<Language>,
     private readonly httpContext: HttpRequestContextService,
     private readonly gcsService: GCSService
-  ) { }
+  ) {}
 
   async createStudentProfile(studentProfileDto: CreateStudentProfileDto) {
     const { id, roles } = this.httpContext.getUser();
@@ -73,9 +73,17 @@ export class StudentProfileService {
     }
 
     return await this.StudentRepository.findOne({
-      relations: ['techStack', 'proposals', 'educations', 'languages',  'experiences', 'experiences.skillSets', 'skillSets'],
-      where: {id: student.id},
-    },);
+      relations: [
+        'techStack',
+        'proposals',
+        'educations',
+        'languages',
+        'experiences',
+        'experiences.skillSets',
+        'skillSets',
+      ],
+      where: { id: student.id },
+    });
   }
 
   async updateStudentProfile(id: string, studentProfileDto: UpdateStudentProfileDto) {
@@ -147,7 +155,10 @@ export class StudentProfileService {
 
     const educations = await this.EducationRepository.find({ where: { studentId: student.id } });
 
-    const experiences = await this.ExperienceRepository.find({ where: { studentId: student.id } });
+    const experiences = await this.ExperienceRepository.find({
+      where: { studentId: student.id },
+      relations: ['skillSets'],
+    });
 
     const languages = await this.LanguageRepository.find({ where: { studentId: student.id } });
 

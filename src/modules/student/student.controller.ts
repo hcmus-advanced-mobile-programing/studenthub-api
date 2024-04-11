@@ -33,7 +33,7 @@ export class StudentProfileController {
 
   @Auth()
   @Get(':studentId')
-  async getStudentProfile(@Param('studentId') studentId: number | string): Promise<GetStudentProfileDto> {
+  async getStudentProfile(@Param('studentId') studentId: number): Promise<GetStudentProfileDto> {
     return this.studentProfileService.getStudentProfile(studentId);
   }
 
