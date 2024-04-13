@@ -1,6 +1,7 @@
 import { ApiProperty } from '@nestjs/swagger';
+import { Transform } from 'class-transformer';
 import { IsOptional, IsString } from 'class-validator';
-import { StatusFlag } from 'src/common/common.enum';
+import { emptyStringAsNull, transformMultipleValueAsArray } from 'src/decorators/transform.decorator';
 import { FindArgs } from 'src/shared/dtos/common.dtos';
 
 export class ProposalFindArgs extends FindArgs {
@@ -8,7 +9,8 @@ export class ProposalFindArgs extends FindArgs {
     required: false,
     description: 'filter by status',
   })
+  @Transform(emptyStringAsNull)
   @IsOptional()
-  @IsString()
-  statusFlag?: StatusFlag;
+  @Transform(transformMultipleValueAsArray)
+  statusFlag?: string;
 }

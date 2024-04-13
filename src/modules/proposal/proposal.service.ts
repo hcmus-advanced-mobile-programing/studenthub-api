@@ -35,7 +35,7 @@ export class ProposalService {
       .leftJoinAndSelect('student.educations', 'education');
 
     if (statusFlag) {
-      record.andWhere('proposal.status_flag = :statusFlag', { statusFlag });
+      record.andWhere('proposal.status_flag IN (:...statusFlag)', { statusFlag });
     }
 
     const [items, count] = await record
