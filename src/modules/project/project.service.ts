@@ -134,9 +134,7 @@ export class ProjectService {
       countProposals: parseInt(project.countProposals, 10) || 0,
       isFavorite: favoriteProjectIds.includes(project.project_id),
     }));
-  
-    console.log(projectsWithDetails);
-  
+    
     return projectsWithDetails;
   }  
   
