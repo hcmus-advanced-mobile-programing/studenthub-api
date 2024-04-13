@@ -40,18 +40,15 @@ async function bootstrap() {
     })
   );
 
-  const isProduction = configService.get('nodeEnv') === 'production';
+  const config = new DocumentBuilder()
+    .setTitle('Nest Tool')
+    .setDescription('nest API description')
+    .setVersion('1.0')
+    .addBearerAuth({ type: 'http', scheme: 'bearer', bearerFormat: 'JWT' })
+    .build();
+  const document = SwaggerModule.createDocument(app, config);
+  SwaggerModule.setup('api-docs', app, document);
 
-  if (!isProduction) {
-    const config = new DocumentBuilder()
-      .setTitle('Nest Tool')
-      .setDescription('nest API description')
-      .setVersion('1.0')
-      .addBearerAuth({ type: 'http', scheme: 'bearer', bearerFormat: 'JWT' })
-      .build();
-    const document = SwaggerModule.createDocument(app, config);
-    SwaggerModule.setup('api-docs', app, document);
-  }
 
   app.enableCors({ allowedHeaders: '*', origin: '*', credentials: true });
 
@@ -62,10 +59,7 @@ async function bootstrap() {
   });
 
   await app.listen(configService.get('port'), () => {
-    console.log(`\n🚀 App running on http://localhost:${configService.get('port')}`);
-    if (!isProduction) {
-      console.log(`\n🚀 Swagger running on http://localhost:${configService.get('port')}/api-docs\n`);
-    }
+    console.log(`\n🚀 App running on port ${configService.get('port')}`);
   });
 }
 bootstrap().catch((e) => console.log(`\n🚀 Failed to start Application due to ->>\n${e}`));
