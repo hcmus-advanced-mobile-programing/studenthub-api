@@ -1,0 +1,17 @@
+version: '3'
+services:
+  redis:
+    image: redis:alpine3.19
+    ports:
+      - "6379:6379"
+    container_name: nest_redis
+    volumes:
+    - ./data:/var/lib/redis/data
+    restart: always
+    networks:
+      - nest_redis
+
+networks:
+  nest_redis:
+    name: nest_networks
+    external: true
