@@ -18,13 +18,13 @@ export class FavoriteProjectService {
   ) { }
 
   async searchStudentId(studentId: string): Promise<any[]> {
-    const projects = await this.favoriteProjectRepository.find({
-      where: {
-        studentId,
-        disableFlag: DisableFlag.Enable
-      },
-      relations: ['project', 'project.proposals'],
-    });
+
+    const projects = await this.favoriteProjectRepository.createQueryBuilder('favoriteProject')
+      .innerJoinAndSelect('favoriteProject.project', 'project', 'project.deletedAt IS NULL')
+      .leftJoinAndSelect('project.proposals', 'proposals')
+      .where('favoriteProject.studentId = :studentId', { studentId })
+      .andWhere('favoriteProject.disableFlag = :disableFlag', { disableFlag: DisableFlag.Enable })
+      .getMany();
 
     const projectsWithProposalCount = projects.map(project => {
       const { proposals, ...projectInfo } = project.project;
@@ -42,8 +42,8 @@ export class FavoriteProjectService {
   }
 
   async disable(studentId: string | number, params: DisableFavorityProjectDto): Promise<void> {
-    const check = await this.favoriteProjectRepository.findOneBy({studentId, projectId: params.projectId})
-    if(check) {
+    const check = await this.favoriteProjectRepository.findOneBy({ studentId, projectId: params.projectId })
+    if (check) {
       await this.favoriteProjectRepository.update({ studentId, projectId: params.projectId }, { disableFlag: params.disableFlag })
     } else {
       await this.favoriteProjectRepository.save({ studentId, projectId: params.projectId, disableFlag: params.disableFlag })
