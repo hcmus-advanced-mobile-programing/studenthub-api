@@ -4,8 +4,11 @@ import { TypeOrmModuleOptions, TypeOrmOptionsFactory } from '@nestjs/typeorm';
 
 @Injectable()
 export class TypeOrmConfigService implements TypeOrmOptionsFactory {
-  constructor(private configService: ConfigService) {}
+  readonly isProduction: boolean;
 
+  constructor(private configService: ConfigService) {
+    this.isProduction = this.configService.get('nodeEnv') === 'production';
+  }    
   createTypeOrmOptions(): TypeOrmModuleOptions {
     return {
       type: this.configService.get('db.type'),
@@ -17,7 +20,7 @@ export class TypeOrmConfigService implements TypeOrmOptionsFactory {
       database: this.configService.get('db.name'),
       synchronize: true,
       dropSchema: false,
-      logging: this.configService.get('app.nodeEnv') !== 'production',
+      logging: !this.isProduction,
       entities: [__dirname + '/../**/*.entity{.ts,.js}'],
       migrations: [__dirname + '/migrations/**/*{.ts,.js}'],
       cli: {

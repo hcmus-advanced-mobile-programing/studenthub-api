@@ -1,6 +1,6 @@
-import { Transform } from 'class-transformer';
+import { Transform, TransformFnParams } from 'class-transformer';
 import { parsePhoneNumber } from 'libphonenumber-js';
-import { castArray, isArray, isNil, map, trim } from 'lodash';
+import { castArray, filter, isArray, isNil, map, trim } from 'lodash';
 
 export function Trim(): PropertyDecorator {
   return Transform((params) => {
@@ -113,3 +113,29 @@ export function ToObject(): PropertyDecorator {
     return JSON.parse(value);
   });
 }
+
+export const transformMultipleValueAsArray = (params: TransformFnParams) => {
+  if (isNil(params.value)) {
+    return params.value;
+  }
+
+  const filterOutNil = (array: Array<number | string>) =>
+    filter(array, (value) => !isNil(value) && value !== '');
+
+  if (params.value instanceof Array) {
+    return filterOutNil(params.value);
+  }
+
+  if (typeof params.value === 'string') {
+    return filterOutNil(params.value.split(','));
+  }
+
+  return [params.value];
+};
+
+export const emptyStringAsNull = (params: TransformFnParams) => {
+  if (typeof params.value === 'string' && params.value.length === 0) {
+    return null;
+  }
+  return params.value;
+};

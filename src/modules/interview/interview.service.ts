@@ -41,7 +41,6 @@ export class InterviewService {
 
   async disable(id: number): Promise<void> {
     const interview = await this.projectRepository.findOne({ where: { id } });
-    console.log('♦️ | interview:', interview);
     if (!interview) {
       throw new Error('Interview not found');
     }
