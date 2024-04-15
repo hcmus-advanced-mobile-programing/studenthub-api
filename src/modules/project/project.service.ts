@@ -157,6 +157,9 @@ export class ProjectService {
       throw new NotFoundException(`No project found with ID: ${id}`);
     }
 
+    const companyInfo = await this.CompanyService.searchCompanyById(project.companyId);
+    const companyName = companyInfo.companyName;
+
     const countProposals = project.proposals ? project.proposals.length : 0;
 
     const messageList = await this.MessageService.searchProjectId(id);
@@ -164,7 +167,7 @@ export class ProjectService {
 
     const countHired = project.proposals ? project.proposals.filter((proposal) => proposal.statusFlag === 2).length : 0;
 
-    return { ...project, countProposals, countMessages, countHired };
+    return { ...project, companyName, countProposals, countMessages, countHired };
   }
 
   async delete(id: number): Promise<void> {
