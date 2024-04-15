@@ -28,11 +28,11 @@ export class Message extends Base {
   @Column({ name: 'message_flag', default: MessageFlag.Message })
   messageFlag: MessageFlag;
 
-  @ManyToOne(() => User, user => user.sentMessages)
+  @ManyToOne(() => User, (user) => user.sentMessages)
   @JoinColumn({ name: 'sender_id' })
   sender: User;
 
-  @ManyToOne(() => User, user => user.receivedMessages)
+  @ManyToOne(() => User, (user) => user.receivedMessages)
   @JoinColumn({ name: 'receiver_id' })
   receiver: User;
 

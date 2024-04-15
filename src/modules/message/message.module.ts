@@ -5,10 +5,12 @@ import { MessageService } from './message.service';
 import { MessageController } from './message.controller';
 import { Student } from 'src/modules/student/student.entity';
 import { Company } from 'src/modules/company/company.entity';
+import { Project } from 'src/modules/project/project.entity';
 
 @Module({
-  imports: [TypeOrmModule.forFeature([Message, Student, Company])],
+  imports: [TypeOrmModule.forFeature([Message, Student, Company, Project])],
   providers: [MessageService],
   controllers: [MessageController],
+  exports: [MessageService],
 })
 export class MessageModule {}

@@ -36,7 +36,7 @@ export class ProjectService {
       where: whereCondition,
       relations: ['proposals'],
     });
-
+  
     if (!projects || projects.length === 0) {
       throw new NotFoundException(`No projects found for company ID: ${companyId}`);
     }

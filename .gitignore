@@ -37,6 +37,11 @@ lerna-debug.log*
 !.vscode/launch.json
 !.vscode/extensions.json
 
+# Docker db data
+/docker/data
+/docker/db-data
+/docker/metabase-data
+
 
 # Diagnostic reports (https://nodejs.org/api/report.html)
 report.[0-9]*.[0-9]*.[0-9]*.[0-9]*.json
@@ -136,3 +141,8 @@ dist
 .tern-port
 
 mount-data
+
+docker/data
+docker/db-data
+docker/metabase-data
+fast-lattice-416510-36854f4c8c7c.json
