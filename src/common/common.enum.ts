@@ -15,8 +15,9 @@ export enum CompanySize {
 
 export enum StatusFlag {
   Waitting = 0,
-  Offer = 1,
-  Hired = 2,
+  Active = 1,
+  Offer = 2,
+  Hired = 3,
 }
 
 export enum DisableFlag {
@@ -25,8 +26,9 @@ export enum DisableFlag {
 }
 
 export enum TypeFlag {
-  Working = 0,
-  Archieved = 1,
+  New = 0,
+  Working = 1,
+  Archieved = 2,
 }
 
 export enum ProjectScopeFlag {

@@ -1,19 +1,17 @@
-import { Body, Controller, Delete, Get, HttpCode, Param, Patch, Post, Query, BadRequestException, Optional } from '@nestjs/common';
+import { Body, Controller, Delete, Get, HttpCode, Param, Patch, Post, Query } from '@nestjs/common';
 import { ApiQuery, ApiTags } from '@nestjs/swagger';
 import { ProjectService } from './project.service';
-import { ProjectSearchCompanyId } from './dto/project-search.dto';
 import { Project } from './project.entity';
 import { ProjectCreateDto } from 'src/modules/project/dto/project-create.dto';
 import { ProjectUpdateDto } from 'src/modules/project/dto/project-update.dto';
 import { ProjectFilterDto } from 'src/modules/project/dto/project-filter.dto';
 import { Auth } from 'src/decorators/http.decorators';
-import { StatusFlag, TypeFlag } from 'src/common/common.enum';
-import { elementAt } from 'rxjs';
+import { TypeFlag } from 'src/common/common.enum';
 
 @ApiTags('project')
 @Controller('api/project')
 export class ProjectController {
-  constructor(private readonly projectService: ProjectService) { }
+  constructor(private readonly projectService: ProjectService) {}
 
   @Auth()
   @Get()
