@@ -34,6 +34,7 @@ async function bootstrap() {
 
   app.useGlobalPipes(
     new ValidationPipe({
+      whitelist: true, // not allow other fields
       transform: true,
       exceptionFactory: (validationErrors: ValidationError[] = []) =>
         new BadRequestException(validationErrors.map((error) => Object.values(error.constraints).join(', '))),
@@ -48,7 +49,6 @@ async function bootstrap() {
     .build();
   const document = SwaggerModule.createDocument(app, config);
   SwaggerModule.setup('api-docs', app, document);
-
 
   app.enableCors({ allowedHeaders: '*', origin: '*', credentials: true });
 
