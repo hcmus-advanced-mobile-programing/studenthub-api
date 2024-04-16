@@ -45,3 +45,11 @@ export enum NotifyFlag {
   Unread = 0,
   Read = 1,
 }
+
+export enum TypeNotifyFlag {
+  Offer = 0,
+  Interview = 1,
+  Submitted = 2,
+  Chat = 3, 
+  
+}
