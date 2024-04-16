@@ -20,7 +20,7 @@ import { MessageService } from 'src/modules/message/message.service';
 import { UserService } from 'src/modules/user/user.service';
 
 @Injectable()
-@WebSocketGateway({cors: { origin: '*' }})
+@WebSocketGateway(parseInt(process.env.SOCKET_PORT, 10), {cors: { origin: '*' }})
 export class EventGateway implements OnGatewayInit, OnGatewayConnection, OnGatewayDisconnect {
   @WebSocketServer() private server: Server;
   private messageQueue: Queue.Queue;
@@ -32,6 +32,7 @@ export class EventGateway implements OnGatewayInit, OnGatewayConnection, OnGatew
     private messageService: MessageService,
     private userService: UserService
   ) {
+    console.log('constructor');
     // Create message queue and process message
     this.messageQueue = new Queue('messageQueue');
     this.messageQueue
@@ -84,11 +85,15 @@ export class EventGateway implements OnGatewayInit, OnGatewayConnection, OnGatew
   }
 
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  async afterInit(socket: Socket) {}
+  async afterInit(socket: Socket) {
+    console.log('afterInit');
+  }
 
   // Handle authorized connection
   async handleConnection(socket: Socket): Promise<void> {
     try {
+      console.log('handleConnection');
+
       // Verify token
       const { email, id } = await this.jwtService.verify(socket.handshake.headers.authorization.split(' ')[1]);
       const { project_id } = socket.handshake.query;
@@ -105,6 +110,8 @@ export class EventGateway implements OnGatewayInit, OnGatewayConnection, OnGatew
 
   // eslint-disable-next-line @typescript-eslint/no-unused-vars, @typescript-eslint/require-await
   async handleDisconnect(socket: Socket) {
+    console.log('handleDisconnect');
+
     socket.disconnect();
   }
 
@@ -112,6 +119,8 @@ export class EventGateway implements OnGatewayInit, OnGatewayConnection, OnGatew
   @SubscribeMessage('SEND_MESSAGE')
   async handleMessage(@ConnectedSocket() client: Socket, @MessageBody() data): Promise<void> {
     try {
+      console.log('handleMessage');
+
       const checkValidate = await checkObjectMatchesDto(data, MessageDto);
 
       if (!checkValidate) {
