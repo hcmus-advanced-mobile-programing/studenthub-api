@@ -79,11 +79,12 @@ export class ProjectService {
       .leftJoinAndSelect('project.proposals', 'proposal')
       .andWhere('project.deletedAt IS NULL');
   
-    if (filterDto.title !== undefined) {
-      query.andWhere('project.title = :title', {
-        title: filterDto.title,
-      });
-    }
+      if (filterDto.title !== undefined) {
+        query.andWhere('project.title LIKE :title', {
+          title: `%${filterDto.title}%`,
+        });
+      }
+
   
     if (filterDto.numberOfStudents !== undefined) {
       query.andWhere('project.numberOfStudents = :numberOfStudents', {
