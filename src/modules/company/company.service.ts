@@ -80,4 +80,8 @@ export class CompanyProfileService {
 
     return GetCompanyProfileDto.fromEntities(company, user);
   }
+
+  async searchCompanyById(id: number | string): Promise<Company>{
+    return await this.CompanyRepository.findOneBy({ id });
+  }
 }

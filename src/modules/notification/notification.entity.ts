@@ -1,6 +1,6 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { Base } from 'src/common/base.entity';
-import { NotifyFlag } from 'src/common/common.enum';
+import { NotifyFlag, TypeNotifyFlag } from 'src/common/common.enum';
 import { Message } from 'src/modules/message/message.entity';
 import { User } from 'src/modules/user/user.entity';
 import { Column, Entity, JoinColumn, ManyToOne, OneToOne } from 'typeorm';
@@ -28,6 +28,10 @@ export class Notification extends Base {
   @Column({ name: 'notifyFlag', type: 'bigint' })
   @ApiProperty({ description: 'notifyFlag' })
   notifyFlag: NotifyFlag;
+
+  @Column({ name: 'typeNotifyFlag', type: 'bigint' })
+  @ApiProperty({ description: 'typeNotifyFlag' })
+  typeNotifyFlag: TypeNotifyFlag;
 
   @Column({ name: 'content', nullable: true })
   @ApiProperty({ description: 'content' })

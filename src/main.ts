@@ -12,9 +12,15 @@ import { SentryFilter } from 'src/utils/exceptions/sentry.filter';
 import { AspectLoggerInterceptor } from 'src/interceptor/aspect-logger.interceptor';
 import { AllExceptionsFilter } from 'src/utils/exceptions/all-exceptions-filter';
 import { ResponseInterceptor } from 'src/interceptor/response.interceptor';
+import { RedisIoAdapter } from 'src/adapters/redis-io.adapter';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule, { bufferLogs: true });
+
+  const redisIoAdapter = new RedisIoAdapter(app);
+  await redisIoAdapter.connectToRedis();
+  app.useWebSocketAdapter(redisIoAdapter);
+
   useContainer(app.select(AppModule), { fallbackOnErrors: true });
   const configService = app.get(ConfigService);
   const reflector = app.get(Reflector);
