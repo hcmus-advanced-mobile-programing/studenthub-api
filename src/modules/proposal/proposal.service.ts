@@ -1,4 +1,4 @@
-import { Injectable, Logger } from '@nestjs/common';
+import { Injectable, Logger, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { PaginationResult, genPaginationResult } from 'src/shared/dtos/common.dtos';
@@ -9,6 +9,7 @@ import { ProposalFindArgs } from 'src/modules/proposal/dto/proposal-find-args.dt
 import { ProposalCreateDto } from 'src/modules/proposal/dto/proposal-create.dto';
 import { ProposalUpdateDto } from 'src/modules/proposal/dto/proposal-update.dto';
 import { StatusFlag } from 'src/common/common.enum';
+import { Project } from 'src/modules/project/project.entity';
 
 @Injectable()
 export class ProposalService {
@@ -17,6 +18,8 @@ export class ProposalService {
   constructor(
     @InjectRepository(Proposal)
     private proposalRepository: Repository<Proposal>,
+    @InjectRepository(Project)
+    private projectRepository: Repository<Project>,
     private readonly httpContext: HttpRequestContextService
   ) { }
 
@@ -72,6 +75,12 @@ export class ProposalService {
   }
 
   async createProposal(proposal: ProposalCreateDto): Promise<ProposalCreateDto> {
+    const projectId = proposal.projectId;
+    const project = await this.projectRepository.findOneBy({id : projectId});
+
+    if (!project || project.deletedAt != null){
+      throw new NotFoundException(`Project not found with id: ${projectId}`);
+    }
     return this.proposalRepository.save(proposal);
   }
 
