@@ -22,4 +22,12 @@ export class InterviewCreateDto {
   @ApiProperty({ description: 'Project Id' })
   @IsNotEmpty()
   projectId: number | string;
+
+  @ApiProperty({ description: 'Sender Id' })
+  @IsNotEmpty()
+  senderId: number | string;
+
+  @ApiProperty({ description: 'Receiver Id' })
+  @IsNotEmpty()
+  receiverId: number | string;
 }

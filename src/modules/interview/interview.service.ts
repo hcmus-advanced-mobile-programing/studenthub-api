@@ -31,12 +31,12 @@ export class InterviewService {
   async create(interview: InterviewCreateDto): Promise<InterviewCreateDto> {
     const newInterview = await this.projectRepository.save(interview);
     await this.messageService.createMessage({
-      senderId: this.authService.getCurrentUser(),
-      receiverId: 0,
+      senderId: interview.senderId,
+      receiverId: interview.receiverId,
+      projectId: interview.projectId,
       content: 'Interview created',
       interviewId: newInterview.id,
       messageFlag: MessageFlag.Interview,
-      projectId: interview.projectId,
     });
     return newInterview;
   }
