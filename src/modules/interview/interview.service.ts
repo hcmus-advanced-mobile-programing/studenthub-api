@@ -1,16 +1,20 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { DisableFlag } from 'src/common/common.enum';
+import { DisableFlag, MessageFlag } from 'src/common/common.enum';
 import { InterviewCreateDto } from 'src/modules/interview/dto/interview-create.dto';
 import { InterviewUpdateDto } from 'src/modules/interview/dto/interview-update.dto';
 import { Interview } from 'src/modules/interview/interview.entity';
+import { MessageService } from 'src/modules/message/message.service';
 import { Repository } from 'typeorm';
+import { AuthService } from '../auth/auth.service';
 
 @Injectable()
 export class InterviewService {
   constructor(
     @InjectRepository(Interview)
-    private readonly projectRepository: Repository<Interview>
+    private readonly projectRepository: Repository<Interview>,
+    private readonly messageService: MessageService,
+    private readonly authService: AuthService
   ) {}
 
   async findAll(): Promise<Interview[]> {
@@ -25,7 +29,16 @@ export class InterviewService {
   }
 
   async create(interview: InterviewCreateDto): Promise<InterviewCreateDto> {
-    return await this.projectRepository.save(interview);
+    const newInterview = await this.projectRepository.save(interview);
+    await this.messageService.createMessage({
+      senderId: this.authService.getCurrentUser(),
+      receiverId: 0,
+      content: 'Interview created',
+      interviewId: newInterview.id,
+      messageFlag: MessageFlag.Interview,
+      projectId: interview.projectId,
+    });
+    return newInterview;
   }
 
   async update(id: number, interview: InterviewUpdateDto): Promise<void> {

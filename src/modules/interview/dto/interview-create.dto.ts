@@ -18,4 +18,8 @@ export class InterviewCreateDto {
   @ApiProperty({ description: 'Disable flag of the interview', enum: DisableFlag })
   @IsEnum(DisableFlag)
   disableFlag: DisableFlag;
+
+  @ApiProperty({ description: 'Project Id' })
+  @IsNotEmpty()
+  projectId: number | string;
 }

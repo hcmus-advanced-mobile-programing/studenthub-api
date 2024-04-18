@@ -9,7 +9,7 @@ import { MessageService as _MessageService } from 'src/modules/message/message.s
 import { Student } from 'src/modules/student/student.entity';
 import { FavoriteProject } from 'src/modules/favoriteProject/favoriteProject.entity';
 import { HttpRequestContextService } from 'src/shared/http-request-context/http-request-context.service';
-import { StatusFlag, TypeFlag } from 'src/common/common.enum';
+import { TypeFlag } from 'src/common/common.enum';
 import { DisableFlag } from 'src/common/common.enum';
 import { CompanyProfileService } from 'src/modules/company/company.service';
 
@@ -29,7 +29,7 @@ export class ProjectService {
 
   async findByCompanyId(companyId: number, typeFlag?: TypeFlag): Promise<Project[]> {
     const whereCondition: any = { companyId: companyId };
-    
+
     if ([TypeFlag.Working, TypeFlag.Archieved].includes(typeFlag)) {
       whereCondition.typeFlag = typeFlag;
     }
@@ -38,7 +38,7 @@ export class ProjectService {
       where: whereCondition,
       relations: ['proposals'],
     });
-  
+
     if (!projects || projects.length === 0) {
       throw new NotFoundException(`No projects found for company ID: ${companyId}`);
     }
@@ -72,42 +72,42 @@ export class ProjectService {
 
   async findAll(filterDto: ProjectFilterDto): Promise<any[]> {
     const userId = this.httpContext.getUser().id;
-    const student = await this.studentRepository.findOneBy({userId: userId});
+    const student = await this.studentRepository.findOneBy({ userId: userId });
     const studentId = student ? student.id : null;
-  
-    const query = this.projectRepository.createQueryBuilder('project')
+
+    const query = this.projectRepository
+      .createQueryBuilder('project')
       .leftJoinAndSelect('project.proposals', 'proposal')
       .andWhere('project.deletedAt IS NULL');
-  
-      if (filterDto.title !== undefined) {
-        query.andWhere('project.title LIKE :title', {
-          title: `%${filterDto.title}%`,
-        });
-      }
 
-  
+    if (filterDto.title !== undefined) {
+      query.andWhere('project.title LIKE :title', {
+        title: `%${filterDto.title}%`,
+      });
+    }
+
     if (filterDto.numberOfStudents !== undefined) {
       query.andWhere('project.numberOfStudents = :numberOfStudents', {
         numberOfStudents: filterDto.numberOfStudents,
       });
     }
-  
+
     if (filterDto.projectScopeFlag !== undefined) {
       query.andWhere('project.projectScopeFlag = :projectScopeFlag', {
         projectScopeFlag: filterDto.projectScopeFlag,
       });
     }
-  
+
     if (filterDto.proposalsLessThan !== undefined) {
       query.having('COUNT(proposal.id) < :proposalsLessThan', {
         proposalsLessThan: filterDto.proposalsLessThan,
       });
     }
-  
+
     const projects = await query.getMany();
-  
+
     let favoriteProjectIds: (number | string)[] = [];
-  
+
     if (studentId) {
       const favoriteProjects = await this.favoriteProjectRepository.find({
         where: {
@@ -116,38 +116,41 @@ export class ProjectService {
         },
         select: ['projectId'],
       });
-  
-      favoriteProjectIds = favoriteProjects.map(favorite => favorite.projectId);
+
+      favoriteProjectIds = favoriteProjects.map((favorite) => favorite.projectId);
     }
-  
-    const projectsWithDetails = await Promise.all(projects.map(async (project) => {
-      let companyInfo;
-      if (project.companyId) {
+
+    const projectsWithDetails = await Promise.all(
+      projects.map(async (project) => {
+        let companyInfo;
+        if (project.companyId) {
           try {
-              companyInfo = await this.CompanyService.searchCompanyById(project.companyId);
+            companyInfo = await this.CompanyService.searchCompanyById(project.companyId);
           } catch (error) {
-              companyInfo = null;
+            companyInfo = null;
           }
-      }
-      return{
-      id: project.id,
-      createdAt: project.createdAt,
-      updatedAt: project.updatedAt,
-      deletedAt: project.deletedAt,
-      companyId: project.companyId,
-      companyName: companyInfo ? companyInfo.companyName : null,
-      projectScopeFlag: project.projectScopeFlag,
-      title: project.title,
-      description: project.description,
-      numberOfStudents: project.numberOfStudents,
-      typeFlag: project.typeFlag,
-      countProposals: project.proposals ? project.proposals.length : 0,
-      isFavorite: favoriteProjectIds.includes(project.id),};
-    }));
-    
+        }
+        return {
+          id: project.id,
+          createdAt: project.createdAt,
+          updatedAt: project.updatedAt,
+          deletedAt: project.deletedAt,
+          companyId: project.companyId,
+          companyName: companyInfo ? companyInfo.companyName : null,
+          projectScopeFlag: project.projectScopeFlag,
+          title: project.title,
+          description: project.description,
+          numberOfStudents: project.numberOfStudents,
+          typeFlag: project.typeFlag,
+          countProposals: project.proposals ? project.proposals.length : 0,
+          isFavorite: favoriteProjectIds.includes(project.id),
+        };
+      })
+    );
+
     return projectsWithDetails;
-  }  
-  
+  }
+
   async findById(id: number): Promise<any> {
     const project = await this.projectRepository.findOne({
       where: { id },
