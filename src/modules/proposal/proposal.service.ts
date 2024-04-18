@@ -1,4 +1,4 @@
-import { Injectable, Logger, NotFoundException } from '@nestjs/common';
+import { Injectable, Logger, NotFoundException, ConflictException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { PaginationResult, genPaginationResult } from 'src/shared/dtos/common.dtos';
@@ -80,6 +80,11 @@ export class ProposalService {
 
     if (!project || project.deletedAt != null){
       throw new NotFoundException(`Project not found with id: ${projectId}`);
+    }
+
+    const checkProposal = await this.proposalRepository.findBy({studentId: proposal.studentId, projectId: projectId});
+    if (checkProposal){
+      throw new ConflictException(`Proposal for project with ID ${projectId} already exists.`)
     }
     return this.proposalRepository.save(proposal);
   }
