@@ -4,9 +4,11 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { ProposalController } from 'src/modules/proposal/proposal.controller';
 import { Proposal } from 'src/modules/proposal/proposal.entity';
 import { ProposalService } from 'src/modules/proposal/proposal.service';
+import { Project } from 'src/modules/project/project.entity';
+import { ProjectService } from 'src/modules/project/project.service';
 
 @Module({
-  imports: [TypeOrmModule.forFeature([Proposal]), ConfigModule],
+  imports: [TypeOrmModule.forFeature([Proposal, Project]), ConfigModule],
   controllers: [ProposalController],
   providers: [ProposalService],
   exports: [ProposalService],
