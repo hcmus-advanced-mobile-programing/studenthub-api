@@ -8,7 +8,6 @@ import { Message } from 'src/modules/message/message.entity';
   name: 'interview',
 })
 export class Interview extends Base {
-
   @Column({ name: 'title' })
   @ApiProperty({ description: 'title' })
   title: string;
@@ -25,6 +24,6 @@ export class Interview extends Base {
   @ApiProperty({ description: 'disableFlag' })
   disableFlag: DisableFlag;
 
-  @OneToMany(() => Message, message => message.interview)
+  @OneToMany(() => Message, (message) => message.interview)
   messages: Message[];
 }
