@@ -18,6 +18,8 @@ import { checkObjectMatchesDto } from 'src/utils/validators/dto.validator';
 import { MessageDto } from 'src/modules/event/dto/message.dto';
 import { MessageService } from 'src/modules/message/message.service';
 import { UserService } from 'src/modules/user/user.service';
+import { NotificationDto } from 'src/modules/event/dto/notification.dto';
+import { NotificationService } from 'src/modules/notification/notification.service';
 
 @Injectable()
 @WebSocketGateway({
@@ -29,12 +31,14 @@ export class EventGateway implements OnGatewayInit, OnGatewayConnection, OnGatew
   @WebSocketServer() private server: Server;
   private messageQueue: Queue.Queue;
   private interviewQueue: Queue.Queue;
+  private notificationQueue: Queue.Queue;
   private readonly logger = new Logger(MessageService.name);
 
   constructor(
     private readonly jwtService: JwtService,
     private messageService: MessageService,
     private userService: UserService,
+    private notificationService: NotificationService,
   ) {
     console.log('constructor');
     // Create message queue and process message
@@ -85,6 +89,36 @@ export class EventGateway implements OnGatewayInit, OnGatewayConnection, OnGatew
 
     this.interviewQueue.on('error', (error) => {
       console.error('Error occurred in interview queue: ', error);
+    });
+
+    // Create message queue and process message
+    this.notificationQueue = new Queue('notificationQueue');
+    this.notificationQueue
+      .process(async (job: Queue.Job<NotificationDto>, done) => {
+        const { receiverId, senderId, messageId, title, notifyFlag, typeNotifyFlag, content } = job.data;
+
+        // Create notification in database
+        const resultAdd = await notificationService.createNotification({ receiverId, senderId, messageId, title, notifyFlag, typeNotifyFlag, content });
+
+        if (!resultAdd) {
+          console.error(senderId, 'Error occurred while adding notification');
+          // Send error to sender
+          this.server.to(senderId.toString()).emit('ERROR', { content: 'Error occurred in notification queue' });
+          return done();
+        }
+
+        // Send notification to clients
+        this.server
+          .to([`${senderId}`, `${receiverId}`])
+          .emit(`RECEIVE_NOTIFICATION`, { content, senderId, receiverId, typeNotifyFlag });
+        done();
+      })
+      .catch((error) => {
+        console.error(error);
+      });
+
+    this.notificationQueue.on('error', (error) => {
+      console.error('Error occurred in notification queue: ', error);
     });
   }
 
@@ -165,34 +199,30 @@ export class EventGateway implements OnGatewayInit, OnGatewayConnection, OnGatew
   }
 
   @SubscribeMessage('SEND_NOTIFICATION')
-  sendNotificationToUser(userId: string, content: string): void {
+  async sendNotificationToUser(@ConnectedSocket() client: Socket, @MessageBody() data): Promise<void> {
+
     try {
-      // Emit notification to the user's socket
-      this.server.to(userId).emit('RECEIVE_NOTIFICATION', { content });
+      console.log('handleNotification');
+
+      console.log(data);
+
+      const checkValidate = await checkObjectMatchesDto(data, NotificationDto);
+
+      if (!checkValidate) {
+        throw new Error('Invalid data');
+      }
+
+      const { receiverId, senderId, messageId, title, notifyFlag, typeNotifyFlag, content } = data;
+
+      // Add task to notification queue
+      this.notificationQueue
+        .add({ receiverId, senderId, messageId, title, notifyFlag, typeNotifyFlag, content })
+        .catch((error) => {
+          throw new Error(error);
+        });
     } catch (error) {
-      throw new Error(error);
+      console.error('Error occurred in notification queue: ', error);
+      this.server.to(client.id).emit('ERROR', { content: 'Error occurred in notification queue' });
     }
   }
-
-  // sendNotificationToUidByProject(clientId: string, projectId: string, content: string): void {
-  //   try {
-  //     const rooms = this.server.sockets.adapter.rooms;
-  //     const socketsInRooms = rooms.get(projectId);
-
-  //     for (const socketId of socketsInRooms) {
-  //       if (socketId !== clientId) {
-  //         const socketDetail = this.server.sockets.sockets.get(socketId);
-
-  //         if (socketDetail) {
-  //           this.server.emit(`NOTI_${socketDetail.data.id}`, {
-  //             content,
-  //             noti: true,
-  //           });
-  //         }
-  //       }
-  //     }
-  //   } catch (error) {
-  //     throw new Error(error);
-  //   }
-  // }
 }

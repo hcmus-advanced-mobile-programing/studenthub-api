@@ -5,11 +5,17 @@ import { EventGateway } from 'src/modules/event/event.gateway';
 import { JwtStrategy } from 'src/modules/auth/strategies/jwt.strategy';
 import { PublicStrategy } from 'src/modules/auth/strategies/public.strategy';
 import { UserModule } from 'src/modules/user/user.module';
-import { MessageModule } from 'src/modules/message/message.module';;
+import { MessageModule } from 'src/modules/message/message.module';
+import { NotificationModule } from 'src/modules/notification/notification.module';
+import { NotificationService } from 'src/modules/notification/notification.service';
+import { TypeOrmModule } from '@nestjs/typeorm';
+import { Notification } from 'src/modules/notification/notification.entity';
 @Module({
   imports: [
+    TypeOrmModule.forFeature([Notification]),
     UserModule,
     MessageModule,
+    NotificationModule,
     JwtModule.registerAsync({
       imports: [ConfigModule],
       inject: [ConfigService],
@@ -21,7 +27,7 @@ import { MessageModule } from 'src/modules/message/message.module';;
       }),
     }),
   ],
-  providers: [JwtStrategy, PublicStrategy, EventGateway],
+  providers: [JwtStrategy, PublicStrategy, EventGateway, NotificationService],
   exports: [EventGateway],
 })
 export class EventModule {}

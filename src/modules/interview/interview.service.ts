@@ -9,19 +9,13 @@ import { Repository } from 'typeorm';
 import { AuthService } from '../auth/auth.service';
 import { NotificationService } from 'src/modules/notification/notification.service';
 import { Message } from 'src/modules/message/message.entity';
-import { EventGateway } from 'src/modules/event/event.gateway';
 
 @Injectable()
 export class InterviewService {
   constructor(
     @InjectRepository(Interview)
     private readonly projectRepository: Repository<Interview>,
-    @InjectRepository(Message)
-    private readonly messageRepository: Repository<Message>,
     private readonly messageService: MessageService,
-    private readonly notificationService: NotificationService,
-    private readonly authService: AuthService,
-    private readonly eventGateway: EventGateway,
   ) {}
 
   async findAll(): Promise<Interview[]> {
@@ -46,19 +40,14 @@ export class InterviewService {
       messageFlag: MessageFlag.Interview,
     });
 
-    const message = await this.messageRepository.findOneBy({interviewId: newInterview.id});
-
-    await this.notificationService.createNotification({
+    await this.messageService.createMessage({
       senderId: interview.senderId,
       receiverId: interview.receiverId,
-      messageId: message.id,
+      projectId: interview.projectId,
       content: 'Interview created',
-      notifyFlag: NotifyFlag.Unread,
-      typeNotifyFlag: TypeNotifyFlag.Interview,
-      title: interview.title,
+      interviewId: newInterview.id,
+      messageFlag: MessageFlag.Interview,
     });
-
-    this.eventGateway.sendNotificationToUser(interview.receiverId.toString(), 'New interview created');
 
     return newInterview;
   }
