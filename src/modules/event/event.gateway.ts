@@ -34,7 +34,7 @@ export class EventGateway implements OnGatewayInit, OnGatewayConnection, OnGatew
   constructor(
     private readonly jwtService: JwtService,
     private messageService: MessageService,
-    private userService: UserService
+    private userService: UserService,
   ) {
     console.log('constructor');
     // Create message queue and process message
@@ -98,8 +98,11 @@ export class EventGateway implements OnGatewayInit, OnGatewayConnection, OnGatew
     try {
       console.log('handleConnection');
 
+      console.log(socket.handshake.headers.authorization.split(' ')[1]);
       // Verify token
       const { email, id } = await this.jwtService.verify(socket.handshake.headers.authorization.split(' ')[1]);
+      console.log(email);
+      console.log(id);
       const { project_id } = socket.handshake.query;
 
       socket.data = { email, id };
@@ -158,6 +161,16 @@ export class EventGateway implements OnGatewayInit, OnGatewayConnection, OnGatew
     } catch (error) {
       console.error('Error occurred in message queue: ', error);
       this.server.to(client.id).emit('ERROR', { content: 'Error occurred in message queue' });
+    }
+  }
+
+  @SubscribeMessage('SEND_NOTIFICATION')
+  sendNotificationToUser(userId: string, content: string): void {
+    try {
+      // Emit notification to the user's socket
+      this.server.to(userId).emit('RECEIVE_NOTIFICATION', { content });
+    } catch (error) {
+      throw new Error(error);
     }
   }
 

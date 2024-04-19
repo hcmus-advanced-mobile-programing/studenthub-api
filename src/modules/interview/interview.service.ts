@@ -9,6 +9,7 @@ import { Repository } from 'typeorm';
 import { AuthService } from '../auth/auth.service';
 import { NotificationService } from 'src/modules/notification/notification.service';
 import { Message } from 'src/modules/message/message.entity';
+import { EventGateway } from 'src/modules/event/event.gateway';
 
 @Injectable()
 export class InterviewService {
@@ -19,7 +20,8 @@ export class InterviewService {
     private readonly messageRepository: Repository<Message>,
     private readonly messageService: MessageService,
     private readonly notificationService: NotificationService,
-    private readonly authService: AuthService
+    private readonly authService: AuthService,
+    private readonly eventGateway: EventGateway,
   ) {}
 
   async findAll(): Promise<Interview[]> {
@@ -55,6 +57,9 @@ export class InterviewService {
       typeNotifyFlag: TypeNotifyFlag.Interview,
       title: interview.title,
     });
+
+    this.eventGateway.sendNotificationToUser(interview.receiverId.toString(), 'New interview created');
+
     return newInterview;
   }
 

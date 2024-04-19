@@ -5,8 +5,7 @@ import { EventGateway } from 'src/modules/event/event.gateway';
 import { JwtStrategy } from 'src/modules/auth/strategies/jwt.strategy';
 import { PublicStrategy } from 'src/modules/auth/strategies/public.strategy';
 import { UserModule } from 'src/modules/user/user.module';
-import { MessageModule } from 'src/modules/message/message.module';
-
+import { MessageModule } from 'src/modules/message/message.module';;
 @Module({
   imports: [
     UserModule,
