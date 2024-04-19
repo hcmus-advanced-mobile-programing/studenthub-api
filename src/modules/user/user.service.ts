@@ -1,6 +1,6 @@
 import { ConflictException, ForbiddenException, Injectable, Logger, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { IsNull, Repository } from 'typeorm';
 import * as bcrypt from 'bcrypt';
 import { ForgotPasswordDto } from 'src/modules/user/dto/forgot-password.dto';
 import { randomBytes } from 'crypto';
@@ -17,6 +17,7 @@ import { UserRole } from 'src/common/common.enum';
 import { Student } from 'src/modules/student/student.entity';
 import { Company } from 'src/modules/company/company.entity';
 import { MailService } from 'src/modules/mail/mail.service'
+import { Proposal } from 'src/modules/proposal/proposal.entity';
 
 @Injectable()
 export class UserService {
@@ -33,6 +34,40 @@ export class UserService {
     private readonly httpContext: HttpRequestContextService
   ) { }
 
+  async getCurrentUser(fields: EntityCondition<User>): Promise<any> {
+    const user = await this.usersRepository.createQueryBuilder('user')
+      .leftJoinAndSelect('user.student', 'student')
+      .leftJoinAndSelect('student.proposals', 'proposal', 'proposal.projectId IS NOT NULL')
+      .leftJoinAndSelect('proposal.project', 'project', 'proposal.projectId = project.id AND project.deletedAt IS NULL')
+      .leftJoinAndSelect('user.company', 'company')
+      .leftJoinAndSelect('student.techStack', 'techStack')
+      .leftJoinAndSelect('student.educations', 'educations')
+      .leftJoinAndSelect('student.languages', 'languages')
+      .leftJoinAndSelect('student.experiences', 'experiences')
+      .leftJoinAndSelect('experiences.skillSets', 'skillSets')
+      .leftJoinAndSelect('student.skillSets', 'studentSkillSets')
+      .where(fields)
+      .getOne();
+
+
+    if (!user) {
+      return null;
+    }
+
+    if (user && user.student && user.student.proposals) {
+      const filteredProposals = user.student.proposals
+        .filter(proposal => proposal.project);
+
+      user.student.proposals = filteredProposals.map(proposal => ({
+        ...proposal,
+        project: undefined
+      }));
+    }
+
+    return user;
+  }
+
+
   async create(createUserDto: CreateUserDto) {
     const user = await this.usersRepository.save(this.usersRepository.create(createUserDto));
     return user;
@@ -40,7 +75,7 @@ export class UserService {
 
   async findOne(fields: EntityCondition<User>): Promise<User> {
     return await this.usersRepository.findOne({
-      relations: ['student', 'company', 'student.techStack', 'student.proposals', 'student.educations', 'student.languages',  'student.experiences', 'student.experiences.skillSets','student.skillSets'],
+      relations: ['student', 'company', 'student.techStack', 'student.proposals', 'student.educations', 'student.languages', 'student.experiences', 'student.experiences.skillSets', 'student.skillSets'],
       where: fields,
     },);
   }
