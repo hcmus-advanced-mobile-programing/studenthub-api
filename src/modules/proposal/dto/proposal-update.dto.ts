@@ -10,11 +10,11 @@ export class ProposalUpdateDto {
 
   @ApiProperty({ description: 'Status Flag', example: StatusFlag.Offer })
   @IsEnum(StatusFlag)
-  @IsNotEmpty()
+  @IsOptional()
   statusFlag: StatusFlag;
 
   @ApiProperty({ description: 'Disable Flag', example: DisableFlag.Enable })
   @IsEnum(DisableFlag)
-  @IsNotEmpty()
+  @IsOptional()
   disableFlag: DisableFlag;
 }
