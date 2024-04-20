@@ -25,17 +25,21 @@ export class AuthService {
     if (!userId) {
       return null;
     }
-    const user = await this.usersService.findOne({ id: userId });
+    const user = await this.usersService.getCurrentUser({ id: userId });
 
-    const dto: UserResDto = {
-      id: user.id,
-      fullname: user.fullname,
-      roles: user.roles,
-      student: user.student,
-      company: user.company,
-    };
+    if(user) {
+      const dto: UserResDto = {
+        id: user.id,
+        fullname: user.fullname,
+        roles: user.roles,
+        student: user.student,
+        company: user.company,
+      };
+  
+      return dto;
+    }
 
-    return dto;
+    return null;
   }
 
   async validateLogin(loginDto: AuthCredentialsDto): Promise<{ token: string } | string> {

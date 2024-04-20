@@ -9,7 +9,7 @@ import { MessageService as _MessageService } from 'src/modules/message/message.s
 import { Student } from 'src/modules/student/student.entity';
 import { FavoriteProject } from 'src/modules/favoriteProject/favoriteProject.entity';
 import { HttpRequestContextService } from 'src/shared/http-request-context/http-request-context.service';
-import { TypeFlag } from 'src/common/common.enum';
+import { StatusFlag, TypeFlag } from 'src/common/common.enum';
 import { DisableFlag } from 'src/common/common.enum';
 import { CompanyProfileService } from 'src/modules/company/company.service';
 
@@ -49,7 +49,7 @@ export class ProjectService {
       if (project.deletedAt === null) {
         const countProposals = project.proposals ? project.proposals.length : 0;
         const countHired = project.proposals
-          ? project.proposals.filter((proposal) => proposal.statusFlag === 2).length
+          ? project.proposals.filter((proposal) => proposal.statusFlag === StatusFlag.Hired).length
           : 0;
         const messageList = await this.MessageService.searchProjectId(Number(project.id));
         const countMessages = messageList.length;
@@ -169,7 +169,7 @@ export class ProjectService {
     const messageList = await this.MessageService.searchProjectId(id);
     const countMessages = messageList.length;
 
-    const countHired = project.proposals ? project.proposals.filter((proposal) => proposal.statusFlag === 2).length : 0;
+    const countHired = project.proposals ? project.proposals.filter((proposal) => proposal.statusFlag === StatusFlag.Hired).length : 0;
 
     return { ...project, companyName, countProposals, countMessages, countHired };
   }
