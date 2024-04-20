@@ -24,8 +24,10 @@ export class NotificationService {
     });
   }
 
-  async createNotification(notificationDto: CreateNotificationDto): Promise<Notification> {
-    const notification = this.notificationRepository.create(notificationDto);
-    return await this.notificationRepository.save(notification);
+  async createNotification(notificationDto: CreateNotificationDto): Promise<boolean> {
+    const notification = this.notificationRepository.save(notificationDto);
+    if (notification)
+      return true;
+    else return false;
   }
 }

@@ -96,7 +96,7 @@ export class EventGateway implements OnGatewayInit, OnGatewayConnection, OnGatew
     this.notificationQueue
       .process(async (job: Queue.Job<NotificationDto>, done) => {
         const { receiverId, senderId, messageId, title, notifyFlag, typeNotifyFlag, content } = job.data;
-
+        
         // Create notification in database
         const resultAdd = await notificationService.createNotification({ receiverId, senderId, messageId, title, notifyFlag, typeNotifyFlag, content });
 
@@ -108,9 +108,10 @@ export class EventGateway implements OnGatewayInit, OnGatewayConnection, OnGatew
         }
 
         // Send notification to clients
-        this.server
-          .to([`${senderId}`, `${receiverId}`])
-          .emit(`RECEIVE_NOTIFICATION`, { content, senderId, receiverId, typeNotifyFlag });
+        this.server.emit(`RECEIVE_NOTIFICATION`, { content, senderId, receiverId, typeNotifyFlag });
+        console.log(`RECEIVE_NOTIFICATION`);
+
+        this.server.emit(`NOTI_${receiverId}`, { content, senderId, receiverId, typeNotifyFlag });
         done();
       })
       .catch((error) => {
@@ -203,8 +204,6 @@ export class EventGateway implements OnGatewayInit, OnGatewayConnection, OnGatew
 
     try {
       console.log('handleNotification');
-
-      console.log(data);
 
       const checkValidate = await checkObjectMatchesDto(data, NotificationDto);
 
