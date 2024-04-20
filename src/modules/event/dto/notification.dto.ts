@@ -1,4 +1,4 @@
-import { IsIn, IsNotEmpty } from 'class-validator';
+import { IsIn, IsNotEmpty, IsOptional } from 'class-validator';
 
 export class NotificationDto {
   @IsNotEmpty()
@@ -23,4 +23,7 @@ export class NotificationDto {
 
   @IsNotEmpty()
   content: string;
+
+  @IsOptional()
+  senderSocketId: string = '';
 }

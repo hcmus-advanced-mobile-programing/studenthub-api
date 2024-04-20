@@ -33,6 +33,7 @@ export class EventGateway implements OnGatewayInit, OnGatewayConnection, OnGatew
   private interviewQueue: Queue.Queue;
   private notificationQueue: Queue.Queue;
   private readonly logger = new Logger(MessageService.name);
+  private connectedUsers: Map<string, string> = new Map<string, string>();
 
   constructor(
     private readonly jwtService: JwtService,
@@ -95,23 +96,28 @@ export class EventGateway implements OnGatewayInit, OnGatewayConnection, OnGatew
     this.notificationQueue = new Queue('notificationQueue');
     this.notificationQueue
       .process(async (job: Queue.Job<NotificationDto>, done) => {
-        const { receiverId, senderId, messageId, title, notifyFlag, typeNotifyFlag, content } = job.data;
+        const { receiverId, senderId, messageId, title, notifyFlag, typeNotifyFlag, content, senderSocketId } = job.data;
         
         // Create notification in database
         const resultAdd = await notificationService.createNotification({ receiverId, senderId, messageId, title, notifyFlag, typeNotifyFlag, content });
 
         if (!resultAdd) {
-          console.error(senderId, 'Error occurred while adding notification');
+          console.error(senderSocketId, 'Error occurred while adding notification');
           // Send error to sender
-          this.server.to(senderId.toString()).emit('ERROR', { content: 'Error occurred in notification queue' });
+          this.server.to(senderSocketId).emit('ERROR', { content: 'Error occurred in notification queue' });
           return done();
         }
+        
+        this.server.to(senderSocketId).emit(`RECEIVE_NOTIFICATION`, { content, senderId, receiverId, typeNotifyFlag });
+        const receiverSocketId = Array.from(this.connectedUsers.keys()).find(socketId => this.connectedUsers.get(socketId) === receiverId);
+        if (receiverSocketId) {
+          this.server.to(receiverSocketId).emit(`RECEIVE_NOTIFICATION`, { content, senderId, receiverId, typeNotifyFlag });
+        }
 
-        // Send notification to clients
-        this.server.emit(`RECEIVE_NOTIFICATION`, { content, senderId, receiverId, typeNotifyFlag });
-        console.log(`RECEIVE_NOTIFICATION`);
+        console.log('sender: '+senderSocketId);
+        console.log('receiver: '+receiverSocketId);
 
-        this.server.emit(`NOTI_${receiverId}`, { content, senderId, receiverId, typeNotifyFlag });
+        this.server.to(receiverSocketId).emit(`NOTI`, { content, senderId, receiverId, typeNotifyFlag });
         done();
       })
       .catch((error) => {
@@ -133,17 +139,16 @@ export class EventGateway implements OnGatewayInit, OnGatewayConnection, OnGatew
     try {
       console.log('handleConnection');
 
-      console.log(socket.handshake.headers.authorization.split(' ')[1]);
       // Verify token
       const { email, id } = await this.jwtService.verify(socket.handshake.headers.authorization.split(' ')[1]);
-      console.log(email);
-      console.log(id);
       const { project_id } = socket.handshake.query;
 
       socket.data = { email, id };
 
       // Join room
       if (project_id) await socket.join(`${project_id}_${id}`);
+      this.connectedUsers.set(socket.id, id);
+      console.log(this.connectedUsers);
     } catch (error) {
       console.log('Unauthorized connection');
       socket.disconnect();
@@ -215,7 +220,7 @@ export class EventGateway implements OnGatewayInit, OnGatewayConnection, OnGatew
 
       // Add task to notification queue
       this.notificationQueue
-        .add({ receiverId, senderId, messageId, title, notifyFlag, typeNotifyFlag, content })
+        .add({ receiverId, senderId, messageId, title, notifyFlag, typeNotifyFlag, content, senderSocketId: client.id })
         .catch((error) => {
           throw new Error(error);
         });
