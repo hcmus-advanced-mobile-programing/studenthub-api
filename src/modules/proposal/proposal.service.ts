@@ -76,14 +76,14 @@ export class ProposalService {
 
   async createProposal(proposal: ProposalCreateDto): Promise<ProposalCreateDto> {
     const projectId = proposal.projectId;
-    const project = await this.projectRepository.findOneBy({id : projectId});
+    const project = await this.projectRepository.findOneBy({ id: projectId });
 
-    if (!project || project.deletedAt != null){
+    if (!project || project.deletedAt != null) {
       throw new NotFoundException(`Project not found with id: ${projectId}`);
     }
 
-    const checkProposal = await this.proposalRepository.findBy({studentId: proposal.studentId, projectId: projectId});
-    if (checkProposal){
+    const checkProposal = await this.proposalRepository.findBy({ studentId: proposal.studentId, projectId: projectId });
+    if (checkProposal.length > 0) {
       throw new ConflictException(`Proposal for project with ID ${projectId} already exists.`)
     }
     return this.proposalRepository.save(proposal);
@@ -108,7 +108,7 @@ export class ProposalService {
 
   async findProjectByStudentId(studentId: number, statusFlag: StatusFlag): Promise<Proposal[]> {
     const whereCondition: any = { studentId: studentId };
-    
+
     if ([StatusFlag.Waitting, StatusFlag.Offer, StatusFlag.Hired].includes(statusFlag)) {
       whereCondition.statusFlag = statusFlag;
     }

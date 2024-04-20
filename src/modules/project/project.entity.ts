@@ -29,7 +29,7 @@ export class Project extends Base {
   @ApiProperty({ description: 'Number of Students' })
   numberOfStudents: number;
 
-  @Column({ name: 'type_flag', nullable: true })
+  @Column({ name: 'type_flag', nullable: true, default: TypeFlag.New })
   @ApiProperty({ description: 'typeFlag' })
   typeFlag: TypeFlag;
 

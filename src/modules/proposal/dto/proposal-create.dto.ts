@@ -1,6 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { IsNotEmpty, IsString } from 'class-validator';
-import { DisableFlag, StatusFlag } from 'src/common/common.enum';
 
 export class ProposalCreateDto {
   @ApiProperty({ description: 'Project ID', type: 'bigint', required: true })
@@ -15,10 +14,4 @@ export class ProposalCreateDto {
   @IsNotEmpty()
   @IsString()
   coverLetter?: string;
-
-  @ApiProperty({ description: 'Status Flag', example: StatusFlag.Offer, default: StatusFlag.Waitting })
-  statusFlag: StatusFlag = StatusFlag.Waitting;
-
-  @ApiProperty({ description: 'Disable Flag', example: DisableFlag.Enable })
-  disableFlag: DisableFlag;
 }

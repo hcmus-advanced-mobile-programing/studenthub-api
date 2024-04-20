@@ -29,7 +29,7 @@ export class Notification extends Base {
   @ApiProperty({ description: 'notifyFlag' })
   notifyFlag: NotifyFlag;
 
-  @Column({ name: 'typeNotifyFlag', type: 'bigint' })
+  @Column({ name: 'typeNotifyFlag', type: 'bigint', default: NotifyFlag.Unread })
   @ApiProperty({ description: 'typeNotifyFlag' })
   typeNotifyFlag: TypeNotifyFlag;
 

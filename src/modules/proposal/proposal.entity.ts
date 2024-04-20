@@ -21,11 +21,11 @@ export class Proposal extends Base {
   @ApiProperty({ description: 'coverLetter' })
   coverLetter?: string;
 
-  @Column({ name: 'status_flag' })
+  @Column({ name: 'status_flag', default: StatusFlag.Waitting })
   @ApiProperty({ description: 'statusFlag' })
   statusFlag: StatusFlag;
 
-  @Column({ name: 'disable_flag' })
+  @Column({ name: 'disable_flag', default: DisableFlag.Enable })
   @ApiProperty({ description: 'disableFlag' })
   disableFlag: DisableFlag;
 

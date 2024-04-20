@@ -26,9 +26,4 @@ export class ProjectCreateDto {
   @IsString()
   @IsNotEmpty()
   description: string;
-
-  @ApiProperty({ default: 0, description: 'Status of the project', example: TypeFlag.Working })
-  @IsOptional()
-  @IsEnum(TypeFlag)
-  typeFlag: TypeFlag;
 }

@@ -15,10 +15,6 @@ export class InterviewCreateDto {
   @IsDateString()
   endTime: Date;
 
-  @ApiProperty({ description: 'Disable flag of the interview', enum: DisableFlag })
-  @IsEnum(DisableFlag)
-  disableFlag: DisableFlag;
-
   @ApiProperty({ description: 'Project Id' })
   @IsNotEmpty()
   projectId: number | string;

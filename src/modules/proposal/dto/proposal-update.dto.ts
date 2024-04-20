@@ -9,12 +9,12 @@ export class ProposalUpdateDto {
   coverLetter?: string;
 
   @ApiProperty({ description: 'Status Flag', example: StatusFlag.Offer })
-  @IsEnum(StatusFlag)
   @IsOptional()
+  @IsEnum(StatusFlag)
   statusFlag: StatusFlag;
 
   @ApiProperty({ description: 'Disable Flag', example: DisableFlag.Enable })
-  @IsEnum(DisableFlag)
   @IsOptional()
+  @IsEnum(DisableFlag)
   disableFlag: DisableFlag;
 }
