@@ -50,7 +50,7 @@ export class ProposalController {
 
   @Auth()
   @Patch(':id')
-  updateProposal(@Param('id') id: number | string, @Body() proposal: ProposalUpdateDto): Promise<void> {
+  updateProposal(@Param('id') id: string, @Body() proposal: ProposalUpdateDto): Promise<void> {
     return this.proposalService.updateProposal(id, proposal);
   }
 
