@@ -109,7 +109,7 @@ export class ProposalService {
   async findProjectByStudentId(studentId: number, statusFlag: StatusFlag): Promise<Proposal[]> {
     const whereCondition: any = { studentId: studentId };
 
-    if ([StatusFlag.Waitting, StatusFlag.Offer, StatusFlag.Hired].includes(statusFlag)) {
+    if ([StatusFlag.Waitting, StatusFlag.Offer, StatusFlag.Hired, StatusFlag.Active].includes(statusFlag)) {
       whereCondition.statusFlag = statusFlag;
     }
 

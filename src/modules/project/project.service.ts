@@ -30,7 +30,7 @@ export class ProjectService {
   async findByCompanyId(companyId: number, typeFlag?: TypeFlag): Promise<Project[]> {
     const whereCondition: any = { companyId: companyId };
 
-    if ([TypeFlag.Working, TypeFlag.Archieved].includes(typeFlag)) {
+    if ([TypeFlag.New, TypeFlag.Working, TypeFlag.Archieved].includes(typeFlag)) {
       whereCondition.typeFlag = typeFlag;
     }
 
