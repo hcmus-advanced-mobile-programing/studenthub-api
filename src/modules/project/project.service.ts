@@ -67,10 +67,8 @@ export class ProjectService {
         });
 
         projectsWithDetails.push({
-          project: {
-            ...project,
-            proposals
-          },
+          ...project,
+          proposals,
           countProposals,
           countMessages,
           countHired,
