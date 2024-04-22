@@ -17,9 +17,9 @@ import { RedisIoAdapter } from 'src/adapters/redis-io.adapter';
 async function bootstrap() {
   const app = await NestFactory.create(AppModule, { bufferLogs: true });
 
-  const redisIoAdapter = new RedisIoAdapter(app);
-  await redisIoAdapter.connectToRedis();
-  app.useWebSocketAdapter(redisIoAdapter);
+  // const redisIoAdapter = new RedisIoAdapter(app);
+  // await redisIoAdapter.connectToRedis();
+  // app.useWebSocketAdapter(redisIoAdapter);
 
   useContainer(app.select(AppModule), { fallbackOnErrors: true });
   const configService = app.get(ConfigService);
@@ -40,7 +40,6 @@ async function bootstrap() {
 
   app.useGlobalPipes(
     new ValidationPipe({
-      whitelist: true, // not allow other fields
       transform: true,
       exceptionFactory: (validationErrors: ValidationError[] = []) =>
         new BadRequestException(validationErrors.map((error) => Object.values(error.constraints).join(', '))),
