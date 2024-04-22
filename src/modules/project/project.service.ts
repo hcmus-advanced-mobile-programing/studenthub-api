@@ -36,7 +36,7 @@ export class ProjectService {
 
     const projects = await this.projectRepository.find({
       where: whereCondition,
-      relations: ['proposals'],
+      relations: ['proposals', 'proposals.student', 'proposals.student.user', 'proposals.student.techStack', 'proposals.student.educations'],
     });
 
     if (!projects || projects.length === 0) {
@@ -54,8 +54,23 @@ export class ProjectService {
         const messageList = await this.MessageService.searchProjectId(Number(project.id));
         const countMessages = messageList.length;
 
+        const proposals = project.proposals.map(item => {
+          return {
+            ...item,
+            student: {
+              ...item.student,
+              user: {
+                fullname: item?.student.user.fullname
+              }
+            }
+          };
+        });
+
         projectsWithDetails.push({
-          ...project,
+          project: {
+            ...project,
+            proposals
+          },
           countProposals,
           countMessages,
           countHired,
