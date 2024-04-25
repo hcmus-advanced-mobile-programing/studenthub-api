@@ -176,23 +176,43 @@ export class MessageService {
       )
       .orderBy('message.createdAt', 'ASC')
       .getMany();
-
+    
     const groupedMessages = messages.reduce((acc, message) => {
+      const senderId = message.sender.id;
+      const receiverId = message.receiver.id;
       const projectId = message.project.id;
-      if (!acc[projectId]) {
-        acc[projectId] = {
+    
+      const key1 = `${projectId}_${senderId}_${receiverId}`;
+      const key2 = `${projectId}_${receiverId}_${senderId}`;
+    
+      const key = acc[key1] ? key1 : acc[key2] ? key2 : key1;
+    
+      if (!acc[key]) {
+        acc[key] = {
           project: message.project,
           messages: [],
         };
       }
       message.project = undefined;
-      acc[projectId].messages.push(message);
+      acc[key].messages.push(message);
       return acc;
     }, {});
 
-    const groupedMessagesArray = Object.values(groupedMessages);
+    const latestMessages = Object.values(groupedMessages).map((group: any) => {
+      const latestMessage = group.messages.reduce((latest, current) => {
+        if (!latest || current.createdAt > latest.createdAt) {
+          return current;
+        }
+        return latest;
+      }, null);
 
-    return groupedMessagesArray;
+      latestMessage.project = group.project;
+
+      return latestMessage;
+    });
+    
+    
+    return latestMessages;
   }
 
   //TODO: Group seminar by project
