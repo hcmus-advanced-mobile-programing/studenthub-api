@@ -40,15 +40,6 @@ export class InterviewService {
       messageFlag: MessageFlag.Interview,
     });
 
-    await this.messageService.createMessage({
-      senderId: interview.senderId,
-      receiverId: interview.receiverId,
-      projectId: interview.projectId,
-      content: 'Interview created',
-      interviewId: newInterview.id,
-      messageFlag: MessageFlag.Interview,
-    });
-
     return newInterview;
   }
 
