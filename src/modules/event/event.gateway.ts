@@ -83,8 +83,8 @@ export class EventGateway implements OnGatewayInit, OnGatewayConnection, OnGatew
     this.interviewQueue = new Queue('interviewQueue');
     this.interviewQueue
       .process(async (job: Queue.Job<InterviewDto>, done) => {
-        const { title, startTime, endTime, disableFlag, projectId, senderId, receiverId, senderSocketId} = job.data;
-        const resultAdd = this.interviewService.create({title, startTime, endTime, disableFlag, projectId, senderId, receiverId});
+        const { title, startTime, endTime, projectId, senderId, receiverId, senderSocketId} = job.data;
+        const resultAdd = this.interviewService.create({title, startTime, endTime, projectId, senderId, receiverId});
 
         if (!resultAdd) {
           console.error(senderSocketId, 'Error occurred while adding interview');
