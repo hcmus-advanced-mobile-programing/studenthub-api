@@ -6,11 +6,21 @@ import { JwtStrategy } from 'src/modules/auth/strategies/jwt.strategy';
 import { PublicStrategy } from 'src/modules/auth/strategies/public.strategy';
 import { UserModule } from 'src/modules/user/user.module';
 import { MessageModule } from 'src/modules/message/message.module';
-
+import { NotificationModule } from 'src/modules/notification/notification.module';
+import { NotificationService } from 'src/modules/notification/notification.service';
+import { TypeOrmModule } from '@nestjs/typeorm';
+import { Notification } from 'src/modules/notification/notification.entity';
+import { InterviewModule } from 'src/modules/interview/interview.module';
+import { InterviewService } from 'src/modules/interview/interview.service';
+import { Interview } from 'src/modules/interview/interview.entity';
+import { Message } from 'src/modules/message/message.entity';
 @Module({
   imports: [
+    TypeOrmModule.forFeature([Notification, Interview, Message]),
     UserModule,
     MessageModule,
+    NotificationModule,
+    InterviewModule,
     JwtModule.registerAsync({
       imports: [ConfigModule],
       inject: [ConfigService],
@@ -22,7 +32,7 @@ import { MessageModule } from 'src/modules/message/message.module';
       }),
     }),
   ],
-  providers: [JwtStrategy, PublicStrategy, EventGateway],
+  providers: [JwtStrategy, PublicStrategy, EventGateway, NotificationService, InterviewService],
   exports: [EventGateway],
 })
 export class EventModule {}

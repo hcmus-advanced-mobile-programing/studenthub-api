@@ -94,10 +94,10 @@ export class ProjectService {
       .andWhere('project.deletedAt IS NULL');
 
     if (filterDto.title !== undefined) {
-      query.andWhere('project.title LIKE :title', {
-        title: `%${filterDto.title}%`,
-      });
+      const title = filterDto.title.toLowerCase();
+      query.andWhere('LOWER(project.title) LIKE :title', { title: `%${title}%` });
     }
+      
 
     if (filterDto.numberOfStudents !== undefined) {
       query.andWhere('project.numberOfStudents = :numberOfStudents', {
@@ -112,12 +112,19 @@ export class ProjectService {
     }
 
     if (filterDto.proposalsLessThan !== undefined) {
-      query.having('COUNT(proposal.id) < :proposalsLessThan', {
-        proposalsLessThan: filterDto.proposalsLessThan,
-      });
+      query
+        .leftJoin('project.proposals', 'proposal')
+        .groupBy('project.id')
+        .having('COUNT(proposal.id) < :proposalsLessThan', {
+          proposalsLessThan: filterDto.proposalsLessThan,
+        });
     }
 
     const projects = await query.getMany();
+
+    if (projects.length === 0) {
+      throw new NotFoundException(`No projects found`);
+    }
 
     let favoriteProjectIds: (number | string)[] = [];
 

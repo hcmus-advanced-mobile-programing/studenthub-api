@@ -1,20 +1,23 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { DisableFlag, MessageFlag } from 'src/common/common.enum';
+import { DisableFlag, MessageFlag, NotifyFlag, TypeNotifyFlag } from 'src/common/common.enum';
 import { InterviewCreateDto } from 'src/modules/interview/dto/interview-create.dto';
 import { InterviewUpdateDto } from 'src/modules/interview/dto/interview-update.dto';
 import { Interview } from 'src/modules/interview/interview.entity';
 import { MessageService } from 'src/modules/message/message.service';
 import { Repository } from 'typeorm';
-import { AuthService } from '../auth/auth.service';
+import { Message } from 'src/modules/message/message.entity';
+import { NotificationService } from 'src/modules/notification/notification.service';
 
 @Injectable()
 export class InterviewService {
   constructor(
     @InjectRepository(Interview)
     private readonly projectRepository: Repository<Interview>,
+    @InjectRepository(Message)
+    private readonly messageRepository: Repository<Message>,
     private readonly messageService: MessageService,
-    private readonly authService: AuthService
+    private readonly notificationService: NotificationService,
   ) {}
 
   async findAll(): Promise<Interview[]> {
@@ -38,6 +41,19 @@ export class InterviewService {
       interviewId: newInterview.id,
       messageFlag: MessageFlag.Interview,
     });
+
+    const message = await this.messageRepository.findOneBy({interviewId: newInterview.id});
+
+    await this.notificationService.createNotification({
+      senderId: interview.senderId,
+      receiverId: interview.receiverId,
+      messageId: message.id,
+      content: 'Interview created',
+      notifyFlag: NotifyFlag.Unread,
+      typeNotifyFlag: TypeNotifyFlag.Interview,
+      title: interview.title,
+    });
+
     return newInterview;
   }
 

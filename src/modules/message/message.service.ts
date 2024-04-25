@@ -248,6 +248,7 @@ export class MessageService {
     const projectId = Number(data.projectId);
     const content = data.content;
     const messageFlag = data.messageFlag;
+    const interviewId = Number(data.interviewId);
 
     try {
       // Check project exist
@@ -261,6 +262,7 @@ export class MessageService {
         projectId,
         content,
         messageFlag: messageFlag,
+        interviewId: interviewId ? Number(interviewId) : null,
       });
 
       await this.messageRepository.save(newMessage);
