@@ -10,12 +10,17 @@ import { NotificationModule } from 'src/modules/notification/notification.module
 import { NotificationService } from 'src/modules/notification/notification.service';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { Notification } from 'src/modules/notification/notification.entity';
+import { InterviewModule } from 'src/modules/interview/interview.module';
+import { InterviewService } from 'src/modules/interview/interview.service';
+import { Interview } from 'src/modules/interview/interview.entity';
+import { Message } from 'src/modules/message/message.entity';
 @Module({
   imports: [
-    TypeOrmModule.forFeature([Notification]),
+    TypeOrmModule.forFeature([Notification, Interview, Message]),
     UserModule,
     MessageModule,
     NotificationModule,
+    InterviewModule,
     JwtModule.registerAsync({
       imports: [ConfigModule],
       inject: [ConfigService],
@@ -27,7 +32,7 @@ import { Notification } from 'src/modules/notification/notification.entity';
       }),
     }),
   ],
-  providers: [JwtStrategy, PublicStrategy, EventGateway, NotificationService],
+  providers: [JwtStrategy, PublicStrategy, EventGateway, NotificationService, InterviewService],
   exports: [EventGateway],
 })
 export class EventModule {}
