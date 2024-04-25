@@ -11,10 +11,6 @@ export class InterviewDto {
   endTime: Date;
 
   @IsNotEmpty()
-  @IsIn([0, 1], { message: 'Invalid value' })
-  disableFlag: number;
-
-  @IsNotEmpty()
   projectId: number | string;
 
   @IsNotEmpty()
