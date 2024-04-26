@@ -8,10 +8,12 @@ import { AuthModule } from 'src/modules/auth/auth.module';
 import { Notification } from 'src/modules/notification/notification.entity';
 import { Message } from 'src/modules/message/message.entity';
 import { NotificationService } from 'src/modules/notification/notification.service';
+import { MeetingRoomService } from 'src/modules/meeting-room/meeting-room.service';
+import { MeetingRoom } from 'src/modules/meeting-room/meeting-room.entity';
 
 @Module({
-  imports: [TypeOrmModule.forFeature([Interview, Message, Notification]), MessageModule, AuthModule],
+  imports: [TypeOrmModule.forFeature([Interview, Message, Notification, MeetingRoom]), MessageModule, AuthModule],
   controllers: [InterviewController],
-  providers: [InterviewService, NotificationService],
+  providers: [InterviewService, NotificationService, MeetingRoomService],
 })
 export class InterviewModule {}

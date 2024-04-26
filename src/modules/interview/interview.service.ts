@@ -8,6 +8,7 @@ import { MessageService } from 'src/modules/message/message.service';
 import { Repository } from 'typeorm';
 import { Message } from 'src/modules/message/message.entity';
 import { NotificationService } from 'src/modules/notification/notification.service';
+import { MeetingRoomService } from 'src/modules/meeting-room/meeting-room.service';
 
 @Injectable()
 export class InterviewService {
@@ -18,6 +19,7 @@ export class InterviewService {
     private readonly messageRepository: Repository<Message>,
     private readonly messageService: MessageService,
     private readonly notificationService: NotificationService,
+    private readonly meetingRoomService: MeetingRoomService,
   ) {}
 
   async findAll(): Promise<Interview[]> {
@@ -31,8 +33,28 @@ export class InterviewService {
     });
   }
 
+  generateRandomString(length: number): string {
+    const characters = 'abcdefghijklmnopqrstuvwxyz'; 
+    let result = '';
+    
+    for (let i = 0; i < length; i++) {
+      const randomIndex = Math.floor(Math.random() * characters.length);
+      result += characters[randomIndex];
+    }
+    
+    return result;
+  }
+
   async create(interview: InterviewCreateDto): Promise<InterviewCreateDto> {
-    const newInterview = await this.projectRepository.save(interview);
+
+    const meeting_room = await this.meetingRoomService.create({
+      meeting_room_code: this.generateRandomString(6),
+      meeting_room_id: `${interview.projectId}_${interview.senderId}_${interview.receiverId}`,
+      expired_at: interview.endTime,
+    });
+
+    const newInterview = await this.projectRepository.save({...interview, meetingRoomId: meeting_room.id});
+
     await this.messageService.createMessage({
       senderId: interview.senderId,
       receiverId: interview.receiverId,

@@ -14,13 +14,18 @@ import { InterviewModule } from 'src/modules/interview/interview.module';
 import { InterviewService } from 'src/modules/interview/interview.service';
 import { Interview } from 'src/modules/interview/interview.entity';
 import { Message } from 'src/modules/message/message.entity';
+import { MeetingRoomService } from 'src/modules/meeting-room/meeting-room.service';
+import { MeetingRoom } from 'src/modules/meeting-room/meeting-room.entity';
+import { MeetingRoomModule } from 'src/modules/meeting-room/meeting-room.module';
+
 @Module({
   imports: [
-    TypeOrmModule.forFeature([Notification, Interview, Message]),
+    TypeOrmModule.forFeature([Notification, Interview, Message, MeetingRoom]),
     UserModule,
     MessageModule,
     NotificationModule,
     InterviewModule,
+    MeetingRoomModule,
     JwtModule.registerAsync({
       imports: [ConfigModule],
       inject: [ConfigService],
@@ -32,7 +37,7 @@ import { Message } from 'src/modules/message/message.entity';
       }),
     }),
   ],
-  providers: [JwtStrategy, PublicStrategy, EventGateway, NotificationService, InterviewService],
+  providers: [JwtStrategy, PublicStrategy, EventGateway, NotificationService, InterviewService, MeetingRoomService],
   exports: [EventGateway],
 })
 export class EventModule {}
