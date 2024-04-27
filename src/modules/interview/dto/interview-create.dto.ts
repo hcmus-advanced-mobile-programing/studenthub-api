@@ -26,4 +26,15 @@ export class InterviewCreateDto {
   @ApiProperty({ description: 'Receiver Id' })
   @IsNotEmpty()
   receiverId: number | string;
+
+  @ApiProperty({ description: 'Meeting room code' })
+  @IsNotEmpty()
+  meeting_room_code: string;
+
+  @ApiProperty({ description: 'Meeting room Id' })
+  @IsNotEmpty()
+  meeting_room_id: string;
+
+  @ApiProperty({ description: 'Meeting room expired at ' })
+  expired_at?: Date;
 }
