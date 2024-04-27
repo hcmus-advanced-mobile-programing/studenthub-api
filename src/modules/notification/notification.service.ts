@@ -1,18 +1,16 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
+import { CreateNotificationDto } from 'src/modules/notification/dto/notification-create.dto';
 import { Notification } from 'src/modules/notification/notification.entity';
 import { HttpRequestContextService } from 'src/shared/http-request-context/http-request-context.service';
 import { Repository } from 'typeorm';
-import { CreateNotificationDto } from 'src/modules/notification/dto/notification-create.dto';
-import { EventGateway } from 'src/modules/event/event.gateway';
 
 @Injectable()
 export class NotificationService {
   constructor(
     @InjectRepository(Notification)
     private notificationRepository: Repository<Notification>,
-    private readonly httpContext: HttpRequestContextService,
-    private readonly eventGateway: EventGateway
+    private readonly httpContext: HttpRequestContextService
   ) {}
 
   async findByReceiverId(receiverId: string): Promise<Notification[]> {
