@@ -7,10 +7,19 @@ import { FindArgs } from 'src/shared/dtos/common.dtos';
 export class ProposalFindArgs extends FindArgs {
   @ApiProperty({
     required: false,
-    description: 'filter by status',
+    description: 'filter by statusFlag',
   })
   @Transform(emptyStringAsNull)
   @IsOptional()
   @Transform(transformMultipleValueAsArray)
   statusFlag?: string;
+
+  @ApiProperty({
+    required: false,
+    description: 'filter by typeFlag of project',
+  })
+  @Transform(emptyStringAsNull)
+  @IsOptional()
+  @Transform(transformMultipleValueAsArray)
+  typeFlag?: string
 }

@@ -31,10 +31,9 @@ export class ProposalController {
   @ApiQuery({ name: 'statusFlag', required: false })
   async projectSearchStudentId(
     @Param('studentId') studentId: number,
-    @Query('statusFlag') statusFlag?: StatusFlag,
-    @Query('typeFlag') typeFlag?: TypeFlag
+    @Query() args: ProposalFindArgs
   ): Promise<Proposal[]> {
-    return this.proposalService.findProjectByStudentId(studentId, statusFlag, typeFlag);
+    return this.proposalService.findProjectByStudentId(studentId, args);
   }
 
   @Auth()
