@@ -10,10 +10,12 @@ import { Company } from 'src/modules/company/company.entity';
 import { User } from 'src/modules/user/user.entity';
 import { FavoriteProject } from 'src/modules/favoriteProject/favoriteProject.entity';
 import { CompanyProfileService } from 'src/modules/company/company.service';
+import { ProposalService } from 'src/modules/proposal/proposal.service';
+import { Proposal } from 'src/modules/proposal/proposal.entity';
 
 @Module({
-  imports: [TypeOrmModule.forFeature([Project, Message, Student, Company, FavoriteProject, User])],
-  providers: [ProjectService, MessageService, CompanyProfileService],
+  imports: [TypeOrmModule.forFeature([Project, Message, Student, Company, FavoriteProject, User, Proposal])],
+  providers: [ProjectService, MessageService, CompanyProfileService, ProposalService],
   controllers: [ProjectController],
 })
 export class ProjectModule {}

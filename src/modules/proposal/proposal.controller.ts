@@ -9,7 +9,6 @@ import { ProposalResDto } from 'src/modules/proposal/dto/proposal-res.dto';
 import { ProposalCreateDto } from 'src/modules/proposal/dto/proposal-create.dto';
 import { ProposalUpdateDto } from 'src/modules/proposal/dto/proposal-update.dto';
 import { StatusFlag } from 'src/common/common.enum';
-import { Project } from 'src/modules/project/project.entity';
 import { Proposal } from 'src/modules/proposal/proposal.entity';
 
 @ApiTags('proposal')

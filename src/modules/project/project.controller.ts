@@ -30,6 +30,16 @@ export class ProjectController {
   }
 
   @Auth()
+  @Get('student/:studentId')
+  @ApiQuery({ name: 'typeFlag', required: false })
+  async projectSearchStudentId(
+    @Param('studentId') studentId: number,
+    @Query('typeFlag') typeFlag?: TypeFlag
+  ): Promise<Project[]> {
+    return this.projectService.findByStudentId(studentId, typeFlag);
+  }
+
+  @Auth()
   @Get(':projectId')
   async projectSearchId(@Param('projectId') id: number): Promise<any> {
     return this.projectService.findById(id);
