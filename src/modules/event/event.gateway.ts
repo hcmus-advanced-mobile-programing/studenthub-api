@@ -83,8 +83,8 @@ export class EventGateway implements OnGatewayInit, OnGatewayConnection, OnGatew
     this.interviewQueue = new Queue('interviewQueue');
     this.interviewQueue
       .process(async (job: Queue.Job<InterviewDto>, done) => {
-        const { title, startTime, endTime, projectId, senderId, receiverId, senderSocketId} = job.data;
-        const resultAdd = this.interviewService.create({title, startTime, endTime, projectId, senderId, receiverId});
+        const { title, startTime, endTime, projectId, senderId, receiverId, senderSocketId, meeting_room_code, meeting_room_id, expired_at} = job.data;
+        const resultAdd = this.interviewService.create({title, startTime, endTime, projectId, senderId, receiverId, meeting_room_code, meeting_room_id, expired_at});
 
         if (!resultAdd) {
           console.error(senderSocketId, 'Error occurred while adding interview');
@@ -174,11 +174,11 @@ export class EventGateway implements OnGatewayInit, OnGatewayConnection, OnGatew
         throw new Error('Invalid data');
       }
 
-      const { title, startTime, endTime, disableFlag, projectId, senderId, receiverId } = data;
+      const { title, startTime, endTime, disableFlag, projectId, senderId, receiverId, meeting_room_code, meeting_room_id, expired_at } = data;
       const clientId = client.id;
 
       this.interviewQueue
-        .add({ title, startTime, endTime, disableFlag, projectId, senderId, receiverId, clientId})
+        .add({ title, startTime, endTime, disableFlag, projectId, senderId, receiverId, clientId, meeting_room_code, meeting_room_id, expired_at})
         .catch((error) => {
           throw new Error(error);
         });

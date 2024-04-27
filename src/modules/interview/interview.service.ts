@@ -33,24 +33,12 @@ export class InterviewService {
     });
   }
 
-  generateRandomString(length: number): string {
-    const characters = 'abcdefghijklmnopqrstuvwxyz'; 
-    let result = '';
-    
-    for (let i = 0; i < length; i++) {
-      const randomIndex = Math.floor(Math.random() * characters.length);
-      result += characters[randomIndex];
-    }
-    
-    return result;
-  }
-
   async create(interview: InterviewCreateDto): Promise<InterviewCreateDto> {
 
     const meeting_room = await this.meetingRoomService.create({
-      meeting_room_code: this.generateRandomString(6),
-      meeting_room_id: `${interview.projectId}_${interview.senderId}_${interview.receiverId}`,
-      expired_at: interview.endTime,
+      meeting_room_code: interview.meeting_room_code,
+      meeting_room_id: interview.meeting_room_id,
+      expired_at: interview.expired_at,
     });
 
     const newInterview = await this.projectRepository.save({...interview, meetingRoomId: meeting_room.id});

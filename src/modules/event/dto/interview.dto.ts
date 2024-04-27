@@ -21,4 +21,13 @@ export class InterviewDto {
 
   @IsOptional()
   senderSocketId: string = '';
+
+  @IsNotEmpty()
+  meeting_room_code: string;
+
+  @IsNotEmpty()
+  meeting_room_id: string;
+  
+  @IsOptional()
+  expired_at?: Date;
 }
