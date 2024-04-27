@@ -65,8 +65,8 @@ export class EventGateway implements OnGatewayInit, OnGatewayConnection, OnGatew
         }
 
         const sender = await userService.findOne({ id: senderId });
-        const message = await messageRepository.findOneBy({projectId: projectId, receiverId: receiverId, senderId: senderId, content: content});
-        const messageId = message.id;
+        const messageId = resultAdd;
+
         // Send message to clients
         this.server
           .to([`${projectId}_${senderId}`, `${projectId}_${receiverId}`])

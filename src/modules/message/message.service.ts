@@ -262,7 +262,7 @@ export class MessageService {
     };
   }
 
-  async createMessage(data: any): Promise<boolean> {
+  async createMessage(data: any): Promise<string | number | false> {
     const senderId = Number(data.senderId);
     const receiverId = Number(data.receiverId);
     const projectId = Number(data.projectId);
@@ -286,12 +286,11 @@ export class MessageService {
       });
 
       await this.messageRepository.save(newMessage);
+      return newMessage.id;
     } catch (Exception) {
       this.logger.error(`Error when create message: ${Exception}`);
       return false;
     }
-
-    return true;
   }
 
   async deleteMessage(id: string): Promise<string> {
