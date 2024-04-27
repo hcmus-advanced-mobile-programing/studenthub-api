@@ -26,7 +26,7 @@ export class Interview extends Base {
   disableFlag: DisableFlag;
 
   @Column({ name: 'meeting_room_id', type: 'bigint'})
-  meetingRoomId?: number | string;
+  meetingRoomId: number | string;
 
   @OneToMany(() => Message, (message) => message.interview)
   messages: Message[];

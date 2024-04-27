@@ -1,4 +1,5 @@
 import { Injectable, Logger } from '@nestjs/common';
+import { InjectRepository } from '@nestjs/typeorm';
 import { JwtService } from '@nestjs/jwt';
 import {
   ConnectedSocket,
@@ -12,7 +13,7 @@ import {
 } from '@nestjs/websockets';
 
 import { Server, Socket } from 'socket.io';
-
+import { Repository } from 'typeorm';
 import * as Queue from 'bull';
 import { checkObjectMatchesDto } from 'src/utils/validators/dto.validator';
 import { MessageDto } from 'src/modules/event/dto/message.dto';
@@ -22,6 +23,7 @@ import { InterviewDto } from 'src/modules/event/dto/interview.dto';
 import { NotificationService } from 'src/modules/notification/notification.service';
 import { InterviewCreateDto } from 'src/modules/interview/dto/interview-create.dto';
 import { InterviewService } from 'src/modules/interview/interview.service';
+import { Message } from 'src/modules/message/message.entity';
 
 @Injectable()
 @WebSocketGateway({
@@ -37,6 +39,8 @@ export class EventGateway implements OnGatewayInit, OnGatewayConnection, OnGatew
   private readonly logger = new Logger(MessageService.name);
 
   constructor(
+    @InjectRepository(Message)
+    private messageRepository: Repository<Message>,
     private readonly jwtService: JwtService,
     private messageService: MessageService,
     private userService: UserService,
@@ -61,14 +65,15 @@ export class EventGateway implements OnGatewayInit, OnGatewayConnection, OnGatew
         }
 
         const sender = await userService.findOne({ id: senderId });
-
+        const message = await messageRepository.findOneBy({projectId: projectId, receiverId: receiverId, senderId: senderId, content: content});
+        const messageId = message.id;
         // Send message to clients
         this.server
           .to([`${projectId}_${senderId}`, `${projectId}_${receiverId}`])
-          .emit(`RECEIVE_MESSAGE`, { content, senderId, receiverId, messageFlag });
+          .emit(`RECEIVE_MESSAGE`, { content, senderId, receiverId, messageFlag, messageId });
 
         // Send notification to receiver
-        this.server.emit(`NOTI_${receiverId}`, { content, title: `New message from ${sender.fullname}`, messageFlag });
+        this.server.emit(`NOTI_${receiverId}`, { content, title: `New message from ${sender.fullname}`, messageFlag, messageId });
         done();
       })
       .catch((error) => {
@@ -93,10 +98,12 @@ export class EventGateway implements OnGatewayInit, OnGatewayConnection, OnGatew
           return done();
         }
 
+        const interviewId = (await resultAdd).id;
+
         const sender = await userService.findOne({ id: senderId });
-        this.server.emit(`RECEIVE_INTERVIEW`, { title, senderId, receiverId, projectId });
+        this.server.emit(`RECEIVE_INTERVIEW`, { title, senderId, receiverId, interviewId, projectId });
         // Send notification to receiver
-        this.server.emit(`NOTI_${receiverId}`, { title: `New interview created from ${sender.fullname}`, projectId, senderId, receiverId });
+        this.server.emit(`NOTI_${receiverId}`, { title: `New interview created from ${sender.fullname}`, interviewId, projectId, senderId, receiverId });
         done();
       })
       .catch((error) => {

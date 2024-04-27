@@ -13,15 +13,28 @@ export class NotificationService {
     private readonly httpContext: HttpRequestContextService
   ) {}
 
-  async findByReceiverId(receiverId: string): Promise<Notification[]> {
+  async findByReceiverId(receiverId: string | number): Promise<Notification[]> {
     const { id } = this.httpContext.getUser();
-    if (receiverId !== id) {
+    console.log(id);
+    console.log(receiverId);
+    if (receiverId != id) {
       throw new Error('You are not authorized to view this notification');
     }
-    return await this.notificationRepository.find({
+    const notifications =  await this.notificationRepository.find({
       where: { receiverId },
       relations: ['message', 'sender', 'receiver'],
     });
+
+    const notificationsWithoutPassword = notifications.map(notification => {
+      const { sender, receiver, ...rest } = notification;
+      const sanitizedSender = { ...sender };
+      const sanitizedReceiver = { ...receiver };
+      delete sanitizedSender.password;
+      delete sanitizedReceiver.password;
+      return { ...rest, sender: sanitizedSender, receiver: sanitizedReceiver };
+    });
+
+    return notificationsWithoutPassword
   }
 
   async createNotification(notificationDto: CreateNotificationDto): Promise<boolean> {

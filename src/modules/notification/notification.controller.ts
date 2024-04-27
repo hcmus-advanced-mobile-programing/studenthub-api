@@ -9,7 +9,7 @@ export class NotificationController {
 
   @Get('getByReceiverId/:receiverId')
   @Auth()
-  async findByStudentId(@Param('receiverId') receiverId: string): Promise<Notification[]> {
+  async findByStudentId(@Param('receiverId') receiverId: string | number): Promise<Notification[]> {
     return await this.notificationService.findByReceiverId(receiverId);
   }
 }
