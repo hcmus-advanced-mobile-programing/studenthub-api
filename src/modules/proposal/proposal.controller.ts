@@ -8,7 +8,7 @@ import { ProposalFindArgs } from 'src/modules/proposal/dto/proposal-find-args.dt
 import { ProposalResDto } from 'src/modules/proposal/dto/proposal-res.dto';
 import { ProposalCreateDto } from 'src/modules/proposal/dto/proposal-create.dto';
 import { ProposalUpdateDto } from 'src/modules/proposal/dto/proposal-update.dto';
-import { StatusFlag } from 'src/common/common.enum';
+import { StatusFlag, TypeFlag } from 'src/common/common.enum';
 import { Project } from 'src/modules/project/project.entity';
 import { Proposal } from 'src/modules/proposal/proposal.entity';
 
@@ -31,9 +31,10 @@ export class ProposalController {
   @ApiQuery({ name: 'statusFlag', required: false })
   async projectSearchStudentId(
     @Param('studentId') studentId: number,
-    @Query('statusFlag') statusFlag?: StatusFlag
+    @Query('statusFlag') statusFlag?: StatusFlag,
+    @Query('typeFlag') typeFlag?: TypeFlag
   ): Promise<Proposal[]> {
-    return this.proposalService.findProjectByStudentId(studentId, statusFlag);
+    return this.proposalService.findProjectByStudentId(studentId, statusFlag, typeFlag);
   }
 
   @Auth()
