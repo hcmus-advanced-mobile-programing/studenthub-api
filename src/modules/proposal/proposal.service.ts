@@ -1,6 +1,6 @@
 import { Injectable, Logger, NotFoundException, ConflictException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { Repository, In } from 'typeorm';
 import { PaginationResult, genPaginationResult } from 'src/shared/dtos/common.dtos';
 import { HttpRequestContextService } from 'src/shared/http-request-context/http-request-context.service';
 import { Proposal } from 'src/modules/proposal/proposal.entity';
@@ -8,7 +8,7 @@ import { ProposalResDto } from 'src/modules/proposal/dto/proposal-res.dto';
 import { ProposalFindArgs } from 'src/modules/proposal/dto/proposal-find-args.dto';
 import { ProposalCreateDto } from 'src/modules/proposal/dto/proposal-create.dto';
 import { ProposalUpdateDto } from 'src/modules/proposal/dto/proposal-update.dto';
-import { DisableFlag, StatusFlag } from 'src/common/common.enum';
+import { DisableFlag, StatusFlag, TypeFlag } from 'src/common/common.enum';
 import { Project } from 'src/modules/project/project.entity';
 
 @Injectable()
@@ -116,11 +116,15 @@ export class ProposalService {
     });
   }
 
-  async findProjectByStudentId(studentId: number, statusFlag: StatusFlag): Promise<Proposal[]> {
-    const whereCondition: any = { studentId: studentId, disableFlag: DisableFlag.Enable };
+  async findProjectByStudentId(studentId: number, args: ProposalFindArgs): Promise<Proposal[]> {
+    const whereCondition: any = { studentId: studentId };
 
-    if ([StatusFlag.Waitting, StatusFlag.Offer, StatusFlag.Hired, StatusFlag.Active].includes(statusFlag)) {
-      whereCondition.statusFlag = statusFlag;
+    if (Array.isArray(args.statusFlag) && args.statusFlag.length > 0) {
+      whereCondition.statusFlag = In(args.statusFlag);
+    }
+
+    if (Array.isArray(args.typeFlag) && args.typeFlag.length > 0) {
+      whereCondition.project = { typeFlag: In(args.typeFlag) };
     }
 
     return this.proposalRepository.find({

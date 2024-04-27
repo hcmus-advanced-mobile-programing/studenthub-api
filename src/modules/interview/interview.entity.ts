@@ -25,7 +25,7 @@ export class Interview extends Base {
   @ApiProperty({ description: 'disableFlag' })
   disableFlag: DisableFlag;
 
-  @Column({ name: 'meeting_room_id', type: 'bigint'})
+  @Column({ name: 'meeting_room_id', type: 'bigint', nullable: true})
   meetingRoomId: number | string;
 
   @OneToMany(() => Message, (message) => message.interview)
