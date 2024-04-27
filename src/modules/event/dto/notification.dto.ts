@@ -1,13 +1,13 @@
-import { IsIn, IsNotEmpty, IsOptional } from 'class-validator';
+import { IsIn, IsNotEmpty } from 'class-validator';
 
-export class CreateNotificationDto {
+export class NotificationDto {
   @IsNotEmpty()
   receiverId: number | string;
 
   @IsNotEmpty()
   senderId: number | string;
 
-  @IsOptional()
+  @IsNotEmpty()
   messageId: number | string;
 
   @IsNotEmpty()

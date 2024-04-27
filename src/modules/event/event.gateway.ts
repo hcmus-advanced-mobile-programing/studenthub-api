@@ -14,14 +14,18 @@ import {
 import { Server, Socket } from 'socket.io';
 
 import * as Queue from 'bull';
-import { checkObjectMatchesDto } from 'src/utils/validators/dto.validator';
-import { MessageDto } from 'src/modules/event/dto/message.dto';
-import { MessageService } from 'src/modules/message/message.service';
-import { UserService } from 'src/modules/user/user.service';
+import { CompanyProfileService } from 'src/modules/company/company.service';
 import { InterviewDto } from 'src/modules/event/dto/interview.dto';
-import { NotificationService } from 'src/modules/notification/notification.service';
-import { InterviewCreateDto } from 'src/modules/interview/dto/interview-create.dto';
+import { MessageDto } from 'src/modules/event/dto/message.dto';
+import { ProposalDto } from 'src/modules/event/dto/proposal.dto';
 import { InterviewService } from 'src/modules/interview/interview.service';
+import { MessageService } from 'src/modules/message/message.service';
+import { NotificationService } from 'src/modules/notification/notification.service';
+import { ProjectService } from 'src/modules/project/project.service';
+import { ProposalService } from 'src/modules/proposal/proposal.service';
+import { UserService } from 'src/modules/user/user.service';
+import { checkObjectMatchesDto } from 'src/utils/validators/dto.validator';
+import { StudentProfileService } from 'src/modules/student/student.service';
 
 @Injectable()
 @WebSocketGateway({
@@ -34,6 +38,7 @@ export class EventGateway implements OnGatewayInit, OnGatewayConnection, OnGatew
   private messageQueue: Queue.Queue;
   private interviewQueue: Queue.Queue;
   private notificationQueue: Queue.Queue;
+  private proposalQueue: Queue.Queue;
   private readonly logger = new Logger(MessageService.name);
 
   constructor(
@@ -41,7 +46,11 @@ export class EventGateway implements OnGatewayInit, OnGatewayConnection, OnGatew
     private messageService: MessageService,
     private userService: UserService,
     private notificationService: NotificationService,
-    private interviewService: InterviewService
+    private interviewService: InterviewService,
+    private proposalService: ProposalService,
+    private projectService: ProjectService,
+    private companyProfileService: CompanyProfileService,
+    private studentProfileService: StudentProfileService
   ) {
     console.log('constructor');
     // Create message queue and process message
@@ -83,8 +92,29 @@ export class EventGateway implements OnGatewayInit, OnGatewayConnection, OnGatew
     this.interviewQueue = new Queue('interviewQueue');
     this.interviewQueue
       .process(async (job: Queue.Job<InterviewDto>, done) => {
-        const { title, startTime, endTime, projectId, senderId, receiverId, senderSocketId, meeting_room_code, meeting_room_id, expired_at} = job.data;
-        const resultAdd = this.interviewService.create({title, startTime, endTime, projectId, senderId, receiverId, meeting_room_code, meeting_room_id, expired_at});
+        const {
+          title,
+          startTime,
+          endTime,
+          projectId,
+          senderId,
+          receiverId,
+          senderSocketId,
+          meeting_room_code,
+          meeting_room_id,
+          expired_at,
+        } = job.data;
+        const resultAdd = this.interviewService.create({
+          title,
+          startTime,
+          endTime,
+          projectId,
+          senderId,
+          receiverId,
+          meeting_room_code,
+          meeting_room_id,
+          expired_at,
+        });
 
         if (!resultAdd) {
           console.error(senderSocketId, 'Error occurred while adding interview');
@@ -96,7 +126,12 @@ export class EventGateway implements OnGatewayInit, OnGatewayConnection, OnGatew
         const sender = await userService.findOne({ id: senderId });
         this.server.emit(`RECEIVE_INTERVIEW`, { title, senderId, receiverId, projectId });
         // Send notification to receiver
-        this.server.emit(`NOTI_${receiverId}`, { title: `New interview created from ${sender.fullname}`, projectId, senderId, receiverId });
+        this.server.emit(`NOTI_${receiverId}`, {
+          title: `New interview created from ${sender.fullname}`,
+          projectId,
+          senderId,
+          receiverId,
+        });
         done();
       })
       .catch((error) => {
@@ -106,6 +141,50 @@ export class EventGateway implements OnGatewayInit, OnGatewayConnection, OnGatew
     this.interviewQueue.on('error', (error) => {
       console.error('Error occurred in interview queue: ', error);
     });
+
+    // Create proposal queue and process proposal
+    this.proposalQueue = new Queue('proposalQueue');
+    this.proposalQueue
+      .process(async (job: Queue.Job<ProposalDto>, done) => {
+        const { projectId, studentId, coverLetter, senderSocketId } = job.data;
+        const resultAdd = this.proposalService.createProposal({ projectId, studentId, coverLetter });
+
+        const project = await projectService.findById(projectId as number);
+
+        const company = await companyProfileService.getCompanyProfile(project.company_id);
+
+        const student = await studentProfileService.getStudentProfile(studentId);
+
+        student.fullname = student.fullname || '';
+
+        const receiverId = company.userId;
+
+        const notification = await this.notificationService.createNotification({
+          receiverId,
+          senderId: studentId,
+          title: 'New proposal',
+          content: `New proposal from student ${student.fullname} for project ${project.title}`,
+          notifyFlag: 1,
+          typeNotifyFlag: 0,
+          messageId: null,
+        });
+
+        if (!resultAdd || !notification) {
+          console.error('Error occurred while adding proposal');
+          // Send error to sender
+          this.server.to(senderSocketId).emit('ERROR', { content: 'Error occurred in proposal queue' });
+          return done();
+        }
+
+        // Send notification to receiver
+        this.server.emit(`NOTI_${company.userId}`, {
+          notification: notification,
+        });
+        done();
+      })
+      .catch((error) => {
+        console.error(error);
+      });
   }
 
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -174,14 +253,56 @@ export class EventGateway implements OnGatewayInit, OnGatewayConnection, OnGatew
         throw new Error('Invalid data');
       }
 
-      const { title, startTime, endTime, disableFlag, projectId, senderId, receiverId, meeting_room_code, meeting_room_id, expired_at } = data;
+      const {
+        title,
+        startTime,
+        endTime,
+        disableFlag,
+        projectId,
+        senderId,
+        receiverId,
+        meeting_room_code,
+        meeting_room_id,
+        expired_at,
+      } = data;
       const clientId = client.id;
 
       this.interviewQueue
-        .add({ title, startTime, endTime, disableFlag, projectId, senderId, receiverId, clientId, meeting_room_code, meeting_room_id, expired_at})
+        .add({
+          title,
+          startTime,
+          endTime,
+          disableFlag,
+          projectId,
+          senderId,
+          receiverId,
+          clientId,
+          meeting_room_code,
+          meeting_room_id,
+          expired_at,
+        })
         .catch((error) => {
           throw new Error(error);
         });
+    } catch (error) {
+      console.error('Error occurred in message queue: ', error);
+      this.server.to(client.id).emit('ERROR', { content: 'Error occurred in message queue' });
+    }
+  }
+
+  @SubscribeMessage('SUBMIT_PROPOSAL')
+  async handleSubmitProposal(@ConnectedSocket() client: Socket, @MessageBody() data): Promise<void> {
+    try {
+      const checkValidate = await checkObjectMatchesDto(data, ProposalDto);
+
+      if (!checkValidate) {
+        throw new Error('Invalid data');
+      }
+
+      const { projectId, studentId, coverLetter, senderSocketId } = data;
+      this.proposalQueue.add({ projectId, studentId, coverLetter, senderSocketId }).catch((error) => {
+        throw new Error(error);
+      });
     } catch (error) {
       console.error('Error occurred in message queue: ', error);
       this.server.to(client.id).emit('ERROR', { content: 'Error occurred in message queue' });

@@ -4,13 +4,15 @@ import { Notification } from 'src/modules/notification/notification.entity';
 import { HttpRequestContextService } from 'src/shared/http-request-context/http-request-context.service';
 import { Repository } from 'typeorm';
 import { CreateNotificationDto } from 'src/modules/notification/dto/notification-create.dto';
+import { EventGateway } from 'src/modules/event/event.gateway';
 
 @Injectable()
 export class NotificationService {
   constructor(
     @InjectRepository(Notification)
     private notificationRepository: Repository<Notification>,
-    private readonly httpContext: HttpRequestContextService
+    private readonly httpContext: HttpRequestContextService,
+    private readonly eventGateway: EventGateway
   ) {}
 
   async findByReceiverId(receiverId: string): Promise<Notification[]> {
@@ -25,9 +27,8 @@ export class NotificationService {
   }
 
   async createNotification(notificationDto: CreateNotificationDto): Promise<boolean> {
-    const notification = this.notificationRepository.save(notificationDto);
-    if (notification)
-      return true;
+    const notification = await this.notificationRepository.save(notificationDto);
+    if (notification) return true;
     else return false;
   }
 }
