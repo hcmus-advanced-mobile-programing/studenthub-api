@@ -93,10 +93,12 @@ export class EventGateway implements OnGatewayInit, OnGatewayConnection, OnGatew
           return done();
         }
 
+        const interviewId = (await resultAdd).id;
+
         const sender = await userService.findOne({ id: senderId });
-        this.server.emit(`RECEIVE_INTERVIEW`, { title, senderId, receiverId, projectId });
+        this.server.emit(`RECEIVE_INTERVIEW`, { title, senderId, receiverId, interviewId, projectId });
         // Send notification to receiver
-        this.server.emit(`NOTI_${receiverId}`, { title: `New interview created from ${sender.fullname}`, projectId, senderId, receiverId });
+        this.server.emit(`NOTI_${receiverId}`, { title: `New interview created from ${sender.fullname}`, interviewId, projectId, senderId, receiverId });
         done();
       })
       .catch((error) => {

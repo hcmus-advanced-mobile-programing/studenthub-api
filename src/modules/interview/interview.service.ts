@@ -33,7 +33,7 @@ export class InterviewService {
     });
   }
 
-  async create(interview: InterviewCreateDto): Promise<InterviewCreateDto> {
+  async create(interview: InterviewCreateDto): Promise<Interview> {
 
     const meeting_room = await this.meetingRoomService.create({
       meeting_room_code: interview.meeting_room_code,
