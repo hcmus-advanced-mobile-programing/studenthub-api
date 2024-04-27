@@ -1,5 +1,5 @@
 import { ApiPropertyOptional } from '@nestjs/swagger';
-import { ProjectScopeFlag } from 'src/common/common.enum';
+import { ProjectScopeFlag, TypeFlag } from 'src/common/common.enum';
 
 export class ProjectFilterDto {
   @ApiPropertyOptional()
@@ -13,10 +13,4 @@ export class ProjectFilterDto {
 
   @ApiPropertyOptional()
   proposalsLessThan?: number;
-
-  @ApiPropertyOptional()
-  page?: number;
-
-  @ApiPropertyOptional()
-  perPage?: number;
 }
