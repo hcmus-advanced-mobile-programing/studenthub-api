@@ -6,10 +6,12 @@ import { MessageController } from './message.controller';
 import { Student } from 'src/modules/student/student.entity';
 import { Company } from 'src/modules/company/company.entity';
 import { Project } from 'src/modules/project/project.entity';
+import { NotificationService } from 'src/modules/notification/notification.service';
+import { Notification } from 'src/modules/notification/notification.entity';
 
 @Module({
-  imports: [TypeOrmModule.forFeature([Message, Student, Company, Project])],
-  providers: [MessageService],
+  imports: [TypeOrmModule.forFeature([Message, Student, Company, Project,Notification])],
+  providers: [MessageService, NotificationService],
   controllers: [MessageController],
   exports: [MessageService],
 })
