@@ -74,6 +74,9 @@ export class InterviewService {
   }
 
   async delete(id: number): Promise<void> {
+    if (!this.projectRepository.findOne({ where: { id } })) {
+      throw new Error('Interview not found');
+    }
     await this.projectRepository.update(id, { deletedAt: new Date() });
   }
 

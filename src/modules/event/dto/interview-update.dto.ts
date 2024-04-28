@@ -27,4 +27,10 @@ export class _InterviewUpdateDto {
 
   @IsOptional()
   senderSocketId: string = '';
+
+  @IsOptional()
+  updateAction: boolean;
+
+  @IsOptional()
+  deleteAction: boolean;
 }
