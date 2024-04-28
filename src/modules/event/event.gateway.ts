@@ -21,9 +21,10 @@ import { MessageService } from 'src/modules/message/message.service';
 import { UserService } from 'src/modules/user/user.service';
 import { InterviewDto } from 'src/modules/event/dto/interview.dto';
 import { NotificationService } from 'src/modules/notification/notification.service';
-import { InterviewCreateDto } from 'src/modules/interview/dto/interview-create.dto';
+import { _InterviewUpdateDto } from 'src/modules/event/dto/interview-update.dto';
 import { InterviewService } from 'src/modules/interview/interview.service';
 import { Message } from 'src/modules/message/message.entity';
+import { Interview } from 'src/modules/interview/interview.entity';
 
 @Injectable()
 @WebSocketGateway({
@@ -35,7 +36,7 @@ export class EventGateway implements OnGatewayInit, OnGatewayConnection, OnGatew
   @WebSocketServer() private server: Server;
   private messageQueue: Queue.Queue;
   private interviewQueue: Queue.Queue;
-  private notificationQueue: Queue.Queue;
+  private updateInterviewQueue: Queue.Queue;
   private readonly logger = new Logger(MessageService.name);
 
   constructor(
@@ -45,7 +46,9 @@ export class EventGateway implements OnGatewayInit, OnGatewayConnection, OnGatew
     private messageService: MessageService,
     private userService: UserService,
     private notificationService: NotificationService,
-    private interviewService: InterviewService
+    private interviewService: InterviewService,
+    @InjectRepository(Interview)
+    private interviewRepository: Repository<Interview>,
   ) {
     console.log('constructor');
     // Create message queue and process message
@@ -112,6 +115,43 @@ export class EventGateway implements OnGatewayInit, OnGatewayConnection, OnGatew
 
     this.interviewQueue.on('error', (error) => {
       console.error('Error occurred in interview queue: ', error);
+    });
+
+    // Update interview queue and process interview
+    this.updateInterviewQueue = new Queue('updateInterviewQueue');
+    this.updateInterviewQueue
+      .process(async (job: Queue.Job<_InterviewUpdateDto>, done) => {
+        const { interviewId, senderId, receiverId, projectId, title, startTime, endTime, senderSocketId} = job.data;
+
+        const checkInterviewExist = await this.interviewService.findById(Number(interviewId));
+        if (!checkInterviewExist){
+          console.error(senderSocketId, 'The interview does not exist');
+          // Send error to sender
+          this.server.to(senderSocketId).emit('ERROR', { content: 'The interview does not exist' });
+          return done();
+        }
+
+        const resultAdd = this.interviewService.update(Number(interviewId), {title, startTime, endTime});
+        console.log(resultAdd);
+        if (!resultAdd) {
+          console.error(senderSocketId, 'Error occurred while adding interview');
+          // Send error to sender
+          this.server.to(senderSocketId).emit('ERROR', { content: 'Error occurred in interview queue' });
+          return done();
+        }
+
+        const sender = await userService.findOne({ id: senderId });
+        this.server.emit(`RECEIVE_INTERVIEW`, { title, senderId, receiverId, projectId });
+        // Send notification to receiver
+        this.server.emit(`NOTI_${receiverId}`, { title: `Interview updated from ${sender.fullname}`, projectId, senderId, receiverId});
+        done();
+      })
+      .catch((error) => {
+        console.error(error);
+      });
+
+    this.updateInterviewQueue.on('error', (error) => {
+      console.error('Error occurred in update interview queue: ', error);
     });
   }
 
@@ -192,6 +232,29 @@ export class EventGateway implements OnGatewayInit, OnGatewayConnection, OnGatew
     } catch (error) {
       console.error('Error occurred in message queue: ', error);
       this.server.to(client.id).emit('ERROR', { content: 'Error occurred in message queue' });
+    }
+  }
+
+  @SubscribeMessage('UPDATE_INTERVIEW')
+  async updateInterview(@ConnectedSocket() client: Socket, @MessageBody() data): Promise<void> {
+    try {
+      const checkValidate = await checkObjectMatchesDto(data, _InterviewUpdateDto);
+
+      if (!checkValidate) {
+        throw new Error('Invalid data');
+      }
+
+      const { interviewId, senderId, receiverId, projectId, title, startTime, endTime } = data;
+      const clientId = client.id;
+
+      this.updateInterviewQueue
+        .add({ interviewId, senderId, receiverId, projectId, title, startTime, endTime, clientId })
+        .catch((error) => {
+          throw new Error(error);
+        });
+    } catch (error) {
+      console.error('Error occurred in update interview queue: ', error);
+      this.server.to(client.id).emit('ERROR', { content: 'Error occurred in update interview queue' });
     }
   }
 }
