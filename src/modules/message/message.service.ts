@@ -10,7 +10,6 @@ import { Student } from 'src/modules/student/student.entity';
 import { HttpRequestContextService } from 'src/shared/http-request-context/http-request-context.service';
 import { Brackets, In, Repository } from 'typeorm';
 import { NotificationService } from 'src/modules/notification/notification.service';
-import { NotifyFlag, TypeNotifyFlag } from 'src/common/common.enum';
 
 @Injectable()
 export class MessageService {
@@ -289,16 +288,6 @@ export class MessageService {
       });
 
       await this.messageRepository.save(newMessage);
-
-      await this.notificationService.createNotification({
-        senderId: data.senderId,
-        receiverId: data.receiverId,
-        messageId: newMessage.id,
-        content: `New message created`,
-        notifyFlag: NotifyFlag.Unread,
-        typeNotifyFlag: TypeNotifyFlag.Chat,
-        title: `New message is sent by user ${data.senderId}`,
-      });
 
       return newMessage.id;
     } catch (Exception) {

@@ -25,6 +25,9 @@ import { _InterviewUpdateDto } from 'src/modules/event/dto/interview-update.dto'
 import { InterviewService } from 'src/modules/interview/interview.service';
 import { Message } from 'src/modules/message/message.entity';
 import { Interview } from 'src/modules/interview/interview.entity';
+import { MeetingRoom } from 'src/modules/meeting-room/meeting-room.entity';
+import { NotifyFlag, TypeNotifyFlag } from 'src/common/common.enum';
+import { Console } from 'console';
 
 @Injectable()
 @WebSocketGateway({
@@ -42,6 +45,8 @@ export class EventGateway implements OnGatewayInit, OnGatewayConnection, OnGatew
   constructor(
     @InjectRepository(Message)
     private messageRepository: Repository<Message>,
+    @InjectRepository(MeetingRoom)
+    private readonly meetingRoomRepository: Repository<MeetingRoom>,
     private readonly jwtService: JwtService,
     private messageService: MessageService,
     private userService: UserService,
@@ -70,6 +75,16 @@ export class EventGateway implements OnGatewayInit, OnGatewayConnection, OnGatew
         const sender = await userService.findOne({ id: senderId });
         const messageId = resultAdd;
 
+        await this.notificationService.createNotification({
+          senderId: senderId,
+          receiverId: receiverId,
+          messageId: messageId,
+          content: `New message created`,
+          notifyFlag: NotifyFlag.Unread,
+          typeNotifyFlag: TypeNotifyFlag.Chat,
+          title: `New message is sent by user ${senderId}`,
+        });
+
         // Send message to clients
         this.server
           .to([`${projectId}_${senderId}`, `${projectId}_${receiverId}`])
@@ -92,11 +107,26 @@ export class EventGateway implements OnGatewayInit, OnGatewayConnection, OnGatew
     this.interviewQueue
       .process(async (job: Queue.Job<InterviewDto>, done) => {
         const { title, startTime, endTime, projectId, senderId, receiverId, senderSocketId, meeting_room_code, meeting_room_id, expired_at} = job.data;
+        
+
+        const checkCode = await this.meetingRoomRepository.findOneBy({meeting_room_code: meeting_room_code});
+        if (checkCode){
+          console.error(senderSocketId, 'Meeting room code already exist');    
+          this.server.to(senderSocketId).emit('ERROR', { content: 'Meeting room code already exist' });
+          return done();
+        }
+
+        const checkId = await this.meetingRoomRepository.findOneBy({meeting_room_id: meeting_room_id});
+        if (checkId){
+          console.error(senderSocketId, 'Meeting room id already exist');
+          this.server.to(senderSocketId).emit('ERROR', { content: 'Meeting room id already exist' });
+          return done();
+        }
+
         const resultAdd = this.interviewService.create({title, startTime, endTime, projectId, senderId, receiverId, meeting_room_code, meeting_room_id, expired_at});
 
         if (!resultAdd) {
           console.error(senderSocketId, 'Error occurred while adding interview');
-          // Send error to sender
           this.server.to(senderSocketId).emit('ERROR', { content: 'Error occurred in interview queue' });
           return done();
         }
@@ -105,7 +135,6 @@ export class EventGateway implements OnGatewayInit, OnGatewayConnection, OnGatew
 
         const sender = await userService.findOne({ id: senderId });
         this.server.emit(`RECEIVE_INTERVIEW`, { title, senderId, receiverId, interviewId, projectId });
-        // Send notification to receiver
         this.server.emit(`NOTI_${receiverId}`, { title: `New interview created from ${sender.fullname}`, interviewId, projectId, senderId, receiverId, meeting_room_code, meeting_room_id });
         done();
       })
@@ -130,7 +159,6 @@ export class EventGateway implements OnGatewayInit, OnGatewayConnection, OnGatew
           this.server.to(senderSocketId).emit('ERROR', { content: 'The interview does not exist' });
           return done();
         }
-
         const resultAdd = this.interviewService.update(Number(interviewId), {title, startTime, endTime});
         console.log(resultAdd);
         if (!resultAdd) {
@@ -191,7 +219,6 @@ export class EventGateway implements OnGatewayInit, OnGatewayConnection, OnGatew
   async handleMessage(@ConnectedSocket() client: Socket, @MessageBody() data): Promise<void> {
     try {
       console.log('handleMessage');
-
       const checkValidate = await checkObjectMatchesDto(data, MessageDto);
 
       if (!checkValidate) {
@@ -200,9 +227,10 @@ export class EventGateway implements OnGatewayInit, OnGatewayConnection, OnGatew
 
       const { projectId, content, receiverId, senderId, messageFlag } = data;
 
+      console.log('senderSocketId: ' + client.id);
       // Add task to message queue
       this.messageQueue
-        .add({ projectId, content, senderSocketId: client.id, receiverId, senderId, messageFlag })
+        .add({ projectId, content, senderId, receiverId, messageFlag, senderSocketId: client.id })
         .catch((error) => {
           throw new Error(error);
         });
@@ -222,10 +250,9 @@ export class EventGateway implements OnGatewayInit, OnGatewayConnection, OnGatew
       }
 
       const { title, startTime, endTime, disableFlag, projectId, senderId, receiverId, meeting_room_code, meeting_room_id, expired_at } = data;
-      const clientId = client.id;
-
+      
       this.interviewQueue
-        .add({ title, startTime, endTime, disableFlag, projectId, senderId, receiverId, clientId, meeting_room_code, meeting_room_id, expired_at})
+        .add({ title, startTime, endTime, disableFlag, projectId, senderId, receiverId, senderSocketId: client.id, meeting_room_code, meeting_room_id, expired_at})
         .catch((error) => {
           throw new Error(error);
         });
