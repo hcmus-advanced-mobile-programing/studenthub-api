@@ -27,6 +27,9 @@ export class ProjectService {
     private readonly httpContext: HttpRequestContextService
   ) {}
 
+  async _findAll(): Promise<Project[]> {
+    return this.projectRepository.find({});
+  }
   async findByCompanyId(companyId: number, typeFlag?: TypeFlag): Promise<Project[]> {
     const whereCondition: any = { companyId: companyId };
 
@@ -36,7 +39,13 @@ export class ProjectService {
 
     const projects = await this.projectRepository.find({
       where: whereCondition,
-      relations: ['proposals', 'proposals.student', 'proposals.student.user', 'proposals.student.techStack', 'proposals.student.educations'],
+      relations: [
+        'proposals',
+        'proposals.student',
+        'proposals.student.user',
+        'proposals.student.techStack',
+        'proposals.student.educations',
+      ],
     });
 
     if (!projects || projects.length === 0) {
@@ -54,15 +63,15 @@ export class ProjectService {
         const messageList = await this.MessageService.searchProjectId(Number(project.id));
         const countMessages = messageList.length;
 
-        const proposals = project.proposals.map(item => {
+        const proposals = project.proposals.map((item) => {
           return {
             ...item,
             student: {
               ...item.student,
               user: {
-                fullname: item?.student.user.fullname
-              }
-            }
+                fullname: item?.student.user.fullname,
+              },
+            },
           };
         });
 
@@ -97,7 +106,6 @@ export class ProjectService {
       const title = filterDto.title.toLowerCase();
       query.andWhere('LOWER(project.title) LIKE :title', { title: `%${title}%` });
     }
-      
 
     if (filterDto.numberOfStudents !== undefined) {
       query.andWhere('project.numberOfStudents = :numberOfStudents', {
@@ -189,7 +197,9 @@ export class ProjectService {
     const messageList = await this.MessageService.searchProjectId(id);
     const countMessages = messageList.length;
 
-    const countHired = project.proposals ? project.proposals.filter((proposal) => proposal.statusFlag === StatusFlag.Hired).length : 0;
+    const countHired = project.proposals
+      ? project.proposals.filter((proposal) => proposal.statusFlag === StatusFlag.Hired).length
+      : 0;
 
     return { ...project, companyName, countProposals, countMessages, countHired };
   }

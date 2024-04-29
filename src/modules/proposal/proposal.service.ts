@@ -8,8 +8,9 @@ import { ProposalResDto } from 'src/modules/proposal/dto/proposal-res.dto';
 import { ProposalFindArgs } from 'src/modules/proposal/dto/proposal-find-args.dto';
 import { ProposalCreateDto } from 'src/modules/proposal/dto/proposal-create.dto';
 import { ProposalUpdateDto } from 'src/modules/proposal/dto/proposal-update.dto';
-import { StatusFlag, TypeFlag } from 'src/common/common.enum';
 import { Project } from 'src/modules/project/project.entity';
+import { NotificationService } from 'src/modules/notification/notification.service';
+import { NotifyFlag, statusFlagToTypeNotifyMap } from 'src/common/common.enum';
 
 @Injectable()
 export class ProposalService {
@@ -20,8 +21,9 @@ export class ProposalService {
     private proposalRepository: Repository<Proposal>,
     @InjectRepository(Project)
     private projectRepository: Repository<Project>,
-    private readonly httpContext: HttpRequestContextService
-  ) { }
+    private readonly httpContext: HttpRequestContextService,
+    private readonly notificationService: NotificationService
+  ) {}
 
   async searchProjectId(projectId: number | string, args: ProposalFindArgs): Promise<PaginationResult<ProposalResDto>> {
     const { limit, offset, statusFlag } = args;
@@ -29,7 +31,17 @@ export class ProposalService {
     const record = this.proposalRepository.createQueryBuilder('proposal');
 
     record
-      .select(['proposal.id', 'proposal.createdAt', 'proposal.updatedAt', 'proposal.deletedAt', 'proposal.projectId', 'proposal.studentId', 'proposal.coverLetter', 'proposal.statusFlag', 'proposal.disableFlag'])
+      .select([
+        'proposal.id',
+        'proposal.createdAt',
+        'proposal.updatedAt',
+        'proposal.deletedAt',
+        'proposal.projectId',
+        'proposal.studentId',
+        'proposal.coverLetter',
+        'proposal.statusFlag',
+        'proposal.disableFlag',
+      ])
       .where('proposal.project_id = :projectId', { projectId })
       .andWhere('proposal.deleted_at IS NULL')
       .leftJoinAndSelect('proposal.student', 'student')
@@ -46,21 +58,20 @@ export class ProposalService {
       .offset(offset || 0)
       .getManyAndCount();
 
-    const resultItems = items.map(item => {
+    const resultItems = items.map((item) => {
       return {
         ...item,
         student: {
           ...item.student,
           user: {
-            fullname: item?.student.user.fullname
-          }
-        }
+            fullname: item?.student.user.fullname,
+          },
+        },
       };
     });
 
     return genPaginationResult(resultItems as any, count, args.offset, args.limit);
   }
-
 
   async findOne(id: string): Promise<ProposalResDto> {
     const proposal = await this.proposalRepository.findOne({
@@ -68,9 +79,8 @@ export class ProposalService {
         id,
         deletedAt: null,
       },
-      relations: ['student', 'student.techStack', 'student.educations'],
+      relations: ['student', 'student.techStack', 'student.educations', 'student.user.fullname', 'student.skillSets'],
     });
-
     return proposal;
   }
 
@@ -84,15 +94,25 @@ export class ProposalService {
 
     const checkProposal = await this.proposalRepository.findBy({ studentId: proposal.studentId, projectId: projectId });
     if (checkProposal.length > 0) {
-      throw new ConflictException(`Proposal for project with ID ${projectId} already exists.`)
+      throw new ConflictException(`Proposal for project with ID ${projectId} already exists.`);
     }
     return this.proposalRepository.save(proposal);
   }
 
   async updateProposal(id: number | string, proposal: ProposalUpdateDto): Promise<void> {
     const proposalToUpdate = await this.proposalRepository.findOneBy({ id });
+
     if (!proposalToUpdate) throw new Error('Proposal not found');
     await this.proposalRepository.update(id, proposal);
+    await this.notificationService.createNotification({
+      senderId: proposalToUpdate.studentId,
+      receiverId: proposalToUpdate.studentId,
+      content: 'Proposal updated',
+      title: proposalToUpdate.coverLetter,
+      notifyFlag: NotifyFlag.Unread,
+      typeNotifyFlag: statusFlagToTypeNotifyMap[proposalToUpdate.statusFlag],
+      messageId: proposalToUpdate.id,
+    });
   }
 
   async findByStudentId(studentId: string): Promise<ProposalResDto[]> {
@@ -119,7 +139,7 @@ export class ProposalService {
 
     return this.proposalRepository.find({
       where: whereCondition,
-      relations: ['project']
+      relations: ['project'],
     });
   }
 }

@@ -5,12 +5,13 @@ import { ProposalController } from 'src/modules/proposal/proposal.controller';
 import { Proposal } from 'src/modules/proposal/proposal.entity';
 import { ProposalService } from 'src/modules/proposal/proposal.service';
 import { Project } from 'src/modules/project/project.entity';
-import { ProjectService } from 'src/modules/project/project.service';
+import { NotificationService } from 'src/modules/notification/notification.service';
+import { Notification } from 'src/modules/notification/notification.entity';
 
 @Module({
-  imports: [TypeOrmModule.forFeature([Proposal, Project]), ConfigModule],
+  imports: [TypeOrmModule.forFeature([Proposal, Project, Notification]), ConfigModule],
   controllers: [ProposalController],
-  providers: [ProposalService],
+  providers: [ProposalService, NotificationService],
   exports: [ProposalService],
 })
 export class ProposalModule {}

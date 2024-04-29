@@ -20,12 +20,12 @@ export class NotificationService {
     if (receiverId != id) {
       throw new Error('You are not authorized to view this notification');
     }
-    const notifications =  await this.notificationRepository.find({
+    const notifications = await this.notificationRepository.find({
       where: { receiverId },
       relations: ['message', 'sender', 'receiver'],
     });
 
-    const notificationsWithoutPassword = notifications.map(notification => {
+    const notificationsWithoutPassword = notifications.map((notification) => {
       const { sender, receiver, ...rest } = notification;
       const sanitizedSender = { ...sender };
       const sanitizedReceiver = { ...receiver };
@@ -34,13 +34,11 @@ export class NotificationService {
       return { ...rest, sender: sanitizedSender, receiver: sanitizedReceiver };
     });
 
-    return notificationsWithoutPassword
+    return notificationsWithoutPassword;
   }
 
   async createNotification(notificationDto: CreateNotificationDto): Promise<boolean> {
-    const notification = this.notificationRepository.save(notificationDto);
-    if (notification)
-      return true;
-    else return false;
+    const notification = await this.notificationRepository.save(notificationDto);
+    return !!notification;
   }
 }
