@@ -27,7 +27,6 @@ import { Message } from 'src/modules/message/message.entity';
 import { Interview } from 'src/modules/interview/interview.entity';
 import { MeetingRoom } from 'src/modules/meeting-room/meeting-room.entity';
 import { NotifyFlag, TypeNotifyFlag } from 'src/common/common.enum';
-import { Console } from 'console';
 
 @Injectable()
 @WebSocketGateway({
@@ -72,7 +71,6 @@ export class EventGateway implements OnGatewayInit, OnGatewayConnection, OnGatew
           return done();
         }
 
-        const sender = await userService.findOne({ id: senderId });
         const messageId = resultAdd;
 
         await this.notificationService.createNotification({
@@ -85,13 +83,15 @@ export class EventGateway implements OnGatewayInit, OnGatewayConnection, OnGatew
           title: `New message is sent by user ${senderId}`,
         });
 
+        const notification = await this.notificationService.findOneByReceiverId(receiverId, messageId);
+
         // Send message to clients
         this.server
           .to([`${projectId}_${senderId}`, `${projectId}_${receiverId}`])
           .emit(`RECEIVE_MESSAGE`, { content, senderId, receiverId, messageFlag, messageId });
 
         // Send notification to receiver
-        this.server.emit(`NOTI_${receiverId}`, { content, title: `New message from ${sender.fullname}`, messageFlag, messageId });
+        this.server.emit(`NOTI_${receiverId}`, { notification });
         done();
       })
       .catch((error) => {
@@ -132,9 +132,12 @@ export class EventGateway implements OnGatewayInit, OnGatewayConnection, OnGatew
 
         const interviewId = (await resultAdd).id;
 
-        const sender = await userService.findOne({ id: senderId });
+        const message = await this.messageRepository.findOneBy({interviewId: interviewId});
+        const messageId = message.id;
+        const notification = await this.notificationService.findOneByReceiverId(receiverId, messageId);
+        
         this.server.emit(`RECEIVE_INTERVIEW`, { title, senderId, receiverId, interviewId, projectId });
-        this.server.emit(`NOTI_${receiverId}`, { title: `New interview created from ${sender.fullname}`, interviewId, projectId, senderId, receiverId, meeting_room_code, meeting_room_id });
+        this.server.emit(`NOTI_${receiverId}`, { notification });
         done();
       })
       .catch((error) => {
@@ -150,6 +153,8 @@ export class EventGateway implements OnGatewayInit, OnGatewayConnection, OnGatew
     this.updateInterviewQueue
       .process(async (job: Queue.Job<_InterviewUpdateDto>, done) => {
         const { interviewId, senderId, receiverId, projectId, title, startTime, endTime, senderSocketId, updateAction, deleteAction} = job.data;
+        const message = await this.messageRepository.findOneBy({interviewId: interviewId});
+        const messageId = message.id;
 
         if (deleteAction == true){
           const resultDel = this.interviewService.delete(Number(interviewId));
@@ -160,7 +165,7 @@ export class EventGateway implements OnGatewayInit, OnGatewayConnection, OnGatew
           }
           const sender = await userService.findOne({ id: senderId });
           this.server.emit(`RECEIVE_INTERVIEW`, { title, senderId, receiverId, projectId });
-          this.server.emit(`NOTI_${receiverId}`, { title: `Interview deleted from ${sender.fullname}`, projectId, senderId, receiverId});
+          this.server.emit(`NOTI_${receiverId}`, { title: `Interview deleted from ${sender.fullname}`, projectId, senderId, receiverId, messageId});
           done();
         }
 
@@ -180,7 +185,7 @@ export class EventGateway implements OnGatewayInit, OnGatewayConnection, OnGatew
 
           const sender = await userService.findOne({ id: senderId });
           this.server.emit(`RECEIVE_INTERVIEW`, { title, senderId, receiverId, projectId });
-          this.server.emit(`NOTI_${receiverId}`, { title: `Interview updated from ${sender.fullname}`, projectId, senderId, receiverId});
+          this.server.emit(`NOTI_${receiverId}`, { title: `Interview updated from ${sender.fullname}`, projectId, senderId, receiverId, messageId});
           done();
           }
       })
