@@ -36,6 +36,7 @@ export class MessageService {
       .leftJoin('message.sender', 'sender')
       .leftJoin('message.receiver', 'receiver')
       .leftJoinAndSelect('message.interview', 'interview')
+      .leftJoinAndSelect('interview.meetingRoom', 'meetingRoom')
       .select([
         'message.id',
         'message.content',
@@ -45,16 +46,7 @@ export class MessageService {
         'receiver.id',
         'receiver.fullname',
         'interview',
-      ])
-      .select([
-        'message.id',
-        'message.content',
-        'message.createdAt',
-        'sender.id',
-        'sender.fullname',
-        'receiver.id',
-        'receiver.fullname',
-        'interview',
+        'meetingRoom'
       ])
       .where('message.projectId = :projectId', { projectId })
       .andWhere('message.senderId = :userId', { userId })
@@ -66,6 +58,7 @@ export class MessageService {
       .leftJoin('message.sender', 'sender')
       .leftJoin('message.receiver', 'receiver')
       .leftJoinAndSelect('message.interview', 'interview')
+      .leftJoinAndSelect('interview.meetingRoom', 'meetingRoom')
       .select([
         'message.id',
         'message.content',
@@ -75,16 +68,7 @@ export class MessageService {
         'receiver.id',
         'receiver.fullname',
         'interview',
-      ])
-      .select([
-        'message.id',
-        'message.content',
-        'message.createdAt',
-        'sender.id',
-        'sender.fullname',
-        'receiver.id',
-        'receiver.fullname',
-        'interview',
+        'meetingRoom'
       ])
       .where('message.projectId = :projectId', { projectId })
       .andWhere('message.receiverId = :userId', { userId })
@@ -116,6 +100,7 @@ export class MessageService {
       .leftJoin('message.sender', 'sender')
       .leftJoin('message.receiver', 'receiver')
       .leftJoinAndSelect('message.interview', 'interview')
+      .leftJoinAndSelect('interview.meetingRoom', 'meetingRoom')
       .select([
         'message.id',
         'message.content',
@@ -125,6 +110,7 @@ export class MessageService {
         'receiver.id',
         'receiver.fullname',
         'interview',
+        'meetingRoom'
       ])
       .where('message.projectId = :projectId', { projectId })
       .andWhere(
@@ -156,6 +142,7 @@ export class MessageService {
       .leftJoinAndSelect('message.sender', 'sender')
       .leftJoinAndSelect('message.receiver', 'receiver')
       .leftJoinAndSelect('message.interview', 'interview')
+      .leftJoinAndSelect('interview.meetingRoom', 'meetingRoom')
       .leftJoinAndSelect('message.project', 'project')
       .select([
         'message.id',
@@ -167,6 +154,7 @@ export class MessageService {
         'receiver.fullname',
         'interview',
         'project',
+        'meetingRoom'
       ])
       .andWhere(
         new Brackets((qb) => {
