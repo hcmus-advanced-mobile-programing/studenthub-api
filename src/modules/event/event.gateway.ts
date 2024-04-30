@@ -88,7 +88,7 @@ export class EventGateway implements OnGatewayInit, OnGatewayConnection, OnGatew
         // Send message to clients
         this.server
           .to([`${projectId}_${senderId}`, `${projectId}_${receiverId}`])
-          .emit(`RECEIVE_MESSAGE`, { content, senderId, receiverId, messageFlag, messageId });
+          .emit(`RECEIVE_MESSAGE`, { notification });
 
         // Send notification to receiver
         this.server.emit(`NOTI_${receiverId}`, { notification });
@@ -136,7 +136,7 @@ export class EventGateway implements OnGatewayInit, OnGatewayConnection, OnGatew
         const messageId = message.id;
         const notification = await this.notificationService.findOneByReceiverId(receiverId, messageId);
         
-        this.server.emit(`RECEIVE_INTERVIEW`, { title, senderId, receiverId, interviewId, projectId });
+        this.server.emit(`RECEIVE_INTERVIEW`, { notification });
         this.server.emit(`NOTI_${receiverId}`, { notification });
         done();
       })
