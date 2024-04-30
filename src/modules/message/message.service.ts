@@ -9,6 +9,7 @@ import { Project } from 'src/modules/project/project.entity';
 import { Student } from 'src/modules/student/student.entity';
 import { HttpRequestContextService } from 'src/shared/http-request-context/http-request-context.service';
 import { Brackets, In, Repository } from 'typeorm';
+import { NotificationService } from 'src/modules/notification/notification.service';
 
 @Injectable()
 export class MessageService {
@@ -23,7 +24,8 @@ export class MessageService {
     private companyRepository: Repository<Company>,
     private readonly httpContext: HttpRequestContextService,
     @InjectRepository(Project)
-    private projectRepository: Repository<Project>
+    private projectRepository: Repository<Project>, 
+    private readonly notificationService: NotificationService,
   ) {}
 
   async searchProjectId(projectId: number): Promise<MessageResDto[] | any> {
@@ -286,6 +288,7 @@ export class MessageService {
       });
 
       await this.messageRepository.save(newMessage);
+
       return newMessage.id;
     } catch (Exception) {
       this.logger.error(`Error when create message: ${Exception}`);

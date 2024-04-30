@@ -4,7 +4,6 @@ import { IsOptional, IsNotEmpty, IsDateString } from 'class-validator';
 export class InterviewUpdateDto {
   @ApiProperty({ description: 'Title of the interview' })
   @IsOptional()
-  @IsNotEmpty()
   title: string;
 
   @ApiProperty({ description: 'Start time of the interview' })

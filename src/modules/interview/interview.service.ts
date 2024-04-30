@@ -34,7 +34,6 @@ export class InterviewService {
   }
 
   async create(interview: InterviewCreateDto): Promise<Interview> {
-
     const meeting_room = await this.meetingRoomService.create({
       meeting_room_code: interview.meeting_room_code,
       meeting_room_id: interview.meeting_room_id,
@@ -75,6 +74,9 @@ export class InterviewService {
   }
 
   async delete(id: number): Promise<void> {
+    if (!this.projectRepository.findOne({ where: { id } })) {
+      throw new Error('Interview not found');
+    }
     await this.projectRepository.update(id, { deletedAt: new Date() });
   }
 
