@@ -7,6 +7,10 @@ export class InterviewCreateDto {
   @IsNotEmpty()
   title: string;
 
+  @ApiProperty({ description: 'Content of the interview' })
+  @IsNotEmpty()
+  content: string;
+
   @ApiProperty({ description: 'Start time of the interview' })
   @IsDateString()
   startTime: Date;

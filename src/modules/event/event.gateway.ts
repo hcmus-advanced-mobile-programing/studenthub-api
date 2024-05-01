@@ -106,7 +106,7 @@ export class EventGateway implements OnGatewayInit, OnGatewayConnection, OnGatew
     this.interviewQueue = new Queue('interviewQueue');
     this.interviewQueue
       .process(async (job: Queue.Job<InterviewDto>, done) => {
-        const { title, startTime, endTime, projectId, senderId, receiverId, senderSocketId, meeting_room_code, meeting_room_id, expired_at} = job.data;
+        const { title, content, startTime, endTime, projectId, senderId, receiverId, senderSocketId, meeting_room_code, meeting_room_id, expired_at} = job.data;
         
         const checkCode = await this.meetingRoomRepository.findOneBy({meeting_room_code: meeting_room_code});
         if (checkCode){
@@ -122,7 +122,7 @@ export class EventGateway implements OnGatewayInit, OnGatewayConnection, OnGatew
           return done();
         }
 
-        const resultAdd = this.interviewService.create({title, startTime, endTime, projectId, senderId, receiverId, meeting_room_code, meeting_room_id, expired_at});
+        const resultAdd = this.interviewService.create({title, content, startTime, endTime, projectId, senderId, receiverId, meeting_room_code, meeting_room_id, expired_at});
 
         if (!resultAdd) {
           console.error(senderSocketId, 'Error occurred while adding interview');
@@ -157,14 +157,14 @@ export class EventGateway implements OnGatewayInit, OnGatewayConnection, OnGatew
         const messageId = message.id;
 
         if (deleteAction == true){
-          const resultDel = this.interviewService.delete(Number(interviewId));
+          const resultDel = this.interviewService.disable(Number(interviewId));
           if (!resultDel) {
             console.error(senderSocketId, 'Error occurred while delete interview');
             this.server.to(senderSocketId).emit('ERROR', { content: 'Error occurred in interview queue' });
             return done();
           }
           const sender = await userService.findOne({ id: senderId });
-          this.server.emit(`RECEIVE_INTERVIEW`, { title, senderId, receiverId, projectId });
+          this.server.emit(`RECEIVE_INTERVIEW`, { title: `Interview deleted from ${sender.fullname}`, projectId, senderId, receiverId, messageId });
           this.server.emit(`NOTI_${receiverId}`, { title: `Interview deleted from ${sender.fullname}`, projectId, senderId, receiverId, messageId});
           done();
         }
@@ -184,7 +184,7 @@ export class EventGateway implements OnGatewayInit, OnGatewayConnection, OnGatew
           }
 
           const sender = await userService.findOne({ id: senderId });
-          this.server.emit(`RECEIVE_INTERVIEW`, { title, senderId, receiverId, projectId });
+          this.server.emit(`RECEIVE_INTERVIEW`, { title: `Interview updated from ${sender.fullname}`, projectId, senderId, receiverId, messageId });
           this.server.emit(`NOTI_${receiverId}`, { title: `Interview updated from ${sender.fullname}`, projectId, senderId, receiverId, messageId});
           done();
           }
@@ -264,10 +264,10 @@ export class EventGateway implements OnGatewayInit, OnGatewayConnection, OnGatew
         throw new Error('Invalid data');
       }
 
-      const { title, startTime, endTime, disableFlag, projectId, senderId, receiverId, meeting_room_code, meeting_room_id, expired_at } = data;
+      const { title, content, startTime, endTime, disableFlag, projectId, senderId, receiverId, meeting_room_code, meeting_room_id, expired_at } = data;
       
       this.interviewQueue
-        .add({ title, startTime, endTime, disableFlag, projectId, senderId, receiverId, senderSocketId: client.id, meeting_room_code, meeting_room_id, expired_at})
+        .add({ title, content, startTime, endTime, disableFlag, projectId, senderId, receiverId, senderSocketId: client.id, meeting_room_code, meeting_room_id, expired_at})
         .catch((error) => {
           throw new Error(error);
         });
