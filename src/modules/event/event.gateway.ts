@@ -119,7 +119,7 @@ export class EventGateway implements OnGatewayInit, OnGatewayConnection, OnGatew
           return done();
         }
 
-        const resultAdd = this.interviewService.create({title, content, startTime, endTime, projectId, senderId, receiverId, meeting_room_code, meeting_room_id, expired_at});
+        const resultAdd = await this.interviewService.create({title, content, startTime, endTime, projectId, senderId, receiverId, meeting_room_code, meeting_room_id, expired_at});
 
         if (!resultAdd) {
           console.error(senderSocketId, 'Error occurred while adding interview');
@@ -127,7 +127,7 @@ export class EventGateway implements OnGatewayInit, OnGatewayConnection, OnGatew
           return done();
         }
 
-        const interviewId = (await resultAdd).id;
+        const interviewId = resultAdd.id;
 
         const message = await this.messageRepository.findOneBy({interviewId: interviewId});
         const messageId = message.id;
