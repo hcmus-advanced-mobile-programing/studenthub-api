@@ -102,12 +102,7 @@ export class EventGateway implements OnGatewayInit, OnGatewayConnection, OnGatew
     this.interviewQueue = new Queue('interviewQueue');
     this.interviewQueue
       .process(async (job: Queue.Job<InterviewDto>, done) => {
-
-        console.log('job', job.data);
-
         const { title, content, startTime, endTime, projectId, senderId, receiverId, senderSocketId, meeting_room_code, meeting_room_id, expired_at } = job.data;
-
-        console.log('interviewQueue');
 
         const checkCode = await this.meetingRoomRepository.findOneBy({ meeting_room_code: meeting_room_code });
         if (checkCode) {
@@ -125,9 +120,6 @@ export class EventGateway implements OnGatewayInit, OnGatewayConnection, OnGatew
 
         const resultAdd = await this.interviewService.create({ title, content, startTime, endTime, projectId, senderId, receiverId, meeting_room_code, meeting_room_id, expired_at });
 
-        console.log('resultAdd');
-        console.log(resultAdd);
-
         if (!resultAdd) {
           console.error(senderSocketId, 'Error occurred while adding interview');
           this.server.to(senderSocketId).emit('ERROR', { content: 'Error occurred in interview queue' });
@@ -141,8 +133,6 @@ export class EventGateway implements OnGatewayInit, OnGatewayConnection, OnGatew
         const notification = await this.notificationService.findOneByReceiverId(receiverId, messageId);
 
         this.server.emit(`RECEIVE_INTERVIEW`, { notification });
-
-        console.log(`NOTI_${receiverId}`);
 
         this.server.emit(`NOTI_${receiverId}`, { notification });
         done();
@@ -288,8 +278,6 @@ export class EventGateway implements OnGatewayInit, OnGatewayConnection, OnGatew
         throw new Error('Invalid data');
       }
 
-      console.log('SCHEDULE_INTERVIEW');
-
       const { title, content, startTime, endTime, disableFlag, projectId, senderId, receiverId, meeting_room_code, meeting_room_id, expired_at } = data;
 
       this.interviewQueue
@@ -297,9 +285,6 @@ export class EventGateway implements OnGatewayInit, OnGatewayConnection, OnGatew
         .catch((error) => {
           throw new Error(error);
         });
-
-      console.log('END_SCHEDULE_INTERVIEW');
-
     } catch (error) {
       console.error('Error occurred in interview queue: ', error);
       this.server.to(client.id).emit('ERROR', { content: 'Error occurred in interview queue' });
