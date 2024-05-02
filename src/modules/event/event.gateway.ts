@@ -105,6 +105,8 @@ export class EventGateway implements OnGatewayInit, OnGatewayConnection, OnGatew
       .process(async (job: Queue.Job<InterviewDto>, done) => {
         const { title, content, startTime, endTime, projectId, senderId, receiverId, senderSocketId, meeting_room_code, meeting_room_id, expired_at} = job.data;
         
+        console.log('interviewQueue');
+
         const checkCode = await this.meetingRoomRepository.findOneBy({meeting_room_code: meeting_room_code});
         if (checkCode){
           console.error(senderSocketId, 'Meeting room code already exist');    
@@ -121,6 +123,9 @@ export class EventGateway implements OnGatewayInit, OnGatewayConnection, OnGatew
 
         const resultAdd = await this.interviewService.create({title, content, startTime, endTime, projectId, senderId, receiverId, meeting_room_code, meeting_room_id, expired_at});
 
+        console.log('resultAdd');
+        console.log(resultAdd);
+
         if (!resultAdd) {
           console.error(senderSocketId, 'Error occurred while adding interview');
           this.server.to(senderSocketId).emit('ERROR', { content: 'Error occurred in interview queue' });
@@ -134,6 +139,9 @@ export class EventGateway implements OnGatewayInit, OnGatewayConnection, OnGatew
         const notification = await this.notificationService.findOneByReceiverId(receiverId, messageId);
         
         this.server.emit(`RECEIVE_INTERVIEW`, { notification });
+
+        console.log(`NOTI_${receiverId}`);
+
         this.server.emit(`NOTI_${receiverId}`, { notification });
         done();
       })
@@ -293,8 +301,8 @@ export class EventGateway implements OnGatewayInit, OnGatewayConnection, OnGatew
           throw new Error(error);
         });
     } catch (error) {
-      console.error('Error occurred in message queue: ', error);
-      this.server.to(client.id).emit('ERROR', { content: 'Error occurred in message queue' });
+      console.error('Error occurred in interview queue: ', error);
+      this.server.to(client.id).emit('ERROR', { content: 'Error occurred in interview queue' });
     }
   }
 
