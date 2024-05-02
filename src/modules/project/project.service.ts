@@ -156,6 +156,16 @@ export class ProjectService {
         });
     }
 
+    let skip = 0;
+    let take = 10;
+
+    if (filterDto.page && filterDto.perPage) {
+      skip = (filterDto.page - 1) * filterDto.perPage;
+      take = filterDto.perPage;
+    }
+
+  query.skip(skip).take(take);
+
     const projects = await query.getMany();
 
     if (projects.length === 0) {

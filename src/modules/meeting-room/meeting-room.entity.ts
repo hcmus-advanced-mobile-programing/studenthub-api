@@ -1,7 +1,7 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { Base } from 'src/common/base.entity';
 import { Interview } from 'src/modules/interview/interview.entity';
-import { Entity, Column, OneToOne } from 'typeorm';
+import { Entity, Column, OneToOne, JoinColumn } from 'typeorm';
 
 @Entity({
   name: 'meeting_room',
@@ -20,8 +20,6 @@ export class MeetingRoom extends Base {
   @ApiProperty({ description: 'Expiration date and time of the meeting room', type: 'string', format: 'date-time' })
   expired_at: Date | null;
 
-  @OneToOne(() => Interview)
+  @OneToOne(() => Interview, interview => interview.meetingRoom)
   interview: Interview;
-
-  // The Base class presumably includes created_at, updated_at, and deleted_at fields.
 }

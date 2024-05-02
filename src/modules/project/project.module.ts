@@ -10,12 +10,14 @@ import { Company } from 'src/modules/company/company.entity';
 import { User } from 'src/modules/user/user.entity';
 import { FavoriteProject } from 'src/modules/favoriteProject/favoriteProject.entity';
 import { CompanyProfileService } from 'src/modules/company/company.service';
-import { ProposalService } from 'src/modules/proposal/proposal.service';
-import { Proposal } from 'src/modules/proposal/proposal.entity';
+import { NotificationService } from 'src/modules/notification/notification.service';
+import { Notification } from 'src/modules/notification/notification.entity';
+import { Interview } from 'src/modules/interview/interview.entity';
+import { MeetingRoom } from 'src/modules/meeting-room/meeting-room.entity';
 
 @Module({
-  imports: [TypeOrmModule.forFeature([Project, Message, Student, Company, FavoriteProject, User, Proposal])],
-  providers: [ProjectService, MessageService, CompanyProfileService, ProposalService],
+  imports: [TypeOrmModule.forFeature([Project, Message, Student, Company, FavoriteProject, User, Notification, Interview, MeetingRoom])],
+  providers: [ProjectService, MessageService, CompanyProfileService, NotificationService],
   controllers: [ProjectController],
 })
 export class ProjectModule {}

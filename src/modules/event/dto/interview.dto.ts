@@ -5,6 +5,9 @@ export class InterviewDto {
   title: string;
 
   @IsNotEmpty()
+  content: string;
+
+  @IsNotEmpty()
   startTime: Date;
 
   @IsNotEmpty()

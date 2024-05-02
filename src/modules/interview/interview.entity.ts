@@ -31,7 +31,7 @@ export class Interview extends Base {
   @OneToMany(() => Message, (message) => message.interview)
   messages: Message[];
 
-  @OneToOne(() => MeetingRoom)
+  @OneToOne(() => MeetingRoom, meetingRoom => meetingRoom.interview)
   @JoinColumn({ name: 'meeting_room_id' })
   meetingRoom: MeetingRoom;
 }

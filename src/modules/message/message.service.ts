@@ -9,6 +9,7 @@ import { Project } from 'src/modules/project/project.entity';
 import { Student } from 'src/modules/student/student.entity';
 import { HttpRequestContextService } from 'src/shared/http-request-context/http-request-context.service';
 import { Brackets, In, Repository } from 'typeorm';
+import { NotificationService } from 'src/modules/notification/notification.service';
 
 @Injectable()
 export class MessageService {
@@ -23,7 +24,8 @@ export class MessageService {
     private companyRepository: Repository<Company>,
     private readonly httpContext: HttpRequestContextService,
     @InjectRepository(Project)
-    private projectRepository: Repository<Project>
+    private projectRepository: Repository<Project>, 
+    private readonly notificationService: NotificationService,
   ) {}
 
   async searchProjectId(projectId: number): Promise<MessageResDto[] | any> {
@@ -34,6 +36,7 @@ export class MessageService {
       .leftJoin('message.sender', 'sender')
       .leftJoin('message.receiver', 'receiver')
       .leftJoinAndSelect('message.interview', 'interview')
+      .leftJoinAndSelect('interview.meetingRoom', 'meetingRoom')
       .select([
         'message.id',
         'message.content',
@@ -43,16 +46,7 @@ export class MessageService {
         'receiver.id',
         'receiver.fullname',
         'interview',
-      ])
-      .select([
-        'message.id',
-        'message.content',
-        'message.createdAt',
-        'sender.id',
-        'sender.fullname',
-        'receiver.id',
-        'receiver.fullname',
-        'interview',
+        'meetingRoom'
       ])
       .where('message.projectId = :projectId', { projectId })
       .andWhere('message.senderId = :userId', { userId })
@@ -64,6 +58,7 @@ export class MessageService {
       .leftJoin('message.sender', 'sender')
       .leftJoin('message.receiver', 'receiver')
       .leftJoinAndSelect('message.interview', 'interview')
+      .leftJoinAndSelect('interview.meetingRoom', 'meetingRoom')
       .select([
         'message.id',
         'message.content',
@@ -73,16 +68,7 @@ export class MessageService {
         'receiver.id',
         'receiver.fullname',
         'interview',
-      ])
-      .select([
-        'message.id',
-        'message.content',
-        'message.createdAt',
-        'sender.id',
-        'sender.fullname',
-        'receiver.id',
-        'receiver.fullname',
-        'interview',
+        'meetingRoom'
       ])
       .where('message.projectId = :projectId', { projectId })
       .andWhere('message.receiverId = :userId', { userId })
@@ -114,6 +100,7 @@ export class MessageService {
       .leftJoin('message.sender', 'sender')
       .leftJoin('message.receiver', 'receiver')
       .leftJoinAndSelect('message.interview', 'interview')
+      .leftJoinAndSelect('interview.meetingRoom', 'meetingRoom')
       .select([
         'message.id',
         'message.content',
@@ -123,6 +110,7 @@ export class MessageService {
         'receiver.id',
         'receiver.fullname',
         'interview',
+        'meetingRoom'
       ])
       .where('message.projectId = :projectId', { projectId })
       .andWhere(
@@ -154,6 +142,7 @@ export class MessageService {
       .leftJoinAndSelect('message.sender', 'sender')
       .leftJoinAndSelect('message.receiver', 'receiver')
       .leftJoinAndSelect('message.interview', 'interview')
+      .leftJoinAndSelect('interview.meetingRoom', 'meetingRoom')
       .leftJoinAndSelect('message.project', 'project')
       .select([
         'message.id',
@@ -165,6 +154,7 @@ export class MessageService {
         'receiver.fullname',
         'interview',
         'project',
+        'meetingRoom'
       ])
       .andWhere(
         new Brackets((qb) => {
@@ -286,6 +276,7 @@ export class MessageService {
       });
 
       await this.messageRepository.save(newMessage);
+
       return newMessage.id;
     } catch (Exception) {
       this.logger.error(`Error when create message: ${Exception}`);
