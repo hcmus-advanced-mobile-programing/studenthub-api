@@ -87,4 +87,32 @@ export class NotificationService {
 
     return notificationWithoutPassword();
   }
+
+  async findOneByContent(receiverId: string | number, messageId: string | number, content: string): Promise<any> {
+    const notification =  await this.notificationRepository.findOne({
+      where: { messageId: messageId, receiverId: receiverId, content: content },
+      relations: ['message', 'sender', 'receiver'],
+    });
+
+    const notificationWithoutPassword = async () => {
+      const { sender, receiver, ...rest } = notification;
+      const sanitizedSender = { ...sender };
+      const sanitizedReceiver = { ...receiver };
+      let interview : any;
+      let meetingRoom : any;
+      delete sanitizedSender.password;
+      delete sanitizedReceiver.password;
+      if (notification.message.interviewId != null){
+        interview = await this.interviewRepository.findOneBy({ id: notification.message.interviewId });
+        meetingRoom = await this.meetingRoomRepository.findOneBy({ id: interview.meetingRoomId });
+      }
+      else{
+        interview = meetingRoom = null;
+      }
+      
+      return { ...rest, sender: sanitizedSender, receiver: sanitizedReceiver, interview, meetingRoom };
+    };
+
+    return notificationWithoutPassword();
+  }
 }

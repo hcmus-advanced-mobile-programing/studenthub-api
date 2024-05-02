@@ -34,6 +34,10 @@ export class InterviewService {
   }
 
   async create(interview: InterviewCreateDto): Promise<Interview> {
+    if (!interview.expired_at) {
+      interview.expired_at = interview.endTime;
+    }
+
     const meeting_room = await this.meetingRoomService.create({
       meeting_room_code: interview.meeting_room_code,
       meeting_room_id: interview.meeting_room_id,
@@ -46,7 +50,7 @@ export class InterviewService {
       senderId: interview.senderId,
       receiverId: interview.receiverId,
       projectId: interview.projectId,
-      content: 'Interview created',
+      content: interview.content,
       interviewId: newInterview.id,
       messageFlag: MessageFlag.Interview,
     });

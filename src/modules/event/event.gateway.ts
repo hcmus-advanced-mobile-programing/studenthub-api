@@ -24,9 +24,8 @@ import { NotificationService } from 'src/modules/notification/notification.servi
 import { _InterviewUpdateDto } from 'src/modules/event/dto/interview-update.dto';
 import { InterviewService } from 'src/modules/interview/interview.service';
 import { Message } from 'src/modules/message/message.entity';
-import { Interview } from 'src/modules/interview/interview.entity';
 import { MeetingRoom } from 'src/modules/meeting-room/meeting-room.entity';
-import { NotifyFlag, TypeNotifyFlag } from 'src/common/common.enum';
+import { NotifyFlag, TypeNotifyFlag, DisableFlag } from 'src/common/common.enum';
 
 @Injectable()
 @WebSocketGateway({
@@ -51,8 +50,6 @@ export class EventGateway implements OnGatewayInit, OnGatewayConnection, OnGatew
     private userService: UserService,
     private notificationService: NotificationService,
     private interviewService: InterviewService,
-    @InjectRepository(Interview)
-    private interviewRepository: Repository<Interview>,
   ) {
     console.log('constructor');
     // Create message queue and process message
@@ -106,7 +103,7 @@ export class EventGateway implements OnGatewayInit, OnGatewayConnection, OnGatew
     this.interviewQueue = new Queue('interviewQueue');
     this.interviewQueue
       .process(async (job: Queue.Job<InterviewDto>, done) => {
-        const { title, startTime, endTime, projectId, senderId, receiverId, senderSocketId, meeting_room_code, meeting_room_id, expired_at} = job.data;
+        const { title, content, startTime, endTime, projectId, senderId, receiverId, senderSocketId, meeting_room_code, meeting_room_id, expired_at} = job.data;
         
         const checkCode = await this.meetingRoomRepository.findOneBy({meeting_room_code: meeting_room_code});
         if (checkCode){
@@ -122,7 +119,7 @@ export class EventGateway implements OnGatewayInit, OnGatewayConnection, OnGatew
           return done();
         }
 
-        const resultAdd = this.interviewService.create({title, startTime, endTime, projectId, senderId, receiverId, meeting_room_code, meeting_room_id, expired_at});
+        const resultAdd = this.interviewService.create({title, content, startTime, endTime, projectId, senderId, receiverId, meeting_room_code, meeting_room_id, expired_at});
 
         if (!resultAdd) {
           console.error(senderSocketId, 'Error occurred while adding interview');
@@ -155,39 +152,63 @@ export class EventGateway implements OnGatewayInit, OnGatewayConnection, OnGatew
         const { interviewId, senderId, receiverId, projectId, title, startTime, endTime, senderSocketId, updateAction, deleteAction} = job.data;
         const message = await this.messageRepository.findOneBy({interviewId: interviewId});
         const messageId = message.id;
+        const sender = await userService.findOne({ id: senderId });
+        let notification : any;
+        
+        const checkInterviewExist = await this.interviewService.findById(Number(interviewId));
+        if (!checkInterviewExist || checkInterviewExist.disableFlag === DisableFlag.Disable){
+          console.error(senderSocketId, 'The interview does not exist');
+          this.server.to(senderSocketId).emit('ERROR', { content: 'The interview does not exist' });
+          return done();
+        }
 
         if (deleteAction == true){
-          const resultDel = this.interviewService.delete(Number(interviewId));
+          const resultDel = this.interviewService.disable(Number(interviewId));
           if (!resultDel) {
             console.error(senderSocketId, 'Error occurred while delete interview');
             this.server.to(senderSocketId).emit('ERROR', { content: 'Error occurred in interview queue' });
             return done();
           }
-          const sender = await userService.findOne({ id: senderId });
-          this.server.emit(`RECEIVE_INTERVIEW`, { title, senderId, receiverId, projectId });
+
+          await this.notificationService.createNotification({
+            senderId: senderId,
+            receiverId: receiverId,
+            messageId: messageId,
+            content: `Interview deleted`,
+            notifyFlag: NotifyFlag.Unread,
+            typeNotifyFlag: TypeNotifyFlag.Interview,
+            title: `Interview deleted from ${sender.fullname}`,
+          });
+          notification = await this.notificationService.findOneByContent(receiverId, messageId, 'Interview deleted');
+
+          this.server.emit(`RECEIVE_INTERVIEW`, { title: `Interview deleted from ${sender.fullname}`, projectId, senderId, receiverId, messageId });
           this.server.emit(`NOTI_${receiverId}`, { title: `Interview deleted from ${sender.fullname}`, projectId, senderId, receiverId, messageId});
           done();
         }
 
         if (updateAction == true){
-          const checkInterviewExist = await this.interviewService.findById(Number(interviewId));
-          if (!checkInterviewExist){
-            console.error(senderSocketId, 'The interview does not exist');
-            this.server.to(senderSocketId).emit('ERROR', { content: 'The interview does not exist' });
-            return done();
-          }
           const resultAdd = this.interviewService.update(Number(interviewId), {title, startTime, endTime});
           if (!resultAdd) {
-            console.error(senderSocketId, 'Error occurred while adding interview');
+            console.error(senderSocketId, 'Error occurred while update interview');
             this.server.to(senderSocketId).emit('ERROR', { content: 'Error occurred in interview queue' });
             return done();
           }
 
-          const sender = await userService.findOne({ id: senderId });
-          this.server.emit(`RECEIVE_INTERVIEW`, { title, senderId, receiverId, projectId });
-          this.server.emit(`NOTI_${receiverId}`, { title: `Interview updated from ${sender.fullname}`, projectId, senderId, receiverId, messageId});
+          await this.notificationService.createNotification({
+            senderId: senderId,
+            receiverId: receiverId,
+            messageId: messageId,
+            content: `Interview updated`,
+            notifyFlag: NotifyFlag.Unread,
+            typeNotifyFlag: TypeNotifyFlag.Interview,
+            title: `Interview updated from ${sender.fullname}`,
+          });
+          notification = await this.notificationService.findOneByContent(receiverId, messageId, 'Interview updated');
+
+          this.server.emit(`RECEIVE_INTERVIEW`, { notification });
+          this.server.emit(`NOTI_${receiverId}`, { notification });
           done();
-          }
+        }
       })
       .catch((error) => {
         console.error(error);
@@ -264,10 +285,10 @@ export class EventGateway implements OnGatewayInit, OnGatewayConnection, OnGatew
         throw new Error('Invalid data');
       }
 
-      const { title, startTime, endTime, disableFlag, projectId, senderId, receiverId, meeting_room_code, meeting_room_id, expired_at } = data;
+      const { title, content, startTime, endTime, disableFlag, projectId, senderId, receiverId, meeting_room_code, meeting_room_id, expired_at } = data;
       
       this.interviewQueue
-        .add({ title, startTime, endTime, disableFlag, projectId, senderId, receiverId, senderSocketId: client.id, meeting_room_code, meeting_room_id, expired_at})
+        .add({ title, content, startTime, endTime, disableFlag, projectId, senderId, receiverId, senderSocketId: client.id, meeting_room_code, meeting_room_id, expired_at})
         .catch((error) => {
           throw new Error(error);
         });
