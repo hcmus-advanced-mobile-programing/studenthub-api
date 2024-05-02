@@ -14,9 +14,10 @@ import { NotificationService } from 'src/modules/notification/notification.servi
 import { Notification } from 'src/modules/notification/notification.entity';
 import { Interview } from 'src/modules/interview/interview.entity';
 import { MeetingRoom } from 'src/modules/meeting-room/meeting-room.entity';
+import { Proposal } from 'src/modules/proposal/proposal.entity';
 
 @Module({
-  imports: [TypeOrmModule.forFeature([Project, Message, Student, Company, FavoriteProject, User, Notification, Interview, MeetingRoom])],
+  imports: [TypeOrmModule.forFeature([Project, Message, Student, Company, FavoriteProject, User, Notification, Interview, MeetingRoom, Proposal])],
   providers: [ProjectService, MessageService, CompanyProfileService, NotificationService],
   controllers: [ProjectController],
 })
