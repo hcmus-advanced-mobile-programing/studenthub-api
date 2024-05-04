@@ -125,6 +125,6 @@ export class NotificationService {
     if (notification.notifyFlag === NotifyFlag.Unread) {
       throw new Error('Interview already read');
     }
-    await this.notificationRepository.save({ ...notification, notifyFlag: NotifyFlag.Read });
+    await this.notificationRepository.update(id, { notifyFlag: NotifyFlag.Read });
   }
 }

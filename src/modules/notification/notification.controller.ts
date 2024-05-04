@@ -12,7 +12,8 @@ export class NotificationController {
     return await this.notificationService.findByReceiverId(receiverId);
   }
 
-  @Patch(':id/readNoti')
+  @Auth()
+  @Patch('readNoti/:id')
   async disableInterviewById(@Param('id') id: number | string) {
     return await this.notificationService.readNotification(id);
   }
