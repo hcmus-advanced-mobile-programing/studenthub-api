@@ -66,6 +66,27 @@ export class NotificationService {
     else return false;
   }
 
+  async findOneById(id: string | number): Promise<any> {
+    const notification = await this.notificationRepository.findOne({
+      where: { id },
+      relations: ['message', 'sender', 'receiver', 'proposal'],
+      select: {
+        sender: {
+          id: true,
+          fullname: true,
+          email: true,
+        },
+        receiver: {
+          id: true,
+          fullname: true,
+          email: true,
+        },
+      },
+    });
+
+    return notification;
+  }
+
   async findOneByReceiverId(receiverId: string | number, messageId: string | number): Promise<any> {
     const notification = await this.notificationRepository.findOne({
       where: { messageId: messageId, receiverId: receiverId },

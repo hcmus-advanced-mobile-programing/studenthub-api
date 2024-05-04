@@ -66,6 +66,7 @@ export class InterviewService {
       notifyFlag: NotifyFlag.Unread,
       typeNotifyFlag: TypeNotifyFlag.Interview,
       title: interview.title,
+      proposalId: null,
     });
 
     return message;

@@ -12,18 +12,30 @@ import { Project } from 'src/modules/project/project.entity';
 import { NotificationService } from 'src/modules/notification/notification.service';
 import { WebSocketServer } from '@nestjs/websockets';
 import { Server } from 'socket.io';
+import { EventGateway } from 'src/modules/event/event.gateway';
+import { Student } from 'src/modules/student/student.entity';
+import { Company } from 'src/modules/company/company.entity';
+import { User } from 'src/modules/user/user.entity';
+import { NotifyFlag, TypeNotifyFlag } from 'src/common/common.enum';
 
 @Injectable()
 export class ProposalService {
-  private readonly logger = new Logger(ProposalService.name);
   @WebSocketServer() private server: Server;
+  private readonly logger = new Logger(ProposalService.name);
   constructor(
     @InjectRepository(Proposal)
     private proposalRepository: Repository<Proposal>,
-    private notificationService: NotificationService,
     @InjectRepository(Project)
     private projectRepository: Repository<Project>,
-    private readonly httpContext: HttpRequestContextService
+    @InjectRepository(Student)
+    private studentRepository: Repository<Student>,
+    @InjectRepository(Company)
+    private companyRepository: Repository<Company>,
+    @InjectRepository(User)
+    private userRepository: Repository<User>,
+    private readonly httpContext: HttpRequestContextService,
+    private eventGateway: EventGateway,
+    private notificationService: NotificationService
   ) {}
 
   async searchProjectId(projectId: number | string, args: ProposalFindArgs): Promise<PaginationResult<ProposalResDto>> {
@@ -97,7 +109,35 @@ export class ProposalService {
     if (checkProposal.length > 0) {
       throw new ConflictException(`Proposal for project with ID ${projectId} already exists.`);
     }
-    return this.proposalRepository.save(proposal);
+    const newProposal = await this.proposalRepository.save(proposal);
+
+    const studentId = proposal.studentId;
+
+    const student = await this.studentRepository.findOneBy({ id: studentId });
+
+    const companyId = project.companyId;
+
+    const company = await this.companyRepository.findOneBy({ id: companyId });
+
+    const sender = await this.userRepository.findOneBy({ id: student.userId });
+
+    const notificationId = await this.notificationService.createNotification({
+      receiverId: company.userId,
+      senderId: studentId,
+      title: `New proposal from student ${sender.fullname} for project ${project.title}`,
+      content: `New proposal from student ${sender.fullname} for project ${project.title}`,
+      notifyFlag: NotifyFlag.Unread,
+      typeNotifyFlag: TypeNotifyFlag.Submitted,
+      messageId: null,
+      proposalId: newProposal.id,
+    });
+
+    await this.eventGateway.sendNotification({
+      notificationId: notificationId as string,
+      receiverId: company.userId as string,
+    });
+
+    return newProposal;
   }
 
   async updateProposal(id: number | string, proposal: ProposalUpdateDto): Promise<void> {

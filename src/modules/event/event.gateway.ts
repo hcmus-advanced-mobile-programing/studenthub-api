@@ -26,6 +26,7 @@ import { InterviewService } from 'src/modules/interview/interview.service';
 import { Message } from 'src/modules/message/message.entity';
 import { MeetingRoom } from 'src/modules/meeting-room/meeting-room.entity';
 import { NotifyFlag, TypeNotifyFlag, DisableFlag, statusFlagToTypeNotifyMap } from 'src/common/common.enum';
+import { NotificationDto } from 'src/modules/event/dto/notification.dto';
 
 @Injectable()
 @WebSocketGateway({
@@ -38,6 +39,7 @@ export class EventGateway implements OnGatewayInit, OnGatewayConnection, OnGatew
   private messageQueue: Queue.Queue;
   private interviewQueue: Queue.Queue;
   private updateInterviewQueue: Queue.Queue;
+  private notificationQueue: Queue.Queue;
   private readonly logger = new Logger(MessageService.name);
 
   constructor(
@@ -75,6 +77,7 @@ export class EventGateway implements OnGatewayInit, OnGatewayConnection, OnGatew
           notifyFlag: NotifyFlag.Unread,
           typeNotifyFlag: TypeNotifyFlag.Chat,
           title: `New message is sent by user ${senderId}`,
+          proposalId: null,
         });
 
         const notification = await this.notificationService.findOneByReceiverId(receiverId, messageId);
@@ -209,6 +212,7 @@ export class EventGateway implements OnGatewayInit, OnGatewayConnection, OnGatew
             notifyFlag: NotifyFlag.Unread,
             typeNotifyFlag: TypeNotifyFlag.Interview,
             title: `Interview deleted from ${sender.fullname}`,
+            proposalId: null,
           });
           notification = await this.notificationService.findOneByContent(receiverId, messageId, 'Interview deleted');
 
@@ -244,6 +248,7 @@ export class EventGateway implements OnGatewayInit, OnGatewayConnection, OnGatew
             notifyFlag: NotifyFlag.Unread,
             typeNotifyFlag: TypeNotifyFlag.Interview,
             title: `Interview updated from ${sender.fullname}`,
+            proposalId: null,
           });
           notification = await this.notificationService.findOneByContent(receiverId, messageId, 'Interview updated');
 
@@ -257,6 +262,25 @@ export class EventGateway implements OnGatewayInit, OnGatewayConnection, OnGatew
       .catch((error) => {});
 
     this.updateInterviewQueue.on('error', (error) => {});
+
+    // Create notification queue and process notification
+    this.notificationQueue = new Queue('notificationQueue');
+    this.notificationQueue
+      .process(async (job: Queue.Job<NotificationDto>, done) => {
+        const { receiverId, notificationId } = job.data;
+
+        const notification = await this.notificationService.findOneById(notificationId);
+
+        this.server.emit(`NOTI_${receiverId}`, { notification });
+        done();
+      })
+      .catch((error) => {
+        console.log('process error', error);
+      });
+
+    this.notificationQueue.on('error', (error) => {
+      console.log('on error', error);
+    });
   }
 
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -274,6 +298,7 @@ export class EventGateway implements OnGatewayInit, OnGatewayConnection, OnGatew
       // Join room
       if (project_id) await socket.join(`${project_id}_${id}`);
     } catch (error) {
+      console.log(error);
       socket.disconnect();
     }
   }
@@ -281,6 +306,12 @@ export class EventGateway implements OnGatewayInit, OnGatewayConnection, OnGatew
   // eslint-disable-next-line @typescript-eslint/no-unused-vars, @typescript-eslint/require-await
   async handleDisconnect(socket: Socket) {
     socket.disconnect();
+  }
+
+  async sendNotification(data: NotificationDto): Promise<void> {
+    await this.notificationQueue.add(data).catch((error) => {
+      throw new Error(error);
+    });
   }
 
   // Listen for SEND_MESSAGE event
@@ -392,6 +423,7 @@ export class EventGateway implements OnGatewayInit, OnGatewayConnection, OnGatew
     try {
       const { proposalId, senderId, receiverId, ...proposalToUpdate } = data;
       await this.notificationService.createNotification({
+        proposalId: proposalId,
         senderId: proposalToUpdate.studentId,
         receiverId: proposalToUpdate.studentId,
         content: 'Proposal updated',
