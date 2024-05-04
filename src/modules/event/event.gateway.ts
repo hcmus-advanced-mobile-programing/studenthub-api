@@ -35,7 +35,7 @@ import { NotificationDto } from 'src/modules/event/dto/notification.dto';
   },
 })
 export class EventGateway implements OnGatewayInit, OnGatewayConnection, OnGatewayDisconnect {
-  @WebSocketServer() private server: Server;
+  @WebSocketServer() public server: Server;
   private messageQueue: Queue.Queue;
   private interviewQueue: Queue.Queue;
   private updateInterviewQueue: Queue.Queue;
@@ -421,22 +421,20 @@ export class EventGateway implements OnGatewayInit, OnGatewayConnection, OnGatew
   @SubscribeMessage('PROPOSAL_UPDATED')
   async handleProposalUpdated(@ConnectedSocket() client: Socket, @MessageBody() data): Promise<void> {
     try {
-      const { proposalId, senderId, receiverId, ...proposalToUpdate } = data;
-      await this.notificationService.createNotification({
-        proposalId: proposalId,
+      const { proposalId, studentInfo, projectInfo, company, proposalToUpdate } = data;
+      const notificationId = await this.notificationService.createNotification({
+        receiverId: company.userId,
         senderId: proposalToUpdate.studentId,
-        receiverId: proposalToUpdate.studentId,
-        content: 'Proposal updated',
-        title: proposalToUpdate.coverLetter,
-        notifyFlag: NotifyFlag.Unread,
-        typeNotifyFlag: statusFlagToTypeNotifyMap[proposalToUpdate.statusFlag],
-        messageId: proposalToUpdate.id,
+        title: `PROPOSAL UPDATED !`,
+        content: `Proposal udpated by student ${studentInfo.fullname} for project ${projectInfo.title}`,
+        notifyFlag: NotifyFlag.Read,
+        typeNotifyFlag: TypeNotifyFlag.Submitted,
+        messageId: null,
+        proposalId: proposalId,
       });
-      this.server.emit(`PROPOSAL_UPDATED_${receiverId}`, {
-        proposalId,
-        updatedPartsOfProposal: proposalToUpdate,
-        senderId,
-        receiverId,
+      await this.sendNotification({
+        receiverId: company.userId as string,
+        notificationId: notificationId as string,
       });
     } catch (error) {
       console.error('Error occurred in message queue: ', error);

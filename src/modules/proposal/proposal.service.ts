@@ -140,18 +140,25 @@ export class ProposalService {
     return newProposal;
   }
 
-  async updateProposal(id: number | string, proposal: ProposalUpdateDto): Promise<void> {
+  async updateProposal(proposalId: number | string, proposal: ProposalUpdateDto): Promise<void> {
     this.logger.log(`Update proposal with id: ${proposal}`);
-    const proposalToUpdate = await this.proposalRepository.findOneBy({ id });
+
+    const proposalToUpdate = await this.proposalRepository.findOneBy({ id: proposalId });
 
     if (!proposalToUpdate) throw new Error('Proposal not found');
-    await this.proposalRepository.update(id, proposal);
-
-    this.server.emit('PROPOSAL_UPDATED', {
-      ...proposalToUpdate,
-      proposalId: id,
-      senderId: proposalToUpdate.studentId,
-      receiverId: proposalToUpdate.studentId,
+    // Update proposal
+    await this.proposalRepository.update(proposalId, proposal);
+    // Get info for notification
+    const studentInfo = await this.userRepository.findOneBy({ id: proposalToUpdate.student.userId });
+    const projectInfo = await this.projectRepository.findOneBy({ id: proposalToUpdate.projectId });
+    const company = await this.companyRepository.findOneBy({ id: proposalToUpdate.project.companyId });
+    // Emit event back to event.gateway.ts
+    this.eventGateway.server.emit('PROPOSAL_UPDATED', {
+      proposalId,
+      studentInfo,
+      projectInfo,
+      company,
+      proposalToUpdate,
     });
   }
 
