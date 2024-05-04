@@ -119,16 +119,27 @@ export class EventGateway implements OnGatewayInit, OnGatewayConnection, OnGatew
           return done();
         }
 
-        const messageId = await this.interviewService.create({ title, content, startTime, endTime, projectId, senderId, receiverId, meeting_room_code, meeting_room_id, expired_at });
+        let messageId;
+
+        try {
+          messageId = await this.interviewService.create({ title, content, startTime, endTime, projectId, senderId, receiverId, meeting_room_code, meeting_room_id, expired_at });
+        } catch (error) {
+          return done();
+        }
 
         console.log('messageId');
         console.log(messageId);
 
-        const notification = await this.notificationService.findOneByReceiverId(receiverId, messageId);
+        if(messageId) {
+          const notification = await this.notificationService.findOneByReceiverId(receiverId, messageId);
 
-        this.server.to([`${projectId}_${senderId}`, `${projectId}_${receiverId}`]).emit(`RECEIVE_INTERVIEW`, { notification });
-        this.server.emit(`NOTI_${receiverId}`, { notification });
-        done();
+          this.server.to([`${projectId}_${senderId}`, `${projectId}_${receiverId}`]).emit(`RECEIVE_INTERVIEW`, { notification });
+          this.server.emit(`NOTI_${receiverId}`, { notification });
+          done();
+        } else {
+          return done();
+        }
+
       })
       .catch((error) => {
         console.log('process error', error);
