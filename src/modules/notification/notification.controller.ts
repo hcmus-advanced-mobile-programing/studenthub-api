@@ -1,4 +1,4 @@
-import { Controller, Get, Param } from '@nestjs/common';
+import { Controller, Get, Param, Patch } from '@nestjs/common';
 import { Auth } from 'src/decorators/http.decorators';
 import { NotificationService } from 'src/modules/notification/notification.service';
 
@@ -10,5 +10,11 @@ export class NotificationController {
   @Auth()
   async findByStudentId(@Param('receiverId') receiverId: string | number): Promise<any[]> {
     return await this.notificationService.findByReceiverId(receiverId);
+  }
+
+  @Auth()
+  @Patch('readNoti/:id')
+  async disableInterviewById(@Param('id') id: number | string) {
+    return await this.notificationService.readNotification(id);
   }
 }

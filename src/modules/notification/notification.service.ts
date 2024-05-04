@@ -6,6 +6,7 @@ import { Repository } from 'typeorm';
 import { CreateNotificationDto } from 'src/modules/notification/dto/notification-create.dto';
 import { Interview } from 'src/modules/interview/interview.entity';
 import { MeetingRoom } from 'src/modules/meeting-room/meeting-room.entity';
+import { NotifyFlag } from 'src/common/common.enum';
 
 @Injectable()
 export class NotificationService {
@@ -113,5 +114,17 @@ export class NotificationService {
     };
 
     return notificationWithoutPassword();
+  }
+
+  async readNotification(id: number | string): Promise<void> {
+    const notification = await this.notificationRepository.findOne({ where: { id } });
+    if (!notification) {
+      throw new Error('Notification not found');
+    }
+
+    if (notification.notifyFlag === NotifyFlag.Unread) {
+      throw new Error('Interview already read');
+    }
+    await this.notificationRepository.update(id, { notifyFlag: NotifyFlag.Read });
   }
 }
