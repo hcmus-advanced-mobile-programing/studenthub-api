@@ -98,8 +98,11 @@ export class EventGateway implements OnGatewayInit, OnGatewayConnection, OnGatew
     this.interviewQueue = new Queue('interviewQueue');
     this.interviewQueue
       .process(async (job: Queue.Job<InterviewDto>, done) => {
-        const { title, content, startTime, endTime, projectId, senderId, receiverId, senderSocketId, meeting_room_code, meeting_room_id, expired_at} = job.data;
-        
+
+        console.log('interviewQueue');
+
+        const { title, content, startTime, endTime, projectId, senderId, receiverId, senderSocketId, meeting_room_code, meeting_room_id, expired_at } = job.data;
+
         const checkMeetingExist = await this.meetingRoomRepository.findOne({
           where: [
             { meeting_room_code: meeting_room_code },
@@ -116,14 +119,19 @@ export class EventGateway implements OnGatewayInit, OnGatewayConnection, OnGatew
           return done();
         }
 
-        const messageId = await this.interviewService.create({title, content, startTime, endTime, projectId, senderId, receiverId, meeting_room_code, meeting_room_id, expired_at});
+        const messageId = await this.interviewService.create({ title, content, startTime, endTime, projectId, senderId, receiverId, meeting_room_code, meeting_room_id, expired_at });
+
+        console.log('messageId');
+        console.log(messageId);
+
         const notification = await this.notificationService.findOneByReceiverId(receiverId, messageId);
-        
+
         this.server.to([`${projectId}_${senderId}`, `${projectId}_${receiverId}`]).emit(`RECEIVE_INTERVIEW`, { notification });
         this.server.emit(`NOTI_${receiverId}`, { notification });
         done();
       })
       .catch((error) => {
+        console.log('error', error);
       });
 
     this.interviewQueue.on('error', (error) => {
@@ -164,7 +172,7 @@ export class EventGateway implements OnGatewayInit, OnGatewayConnection, OnGatew
           notification = await this.notificationService.findOneByContent(receiverId, messageId, 'Interview deleted');
 
           this.server.to([`${projectId}_${senderId}`, `${projectId}_${receiverId}`]).emit(`RECEIVE_INTERVIEW`, { title: `Interview deleted from ${sender.fullname}`, projectId, senderId, receiverId, messageId });
-          this.server.emit(`NOTI_${receiverId}`, { title: `Interview deleted from ${sender.fullname}`, projectId, senderId, receiverId, messageId});
+          this.server.emit(`NOTI_${receiverId}`, { title: `Interview deleted from ${sender.fullname}`, projectId, senderId, receiverId, messageId });
           done();
         }
 

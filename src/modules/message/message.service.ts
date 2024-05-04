@@ -252,7 +252,7 @@ export class MessageService {
     };
   }
 
-  async createMessage(data: any): Promise<string | number | false> {
+  async createMessage(data: any): Promise<string | number> {
     const senderId = Number(data.senderId);
     const receiverId = Number(data.receiverId);
     const projectId = Number(data.projectId);
@@ -280,7 +280,7 @@ export class MessageService {
       return newMessage.id;
     } catch (Exception) {
       this.logger.error(`Error when create message: ${Exception}`);
-      return false;
+      return;
     }
   }
 

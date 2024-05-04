@@ -46,7 +46,7 @@ export class InterviewService {
 
     const newInterview = await this.projectRepository.save({...interview, meetingRoomId: meeting_room.id});
 
-    await this.messageService.createMessage({
+    const message = await this.messageService.createMessage({
       senderId: interview.senderId,
       receiverId: interview.receiverId,
       projectId: interview.projectId,
@@ -55,19 +55,17 @@ export class InterviewService {
       messageFlag: MessageFlag.Interview,
     });
 
-    const message = await this.messageRepository.findOneBy({interviewId: newInterview.id});
-
     await this.notificationService.createNotification({
       senderId: interview.senderId,
       receiverId: interview.receiverId,
-      messageId: message.id,
+      messageId: message,
       content: 'Interview created',
       notifyFlag: NotifyFlag.Unread,
       typeNotifyFlag: TypeNotifyFlag.Interview,
       title: interview.title,
     });
 
-    return message.id;
+    return message;
   }
 
   async update(id: number, interview: InterviewUpdateDto): Promise<void> {
