@@ -25,7 +25,7 @@ import { _InterviewUpdateDto } from 'src/modules/event/dto/interview-update.dto'
 import { InterviewService } from 'src/modules/interview/interview.service';
 import { Message } from 'src/modules/message/message.entity';
 import { MeetingRoom } from 'src/modules/meeting-room/meeting-room.entity';
-import { NotifyFlag, TypeNotifyFlag, DisableFlag } from 'src/common/common.enum';
+import { NotifyFlag, TypeNotifyFlag, DisableFlag, statusFlagToTypeNotifyMap } from 'src/common/common.enum';
 
 @Injectable()
 @WebSocketGateway({
@@ -49,7 +49,7 @@ export class EventGateway implements OnGatewayInit, OnGatewayConnection, OnGatew
     private messageService: MessageService,
     private userService: UserService,
     private notificationService: NotificationService,
-    private interviewService: InterviewService,
+    private interviewService: InterviewService
   ) {
     // Create message queue and process message
     this.messageQueue = new Queue('messageQueue');
@@ -88,26 +88,32 @@ export class EventGateway implements OnGatewayInit, OnGatewayConnection, OnGatew
         this.server.emit(`NOTI_${receiverId}`, { notification });
         done();
       })
-      .catch((error) => {
-      });
+      .catch((error) => {});
 
-    this.messageQueue.on('error', (error) => {
-    });
+    this.messageQueue.on('error', (error) => {});
 
     // Create interview queue and process interview
     this.interviewQueue = new Queue('interviewQueue');
     this.interviewQueue
       .process(async (job: Queue.Job<InterviewDto>, done) => {
-
         console.log('interviewQueue');
 
-        const { title, content, startTime, endTime, projectId, senderId, receiverId, senderSocketId, meeting_room_code, meeting_room_id, expired_at } = job.data;
+        const {
+          title,
+          content,
+          startTime,
+          endTime,
+          projectId,
+          senderId,
+          receiverId,
+          senderSocketId,
+          meeting_room_code,
+          meeting_room_id,
+          expired_at,
+        } = job.data;
 
         const checkMeetingExist = await this.meetingRoomRepository.findOne({
-          where: [
-            { meeting_room_code: meeting_room_code },
-            { meeting_room_id: meeting_room_id }
-          ]
+          where: [{ meeting_room_code: meeting_room_code }, { meeting_room_id: meeting_room_id }],
         });
 
         if (checkMeetingExist) {
@@ -122,7 +128,18 @@ export class EventGateway implements OnGatewayInit, OnGatewayConnection, OnGatew
         let messageId;
 
         try {
-          messageId = await this.interviewService.create({ title, content, startTime, endTime, projectId, senderId, receiverId, meeting_room_code, meeting_room_id, expired_at });
+          messageId = await this.interviewService.create({
+            title,
+            content,
+            startTime,
+            endTime,
+            projectId,
+            senderId,
+            receiverId,
+            meeting_room_code,
+            meeting_room_id,
+            expired_at,
+          });
         } catch (error) {
           return done();
         }
@@ -130,16 +147,17 @@ export class EventGateway implements OnGatewayInit, OnGatewayConnection, OnGatew
         console.log('messageId');
         console.log(messageId);
 
-        if(messageId) {
+        if (messageId) {
           const notification = await this.notificationService.findOneByReceiverId(receiverId, messageId);
 
-          this.server.to([`${projectId}_${senderId}`, `${projectId}_${receiverId}`]).emit(`RECEIVE_INTERVIEW`, { notification });
+          this.server
+            .to([`${projectId}_${senderId}`, `${projectId}_${receiverId}`])
+            .emit(`RECEIVE_INTERVIEW`, { notification });
           this.server.emit(`NOTI_${receiverId}`, { notification });
           done();
         } else {
           return done();
         }
-
       })
       .catch((error) => {
         console.log('process error', error);
@@ -153,7 +171,18 @@ export class EventGateway implements OnGatewayInit, OnGatewayConnection, OnGatew
     this.updateInterviewQueue = new Queue('updateInterviewQueue');
     this.updateInterviewQueue
       .process(async (job: Queue.Job<_InterviewUpdateDto>, done) => {
-        const { interviewId, senderId, receiverId, projectId, title, startTime, endTime, senderSocketId, updateAction, deleteAction } = job.data;
+        const {
+          interviewId,
+          senderId,
+          receiverId,
+          projectId,
+          title,
+          startTime,
+          endTime,
+          senderSocketId,
+          updateAction,
+          deleteAction,
+        } = job.data;
         const message = await this.messageRepository.findOneBy({ interviewId: interviewId });
         const messageId = message.id;
         const sender = await userService.findOne({ id: senderId });
@@ -183,8 +212,20 @@ export class EventGateway implements OnGatewayInit, OnGatewayConnection, OnGatew
           });
           notification = await this.notificationService.findOneByContent(receiverId, messageId, 'Interview deleted');
 
-          this.server.to([`${projectId}_${senderId}`, `${projectId}_${receiverId}`]).emit(`RECEIVE_INTERVIEW`, { title: `Interview deleted from ${sender.fullname}`, projectId, senderId, receiverId, messageId });
-          this.server.emit(`NOTI_${receiverId}`, { title: `Interview deleted from ${sender.fullname}`, projectId, senderId, receiverId, messageId });
+          this.server.to([`${projectId}_${senderId}`, `${projectId}_${receiverId}`]).emit(`RECEIVE_INTERVIEW`, {
+            title: `Interview deleted from ${sender.fullname}`,
+            projectId,
+            senderId,
+            receiverId,
+            messageId,
+          });
+          this.server.emit(`NOTI_${receiverId}`, {
+            title: `Interview deleted from ${sender.fullname}`,
+            projectId,
+            senderId,
+            receiverId,
+            messageId,
+          });
           done();
         }
 
@@ -206,26 +247,24 @@ export class EventGateway implements OnGatewayInit, OnGatewayConnection, OnGatew
           });
           notification = await this.notificationService.findOneByContent(receiverId, messageId, 'Interview updated');
 
-          this.server.to([`${projectId}_${senderId}`, `${projectId}_${receiverId}`]).emit(`RECEIVE_INTERVIEW`, { notification });
+          this.server
+            .to([`${projectId}_${senderId}`, `${projectId}_${receiverId}`])
+            .emit(`RECEIVE_INTERVIEW`, { notification });
           this.server.emit(`NOTI_${receiverId}`, { notification });
           done();
         }
       })
-      .catch((error) => {
-      });
+      .catch((error) => {});
 
-    this.updateInterviewQueue.on('error', (error) => {
-    });
+    this.updateInterviewQueue.on('error', (error) => {});
   }
 
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  async afterInit(socket: Socket) {
-  }
+  async afterInit(socket: Socket) {}
 
   // Handle authorized connection
   async handleConnection(socket: Socket): Promise<void> {
     try {
-
       // Verify token
       const { email, id } = await this.jwtService.verify(socket.handshake.headers.authorization.split(' ')[1]);
       const { project_id } = socket.handshake.query;
@@ -276,10 +315,35 @@ export class EventGateway implements OnGatewayInit, OnGatewayConnection, OnGatew
         throw new Error('Invalid data');
       }
 
-      const { title, content, startTime, endTime, disableFlag, projectId, senderId, receiverId, meeting_room_code, meeting_room_id, expired_at } = data;
+      const {
+        title,
+        content,
+        startTime,
+        endTime,
+        disableFlag,
+        projectId,
+        senderId,
+        receiverId,
+        meeting_room_code,
+        meeting_room_id,
+        expired_at,
+      } = data;
 
       this.interviewQueue
-        .add({ title, content, startTime, endTime, disableFlag, projectId, senderId, receiverId, senderSocketId: client.id, meeting_room_code, meeting_room_id, expired_at })
+        .add({
+          title,
+          content,
+          startTime,
+          endTime,
+          disableFlag,
+          projectId,
+          senderId,
+          receiverId,
+          senderSocketId: client.id,
+          meeting_room_code,
+          meeting_room_id,
+          expired_at,
+        })
         .catch((error) => {
           console.log('add error', error);
           throw new Error(error);
@@ -299,15 +363,52 @@ export class EventGateway implements OnGatewayInit, OnGatewayConnection, OnGatew
         throw new Error('Invalid data');
       }
 
-      const { interviewId, senderId, receiverId, projectId, title, startTime, endTime, updateAction, deleteAction } = data;
+      const { interviewId, senderId, receiverId, projectId, title, startTime, endTime, updateAction, deleteAction } =
+        data;
 
       this.updateInterviewQueue
-        .add({ interviewId, senderId, receiverId, projectId, title, startTime, endTime, senderSocketId: client.id, updateAction, deleteAction })
+        .add({
+          interviewId,
+          senderId,
+          receiverId,
+          projectId,
+          title,
+          startTime,
+          endTime,
+          senderSocketId: client.id,
+          updateAction,
+          deleteAction,
+        })
         .catch((error) => {
           throw new Error(error);
         });
     } catch (error) {
       this.server.to(client.id).emit('ERROR', { content: 'Error occurred in update interview queue' });
+    }
+  }
+
+  @SubscribeMessage('PROPOSAL_UPDATED')
+  async handleProposalUpdated(@ConnectedSocket() client: Socket, @MessageBody() data): Promise<void> {
+    try {
+      const { proposalId, senderId, receiverId, ...proposalToUpdate } = data;
+      await this.notificationService.createNotification({
+        senderId: proposalToUpdate.studentId,
+        receiverId: proposalToUpdate.studentId,
+        content: 'Proposal updated',
+        title: proposalToUpdate.coverLetter,
+        notifyFlag: NotifyFlag.Unread,
+        typeNotifyFlag: statusFlagToTypeNotifyMap[proposalToUpdate.statusFlag],
+        messageId: proposalToUpdate.id,
+      });
+      this.server.emit(`PROPOSAL_UPDATED_${receiverId}`, {
+        proposalId,
+        updatedPartsOfProposal: proposalToUpdate,
+        senderId,
+        receiverId,
+      });
+    } catch (error) {
+      console.error('Error occurred in message queue: ', error);
+      this.server.to(client.id).emit('ERROR', { content: 'Error occurred in message queue' });
     }
   }
 }

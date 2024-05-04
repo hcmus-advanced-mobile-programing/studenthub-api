@@ -10,12 +10,13 @@ import { ProposalCreateDto } from 'src/modules/proposal/dto/proposal-create.dto'
 import { ProposalUpdateDto } from 'src/modules/proposal/dto/proposal-update.dto';
 import { Project } from 'src/modules/project/project.entity';
 import { NotificationService } from 'src/modules/notification/notification.service';
-import { NotifyFlag, statusFlagToTypeNotifyMap } from 'src/common/common.enum';
+import { WebSocketServer } from '@nestjs/websockets';
+import { Server } from 'socket.io';
 
 @Injectable()
 export class ProposalService {
   private readonly logger = new Logger(ProposalService.name);
-
+  @WebSocketServer() private server: Server;
   constructor(
     @InjectRepository(Proposal)
     private proposalRepository: Repository<Proposal>,
@@ -105,14 +106,12 @@ export class ProposalService {
 
     if (!proposalToUpdate) throw new Error('Proposal not found');
     await this.proposalRepository.update(id, proposal);
-    await this.notificationService.createNotification({
+
+    this.server.emit('PROPOSAL_UPDATED', {
+      ...proposalToUpdate,
+      proposalId: id,
       senderId: proposalToUpdate.studentId,
       receiverId: proposalToUpdate.studentId,
-      content: 'Proposal updated',
-      title: proposalToUpdate.coverLetter,
-      notifyFlag: NotifyFlag.Unread,
-      typeNotifyFlag: statusFlagToTypeNotifyMap[proposalToUpdate.statusFlag],
-      messageId: proposalToUpdate.id,
     });
   }
 
