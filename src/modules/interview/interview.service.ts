@@ -19,7 +19,7 @@ export class InterviewService {
     private readonly messageRepository: Repository<Message>,
     private readonly messageService: MessageService,
     private readonly notificationService: NotificationService,
-    private readonly meetingRoomService: MeetingRoomService,
+    private readonly meetingRoomService: MeetingRoomService
   ) {}
 
   async findAll(): Promise<Interview[]> {
@@ -44,7 +44,7 @@ export class InterviewService {
       expired_at: interview.expired_at,
     });
 
-    const newInterview = await this.projectRepository.save({...interview, meetingRoomId: meeting_room.id});
+    const newInterview = await this.projectRepository.save({ ...interview, meetingRoomId: meeting_room.id });
 
     const message = await this.messageService.createMessage({
       senderId: interview.senderId,
@@ -63,6 +63,7 @@ export class InterviewService {
       notifyFlag: NotifyFlag.Unread,
       typeNotifyFlag: TypeNotifyFlag.Interview,
       title: interview.title,
+      proposalId: null,
     });
 
     return message;

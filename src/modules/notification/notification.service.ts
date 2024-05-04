@@ -22,46 +22,73 @@ export class NotificationService {
 
   async findByReceiverId(receiverId: string | number): Promise<any[]> {
     const { id } = this.httpContext.getUser();
-    
+
     if (receiverId != id) {
       throw new Error('You are not authorized to view this notification');
     }
-    const notifications =  await this.notificationRepository.find({
+    const notifications = await this.notificationRepository.find({
       where: { receiverId },
       relations: ['message', 'sender', 'receiver'],
     });
 
-    const notificationsWithoutPassword = await Promise.all(notifications.map(async notification => {
-      const { sender, receiver, ...rest } = notification;
-      const sanitizedSender = { ...sender };
-      const sanitizedReceiver = { ...receiver };
-      let interview : any;
-      let meetingRoom : any;
-      delete sanitizedSender.password;
-      delete sanitizedReceiver.password;
-      if (notification.message.interviewId != null){
-        interview = await this.interviewRepository.findOneBy({id: notification.message.interviewId});
-        meetingRoom = await this.meetingRoomRepository.findOneBy({id: interview.meetingRoomId});
-      }
-      else{
-        interview = meetingRoom = null;
-      }
-      
-      return { ...rest, sender: sanitizedSender, receiver: sanitizedReceiver, interview: interview, meetingRoom: meetingRoom };
-    }));
+    const notificationsWithoutPassword = await Promise.all(
+      notifications.map(async (notification) => {
+        const { sender, receiver, ...rest } = notification;
+        const sanitizedSender = { ...sender };
+        const sanitizedReceiver = { ...receiver };
+        let interview: any;
+        let meetingRoom: any;
+        delete sanitizedSender.password;
+        delete sanitizedReceiver.password;
+        if (notification.message.interviewId != null) {
+          interview = await this.interviewRepository.findOneBy({ id: notification.message.interviewId });
+          meetingRoom = await this.meetingRoomRepository.findOneBy({ id: interview.meetingRoomId });
+        } else {
+          interview = meetingRoom = null;
+        }
+
+        return {
+          ...rest,
+          sender: sanitizedSender,
+          receiver: sanitizedReceiver,
+          interview: interview,
+          meetingRoom: meetingRoom,
+        };
+      })
+    );
 
     return notificationsWithoutPassword;
   }
 
   async createNotification(notificationDto: CreateNotificationDto): Promise<number | string | boolean> {
     const notification = this.notificationRepository.save(notificationDto);
-    if (notification && (await notification).id)
-      return (await notification).id;
+    if (notification && (await notification).id) return (await notification).id;
     else return false;
   }
 
+  async findOneById(id: string | number): Promise<any> {
+    const notification = await this.notificationRepository.findOne({
+      where: { id },
+      relations: ['message', 'sender', 'receiver', 'proposal'],
+      select: {
+        sender: {
+          id: true,
+          fullname: true,
+          email: true,
+        },
+        receiver: {
+          id: true,
+          fullname: true,
+          email: true,
+        },
+      },
+    });
+
+    return notification;
+  }
+
   async findOneByReceiverId(receiverId: string | number, messageId: string | number): Promise<any> {
-    const notification =  await this.notificationRepository.findOne({
+    const notification = await this.notificationRepository.findOne({
       where: { messageId: messageId, receiverId: receiverId },
       relations: ['message', 'sender', 'receiver'],
     });
@@ -70,18 +97,17 @@ export class NotificationService {
       const { sender, receiver, ...rest } = notification;
       const sanitizedSender = { ...sender };
       const sanitizedReceiver = { ...receiver };
-      let interview : any;
-      let meetingRoom : any;
+      let interview: any;
+      let meetingRoom: any;
       delete sanitizedSender.password;
       delete sanitizedReceiver.password;
-      if (notification.message.interviewId != null){
+      if (notification.message.interviewId != null) {
         interview = await this.interviewRepository.findOneBy({ id: notification.message.interviewId });
         meetingRoom = await this.meetingRoomRepository.findOneBy({ id: interview.meetingRoomId });
-      }
-      else{
+      } else {
         interview = meetingRoom = null;
       }
-      
+
       return { ...rest, sender: sanitizedSender, receiver: sanitizedReceiver, interview, meetingRoom };
     };
 
@@ -89,7 +115,7 @@ export class NotificationService {
   }
 
   async findOneByContent(receiverId: string | number, messageId: string | number, content: string): Promise<any> {
-    const notification =  await this.notificationRepository.findOne({
+    const notification = await this.notificationRepository.findOne({
       where: { messageId: messageId, receiverId: receiverId, content: content },
       relations: ['message', 'sender', 'receiver'],
     });
@@ -98,18 +124,17 @@ export class NotificationService {
       const { sender, receiver, ...rest } = notification;
       const sanitizedSender = { ...sender };
       const sanitizedReceiver = { ...receiver };
-      let interview : any;
-      let meetingRoom : any;
+      let interview: any;
+      let meetingRoom: any;
       delete sanitizedSender.password;
       delete sanitizedReceiver.password;
-      if (notification.message.interviewId != null){
+      if (notification.message.interviewId != null) {
         interview = await this.interviewRepository.findOneBy({ id: notification.message.interviewId });
         meetingRoom = await this.meetingRoomRepository.findOneBy({ id: interview.meetingRoomId });
-      }
-      else{
+      } else {
         interview = meetingRoom = null;
       }
-      
+
       return { ...rest, sender: sanitizedSender, receiver: sanitizedReceiver, interview, meetingRoom };
     };
 

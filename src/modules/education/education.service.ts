@@ -35,8 +35,8 @@ export class EducationService {
       if (edu.startYear > edu.endYear) {
         throw new Error('Start year should be less than end year');
       }
-      if (edu.endYear > new Date().getFullYear()) {
-        throw new Error('End year should be less than or equal to current year');
+      if (edu.endYear > new Date().getFullYear() + 3) {
+        throw new Error('End year should be less than or equal to current year + 3');
       }
     }
     for (const edu of education.education) {
