@@ -131,10 +131,11 @@ export class EventGateway implements OnGatewayInit, OnGatewayConnection, OnGatew
         done();
       })
       .catch((error) => {
-        console.log('error', error);
+        console.log('process error', error);
       });
 
     this.interviewQueue.on('error', (error) => {
+      console.log('on error', error);
     });
 
     // Update interview queue and process interview
@@ -269,9 +270,11 @@ export class EventGateway implements OnGatewayInit, OnGatewayConnection, OnGatew
       this.interviewQueue
         .add({ title, content, startTime, endTime, disableFlag, projectId, senderId, receiverId, senderSocketId: client.id, meeting_room_code, meeting_room_id, expired_at })
         .catch((error) => {
+          console.log('add error', error);
           throw new Error(error);
         });
     } catch (error) {
+      console.log('SCHEDULE_INTERVIEW error', error);
       this.server.to(client.id).emit('ERROR', { content: 'Error occurred in interview queue' });
     }
   }
