@@ -61,8 +61,6 @@ export class EventGateway implements OnGatewayInit, OnGatewayConnection, OnGatew
         const resultAdd = await messageService.createMessage({ projectId, content, senderId, receiverId, messageFlag });
 
         if (!resultAdd) {
-          console.error(senderSocketId, 'Error occurred while adding message');
-          // Send error to sender
           this.server.to(senderSocketId).emit('ERROR', { content: 'Error occurred in message queue' });
           return done();
         }
@@ -91,18 +89,15 @@ export class EventGateway implements OnGatewayInit, OnGatewayConnection, OnGatew
         done();
       })
       .catch((error) => {
-        console.error(error);
       });
 
     this.messageQueue.on('error', (error) => {
-      console.error('Error occurred in message queue: ', error);
     });
 
     // Create interview queue and process interview
     this.interviewQueue = new Queue('interviewQueue');
     this.interviewQueue
       .process(async (job: Queue.Job<InterviewDto>, done) => {
-<<<<<<< HEAD
         const { title, content, startTime, endTime, projectId, senderId, receiverId, senderSocketId, meeting_room_code, meeting_room_id, expired_at} = job.data;
         
         const checkMeetingExist = await this.meetingRoomRepository.findOne({
@@ -114,67 +109,24 @@ export class EventGateway implements OnGatewayInit, OnGatewayConnection, OnGatew
 
         if (checkMeetingExist) {
           if (checkMeetingExist.meeting_room_code === meeting_room_code) {
-            console.error(senderSocketId, 'Meeting room code already exists');
             this.server.to(senderSocketId).emit('ERROR', { content: 'Meeting room code already exists' });
           } else {
-            console.error(senderSocketId, 'Meeting room id already exists');
             this.server.to(senderSocketId).emit('ERROR', { content: 'Meeting room id already exists' });
           }
           return done();
         }
 
         const messageId = await this.interviewService.create({title, content, startTime, endTime, projectId, senderId, receiverId, meeting_room_code, meeting_room_id, expired_at});
-
-        if (!messageId) {
-=======
-        const { title, content, startTime, endTime, projectId, senderId, receiverId, senderSocketId, meeting_room_code, meeting_room_id, expired_at } = job.data;
-
-        const checkCode = await this.meetingRoomRepository.findOneBy({ meeting_room_code: meeting_room_code });
-        if (checkCode) {
-          console.error(senderSocketId, 'Meeting room code already exist');
-          this.server.to(senderSocketId).emit('ERROR', { content: 'Meeting room code already exist' });
-          return done();
-        }
-
-        const checkId = await this.meetingRoomRepository.findOneBy({ meeting_room_id: meeting_room_id });
-        if (checkId) {
-          console.error(senderSocketId, 'Meeting room id already exist');
-          this.server.to(senderSocketId).emit('ERROR', { content: 'Meeting room id already exist' });
-          return done();
-        }
-
-        const resultAdd = await this.interviewService.create({ title, content, startTime, endTime, projectId, senderId, receiverId, meeting_room_code, meeting_room_id, expired_at });
-
-        if (!resultAdd) {
->>>>>>> c05fe307130107db2147704b2c8d2ddebac8b4d9
-          console.error(senderSocketId, 'Error occurred while adding interview');
-          this.server.to(senderSocketId).emit('ERROR', { content: 'Error occurred in interview queue' });
-          return done();
-        }
-<<<<<<< HEAD
         const notification = await this.notificationService.findOneByReceiverId(receiverId, messageId);
         
         this.server.to([`${projectId}_${senderId}`, `${projectId}_${receiverId}`]).emit(`RECEIVE_INTERVIEW`, { notification });
-=======
-
-        const interviewId = resultAdd.id;
-
-        const message = await this.messageRepository.findOneBy({ interviewId: interviewId });
-        const messageId = message.id;
-        const notification = await this.notificationService.findOneByReceiverId(receiverId, messageId);
-
-        this.server.emit(`RECEIVE_INTERVIEW`, { notification });
-
->>>>>>> c05fe307130107db2147704b2c8d2ddebac8b4d9
         this.server.emit(`NOTI_${receiverId}`, { notification });
         done();
       })
       .catch((error) => {
-        console.error(error);
       });
 
     this.interviewQueue.on('error', (error) => {
-      console.error('Error occurred in interview queue: ', error);
     });
 
     // Update interview queue and process interview
@@ -189,7 +141,6 @@ export class EventGateway implements OnGatewayInit, OnGatewayConnection, OnGatew
 
         const checkInterviewExist = await this.interviewService.findById(Number(interviewId));
         if (!checkInterviewExist || checkInterviewExist.disableFlag === DisableFlag.Disable) {
-          console.error(senderSocketId, 'The interview does not exist');
           this.server.to(senderSocketId).emit('ERROR', { content: 'The interview does not exist' });
           return done();
         }
@@ -197,7 +148,6 @@ export class EventGateway implements OnGatewayInit, OnGatewayConnection, OnGatew
         if (deleteAction == true) {
           const resultDel = this.interviewService.disable(Number(interviewId));
           if (!resultDel) {
-            console.error(senderSocketId, 'Error occurred while delete interview');
             this.server.to(senderSocketId).emit('ERROR', { content: 'Error occurred in interview queue' });
             return done();
           }
@@ -213,20 +163,14 @@ export class EventGateway implements OnGatewayInit, OnGatewayConnection, OnGatew
           });
           notification = await this.notificationService.findOneByContent(receiverId, messageId, 'Interview deleted');
 
-<<<<<<< HEAD
           this.server.to([`${projectId}_${senderId}`, `${projectId}_${receiverId}`]).emit(`RECEIVE_INTERVIEW`, { title: `Interview deleted from ${sender.fullname}`, projectId, senderId, receiverId, messageId });
           this.server.emit(`NOTI_${receiverId}`, { title: `Interview deleted from ${sender.fullname}`, projectId, senderId, receiverId, messageId});
-=======
-          this.server.emit(`RECEIVE_INTERVIEW`, { title: `Interview deleted from ${sender.fullname}`, projectId, senderId, receiverId, messageId });
-          this.server.emit(`NOTI_${receiverId}`, { title: `Interview deleted from ${sender.fullname}`, projectId, senderId, receiverId, messageId });
->>>>>>> c05fe307130107db2147704b2c8d2ddebac8b4d9
           done();
         }
 
         if (updateAction == true) {
           const resultAdd = this.interviewService.update(Number(interviewId), { title, startTime, endTime });
           if (!resultAdd) {
-            console.error(senderSocketId, 'Error occurred while update interview');
             this.server.to(senderSocketId).emit('ERROR', { content: 'Error occurred in interview queue' });
             return done();
           }
@@ -248,11 +192,9 @@ export class EventGateway implements OnGatewayInit, OnGatewayConnection, OnGatew
         }
       })
       .catch((error) => {
-        console.error(error);
       });
 
     this.updateInterviewQueue.on('error', (error) => {
-      console.error('Error occurred in update interview queue: ', error);
     });
   }
 
@@ -301,7 +243,6 @@ export class EventGateway implements OnGatewayInit, OnGatewayConnection, OnGatew
           throw new Error(error);
         });
     } catch (error) {
-      console.error('Error occurred in message queue: ', error);
       this.server.to(client.id).emit('ERROR', { content: 'Error occurred in message queue' });
     }
   }
@@ -323,7 +264,6 @@ export class EventGateway implements OnGatewayInit, OnGatewayConnection, OnGatew
           throw new Error(error);
         });
     } catch (error) {
-      console.error('Error occurred in interview queue: ', error);
       this.server.to(client.id).emit('ERROR', { content: 'Error occurred in interview queue' });
     }
   }
@@ -345,7 +285,6 @@ export class EventGateway implements OnGatewayInit, OnGatewayConnection, OnGatew
           throw new Error(error);
         });
     } catch (error) {
-      console.error('Error occurred in update interview queue: ', error);
       this.server.to(client.id).emit('ERROR', { content: 'Error occurred in update interview queue' });
     }
   }
