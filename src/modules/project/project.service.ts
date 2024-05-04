@@ -12,6 +12,7 @@ import { HttpRequestContextService } from 'src/shared/http-request-context/http-
 import { StatusFlag, TypeFlag } from 'src/common/common.enum';
 import { DisableFlag } from 'src/common/common.enum';
 import { CompanyProfileService } from 'src/modules/company/company.service';
+import { Proposal } from 'src/modules/proposal/proposal.entity';
 
 @Injectable()
 export class ProjectService {
@@ -22,6 +23,8 @@ export class ProjectService {
     private studentRepository: Repository<Student>,
     @InjectRepository(FavoriteProject)
     private favoriteProjectRepository: Repository<FavoriteProject>,
+    @InjectRepository(Proposal)
+    private proposalRepository: Repository<Proposal>,
     private MessageService: _MessageService,
     private CompanyService: CompanyProfileService,
     private readonly httpContext: HttpRequestContextService
@@ -48,8 +51,10 @@ export class ProjectService {
       ],
     });
 
+    // return empty array but not throw error
     if (!projects || projects.length === 0) {
-      throw new NotFoundException(`No projects found for company ID: ${companyId}`);
+      // throw new NotFoundException(`No projects found for company ID: ${companyId}`);
+      return [];
     }
 
     const projectsWithDetails: any[] = [];
@@ -88,6 +93,31 @@ export class ProjectService {
     return projectsWithDetails;
   }
 
+  async findByStudentId(studentId: number, typeFlag?: TypeFlag): Promise<Project[]> {
+    const student = await this.studentRepository.findOne({
+      where: { id: studentId },
+    });
+
+    if (!student) {
+      throw new NotFoundException(`No student found with ID: ${studentId}`);
+    }
+
+    return await this.projectRepository.find({
+      where: { proposals: { studentId: studentId, statusFlag: StatusFlag.Hired }, typeFlag },
+      select: {
+        id: true,
+        createdAt: true,
+        updatedAt: true,
+        companyId: true,
+        projectScopeFlag: true,
+        title: true,
+        description: true,
+        numberOfStudents: true,
+        typeFlag: true,
+      },
+    });
+  }
+
   async create(project: ProjectCreateDto): Promise<Project> {
     return this.projectRepository.save(project);
   }
@@ -100,7 +130,8 @@ export class ProjectService {
     const query = this.projectRepository
       .createQueryBuilder('project')
       .leftJoinAndSelect('project.proposals', 'proposal')
-      .andWhere('project.deletedAt IS NULL');
+      .where('project.type_flag != :typeFlag', { typeFlag: TypeFlag.Archieved })
+      .andWhere('project.deleted_at IS NULL');
 
     if (filterDto.title !== undefined) {
       const title = filterDto.title.toLowerCase();
@@ -127,6 +158,16 @@ export class ProjectService {
           proposalsLessThan: filterDto.proposalsLessThan,
         });
     }
+
+    let skip = 0;
+    let take = 10;
+
+    if (filterDto.page && filterDto.perPage) {
+      skip = (filterDto.page - 1) * filterDto.perPage;
+      take = filterDto.perPage;
+    }
+
+  query.skip(skip).take(take);
 
     const projects = await query.getMany();
 
@@ -206,9 +247,18 @@ export class ProjectService {
 
   async delete(id: number): Promise<void> {
     await this.projectRepository.update(id, { deletedAt: new Date() });
+
+    await this.proposalRepository.update({ projectId: id }, { disableFlag: DisableFlag.Disable });
   }
 
   async update(id: number, updatedProject: ProjectUpdateDto): Promise<void> {
+    const project = await this.projectRepository.findOneBy({ id });
     await this.projectRepository.update(id, updatedProject);
+
+    if (updatedProject.typeFlag === TypeFlag.Archieved) {
+      await this.proposalRepository.update({ projectId: id }, { disableFlag: DisableFlag.Disable });
+    } else if (project.typeFlag === TypeFlag.Archieved && updatedProject.typeFlag === TypeFlag.Working) {
+      await this.proposalRepository.update({ projectId: id }, { disableFlag: DisableFlag.Enable });
+    }
   }
 }

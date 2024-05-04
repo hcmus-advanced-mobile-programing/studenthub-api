@@ -37,7 +37,7 @@ export class Notification extends Base {
   @ApiProperty({ description: 'content' })
   content: string;
 
-  @OneToOne(() => Message)
+  @ManyToOne(() => Message)
   @JoinColumn({ name: 'message_id' })
   message: Message;
 

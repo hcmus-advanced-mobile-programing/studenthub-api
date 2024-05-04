@@ -19,10 +19,10 @@ export class ProposalService {
   constructor(
     @InjectRepository(Proposal)
     private proposalRepository: Repository<Proposal>,
+    private notificationService: NotificationService,
     @InjectRepository(Project)
     private projectRepository: Repository<Project>,
-    private readonly httpContext: HttpRequestContextService,
-    private readonly notificationService: NotificationService
+    private readonly httpContext: HttpRequestContextService
   ) {}
 
   async searchProjectId(projectId: number | string, args: ProposalFindArgs): Promise<PaginationResult<ProposalResDto>> {
@@ -100,6 +100,7 @@ export class ProposalService {
   }
 
   async updateProposal(id: number | string, proposal: ProposalUpdateDto): Promise<void> {
+    this.logger.log(`Update proposal with id: ${proposal}`);
     const proposalToUpdate = await this.proposalRepository.findOneBy({ id });
 
     if (!proposalToUpdate) throw new Error('Proposal not found');

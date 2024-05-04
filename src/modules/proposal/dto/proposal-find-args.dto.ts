@@ -22,4 +22,13 @@ export class ProposalFindArgs extends FindArgs {
   @IsOptional()
   @Transform(transformMultipleValueAsArray)
   typeFlag?: string
+
+  @ApiProperty({
+    required: false,
+    description: 'filter by disable flag',
+  })
+  @Transform(emptyStringAsNull)
+  @IsOptional()
+  @Transform(transformMultipleValueAsArray)
+  disableFlag?: string;
 }

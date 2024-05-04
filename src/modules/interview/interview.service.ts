@@ -36,7 +36,11 @@ export class InterviewService {
     return { ...interview, meetingRoomCode: meetingRoomCode };
   }
 
-  async create(interview: InterviewCreateDto): Promise<Interview> {
+  async create(interview: InterviewCreateDto): Promise<number | string> {
+    if (!interview.expired_at) {
+      interview.expired_at = interview.endTime;
+    }
+
     const meeting_room = await this.meetingRoomService.create({
       meeting_room_code: interview.meeting_room_code,
       meeting_room_id: interview.meeting_room_id,
@@ -45,28 +49,26 @@ export class InterviewService {
 
     const newInterview = await this.interviewRepository.save({ ...interview, meetingRoomId: meeting_room.id });
 
-    await this.messageService.createMessage({
+    const message = await this.messageService.createMessage({
       senderId: interview.senderId,
       receiverId: interview.receiverId,
       projectId: interview.projectId,
-      content: 'Interview created',
+      content: interview.content,
       interviewId: newInterview.id,
       messageFlag: MessageFlag.Interview,
     });
 
-    const message = await this.messageRepository.findOneBy({ interviewId: newInterview.id });
-
     await this.notificationService.createNotification({
       senderId: interview.senderId,
       receiverId: interview.receiverId,
-      messageId: message.id,
+      messageId: message,
       content: 'Interview created',
       notifyFlag: NotifyFlag.Unread,
       typeNotifyFlag: TypeNotifyFlag.Interview,
       title: interview.title,
     });
 
-    return newInterview;
+    return message;
   }
 
   async update(id: number, interview: InterviewUpdateDto): Promise<void> {
@@ -77,6 +79,9 @@ export class InterviewService {
   }
 
   async delete(id: number): Promise<void> {
+    if (!this.interviewRepository.findOne({ where: { id } })) {
+      throw new Error('Interview not found');
+    }
     await this.interviewRepository.update(id, { deletedAt: new Date() });
   }
 
