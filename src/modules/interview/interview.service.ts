@@ -33,7 +33,7 @@ export class InterviewService {
     });
   }
 
-  async create(interview: InterviewCreateDto): Promise<Interview> {
+  async create(interview: InterviewCreateDto): Promise<number | string> {
     if (!interview.expired_at) {
       interview.expired_at = interview.endTime;
     }
@@ -67,7 +67,7 @@ export class InterviewService {
       title: interview.title,
     });
 
-    return newInterview;
+    return message.id;
   }
 
   async update(id: number, interview: InterviewUpdateDto): Promise<void> {

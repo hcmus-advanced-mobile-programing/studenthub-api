@@ -105,35 +105,34 @@ export class EventGateway implements OnGatewayInit, OnGatewayConnection, OnGatew
       .process(async (job: Queue.Job<InterviewDto>, done) => {
         const { title, content, startTime, endTime, projectId, senderId, receiverId, senderSocketId, meeting_room_code, meeting_room_id, expired_at} = job.data;
         
-        const checkCode = await this.meetingRoomRepository.findOneBy({meeting_room_code: meeting_room_code});
-        if (checkCode){
-          console.error(senderSocketId, 'Meeting room code already exist');    
-          this.server.to(senderSocketId).emit('ERROR', { content: 'Meeting room code already exist' });
+        const checkMeetingExist = await this.meetingRoomRepository.findOne({
+          where: [
+            { meeting_room_code: meeting_room_code },
+            { meeting_room_id: meeting_room_id }
+          ]
+        });
+
+        if (checkMeetingExist) {
+          if (checkMeetingExist.meeting_room_code === meeting_room_code) {
+            console.error(senderSocketId, 'Meeting room code already exists');
+            this.server.to(senderSocketId).emit('ERROR', { content: 'Meeting room code already exists' });
+          } else {
+            console.error(senderSocketId, 'Meeting room id already exists');
+            this.server.to(senderSocketId).emit('ERROR', { content: 'Meeting room id already exists' });
+          }
           return done();
         }
 
-        const checkId = await this.meetingRoomRepository.findOneBy({meeting_room_id: meeting_room_id});
-        if (checkId){
-          console.error(senderSocketId, 'Meeting room id already exist');
-          this.server.to(senderSocketId).emit('ERROR', { content: 'Meeting room id already exist' });
-          return done();
-        }
+        const messageId = await this.interviewService.create({title, content, startTime, endTime, projectId, senderId, receiverId, meeting_room_code, meeting_room_id, expired_at});
 
-        const resultAdd = await this.interviewService.create({title, content, startTime, endTime, projectId, senderId, receiverId, meeting_room_code, meeting_room_id, expired_at});
-
-        if (!resultAdd) {
+        if (!messageId) {
           console.error(senderSocketId, 'Error occurred while adding interview');
           this.server.to(senderSocketId).emit('ERROR', { content: 'Error occurred in interview queue' });
           return done();
         }
-
-        const interviewId = resultAdd.id;
-
-        const message = await this.messageRepository.findOneBy({interviewId: interviewId});
-        const messageId = message.id;
         const notification = await this.notificationService.findOneByReceiverId(receiverId, messageId);
         
-        this.server.emit(`RECEIVE_INTERVIEW`, { notification });
+        this.server.to([`${projectId}_${senderId}`, `${projectId}_${receiverId}`]).emit(`RECEIVE_INTERVIEW`, { notification });
         this.server.emit(`NOTI_${receiverId}`, { notification });
         done();
       })
@@ -181,7 +180,7 @@ export class EventGateway implements OnGatewayInit, OnGatewayConnection, OnGatew
           });
           notification = await this.notificationService.findOneByContent(receiverId, messageId, 'Interview deleted');
 
-          this.server.emit(`RECEIVE_INTERVIEW`, { title: `Interview deleted from ${sender.fullname}`, projectId, senderId, receiverId, messageId });
+          this.server.to([`${projectId}_${senderId}`, `${projectId}_${receiverId}`]).emit(`RECEIVE_INTERVIEW`, { title: `Interview deleted from ${sender.fullname}`, projectId, senderId, receiverId, messageId });
           this.server.emit(`NOTI_${receiverId}`, { title: `Interview deleted from ${sender.fullname}`, projectId, senderId, receiverId, messageId});
           done();
         }
@@ -205,7 +204,7 @@ export class EventGateway implements OnGatewayInit, OnGatewayConnection, OnGatew
           });
           notification = await this.notificationService.findOneByContent(receiverId, messageId, 'Interview updated');
 
-          this.server.emit(`RECEIVE_INTERVIEW`, { notification });
+          this.server.to([`${projectId}_${senderId}`, `${projectId}_${receiverId}`]).emit(`RECEIVE_INTERVIEW`, { notification });
           this.server.emit(`NOTI_${receiverId}`, { notification });
           done();
         }
