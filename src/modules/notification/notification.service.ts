@@ -22,8 +22,7 @@ export class NotificationService {
 
   async findByReceiverId(receiverId: string | number): Promise<any[]> {
     const { id } = this.httpContext.getUser();
-    console.log(id);
-    console.log(receiverId);
+    
     if (receiverId != id) {
       throw new Error('You are not authorized to view this notification');
     }

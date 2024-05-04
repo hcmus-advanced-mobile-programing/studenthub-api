@@ -51,7 +51,6 @@ export class EventGateway implements OnGatewayInit, OnGatewayConnection, OnGatew
     private notificationService: NotificationService,
     private interviewService: InterviewService,
   ) {
-    console.log('constructor');
     // Create message queue and process message
     this.messageQueue = new Queue('messageQueue');
     this.messageQueue
@@ -103,6 +102,7 @@ export class EventGateway implements OnGatewayInit, OnGatewayConnection, OnGatew
     this.interviewQueue = new Queue('interviewQueue');
     this.interviewQueue
       .process(async (job: Queue.Job<InterviewDto>, done) => {
+<<<<<<< HEAD
         const { title, content, startTime, endTime, projectId, senderId, receiverId, senderSocketId, meeting_room_code, meeting_room_id, expired_at} = job.data;
         
         const checkMeetingExist = await this.meetingRoomRepository.findOne({
@@ -126,13 +126,46 @@ export class EventGateway implements OnGatewayInit, OnGatewayConnection, OnGatew
         const messageId = await this.interviewService.create({title, content, startTime, endTime, projectId, senderId, receiverId, meeting_room_code, meeting_room_id, expired_at});
 
         if (!messageId) {
+=======
+        const { title, content, startTime, endTime, projectId, senderId, receiverId, senderSocketId, meeting_room_code, meeting_room_id, expired_at } = job.data;
+
+        const checkCode = await this.meetingRoomRepository.findOneBy({ meeting_room_code: meeting_room_code });
+        if (checkCode) {
+          console.error(senderSocketId, 'Meeting room code already exist');
+          this.server.to(senderSocketId).emit('ERROR', { content: 'Meeting room code already exist' });
+          return done();
+        }
+
+        const checkId = await this.meetingRoomRepository.findOneBy({ meeting_room_id: meeting_room_id });
+        if (checkId) {
+          console.error(senderSocketId, 'Meeting room id already exist');
+          this.server.to(senderSocketId).emit('ERROR', { content: 'Meeting room id already exist' });
+          return done();
+        }
+
+        const resultAdd = await this.interviewService.create({ title, content, startTime, endTime, projectId, senderId, receiverId, meeting_room_code, meeting_room_id, expired_at });
+
+        if (!resultAdd) {
+>>>>>>> c05fe307130107db2147704b2c8d2ddebac8b4d9
           console.error(senderSocketId, 'Error occurred while adding interview');
           this.server.to(senderSocketId).emit('ERROR', { content: 'Error occurred in interview queue' });
           return done();
         }
+<<<<<<< HEAD
         const notification = await this.notificationService.findOneByReceiverId(receiverId, messageId);
         
         this.server.to([`${projectId}_${senderId}`, `${projectId}_${receiverId}`]).emit(`RECEIVE_INTERVIEW`, { notification });
+=======
+
+        const interviewId = resultAdd.id;
+
+        const message = await this.messageRepository.findOneBy({ interviewId: interviewId });
+        const messageId = message.id;
+        const notification = await this.notificationService.findOneByReceiverId(receiverId, messageId);
+
+        this.server.emit(`RECEIVE_INTERVIEW`, { notification });
+
+>>>>>>> c05fe307130107db2147704b2c8d2ddebac8b4d9
         this.server.emit(`NOTI_${receiverId}`, { notification });
         done();
       })
@@ -148,20 +181,20 @@ export class EventGateway implements OnGatewayInit, OnGatewayConnection, OnGatew
     this.updateInterviewQueue = new Queue('updateInterviewQueue');
     this.updateInterviewQueue
       .process(async (job: Queue.Job<_InterviewUpdateDto>, done) => {
-        const { interviewId, senderId, receiverId, projectId, title, startTime, endTime, senderSocketId, updateAction, deleteAction} = job.data;
-        const message = await this.messageRepository.findOneBy({interviewId: interviewId});
+        const { interviewId, senderId, receiverId, projectId, title, startTime, endTime, senderSocketId, updateAction, deleteAction } = job.data;
+        const message = await this.messageRepository.findOneBy({ interviewId: interviewId });
         const messageId = message.id;
         const sender = await userService.findOne({ id: senderId });
-        let notification : any;
-        
+        let notification: any;
+
         const checkInterviewExist = await this.interviewService.findById(Number(interviewId));
-        if (!checkInterviewExist || checkInterviewExist.disableFlag === DisableFlag.Disable){
+        if (!checkInterviewExist || checkInterviewExist.disableFlag === DisableFlag.Disable) {
           console.error(senderSocketId, 'The interview does not exist');
           this.server.to(senderSocketId).emit('ERROR', { content: 'The interview does not exist' });
           return done();
         }
 
-        if (deleteAction == true){
+        if (deleteAction == true) {
           const resultDel = this.interviewService.disable(Number(interviewId));
           if (!resultDel) {
             console.error(senderSocketId, 'Error occurred while delete interview');
@@ -180,13 +213,18 @@ export class EventGateway implements OnGatewayInit, OnGatewayConnection, OnGatew
           });
           notification = await this.notificationService.findOneByContent(receiverId, messageId, 'Interview deleted');
 
+<<<<<<< HEAD
           this.server.to([`${projectId}_${senderId}`, `${projectId}_${receiverId}`]).emit(`RECEIVE_INTERVIEW`, { title: `Interview deleted from ${sender.fullname}`, projectId, senderId, receiverId, messageId });
           this.server.emit(`NOTI_${receiverId}`, { title: `Interview deleted from ${sender.fullname}`, projectId, senderId, receiverId, messageId});
+=======
+          this.server.emit(`RECEIVE_INTERVIEW`, { title: `Interview deleted from ${sender.fullname}`, projectId, senderId, receiverId, messageId });
+          this.server.emit(`NOTI_${receiverId}`, { title: `Interview deleted from ${sender.fullname}`, projectId, senderId, receiverId, messageId });
+>>>>>>> c05fe307130107db2147704b2c8d2ddebac8b4d9
           done();
         }
 
-        if (updateAction == true){
-          const resultAdd = this.interviewService.update(Number(interviewId), {title, startTime, endTime});
+        if (updateAction == true) {
+          const resultAdd = this.interviewService.update(Number(interviewId), { title, startTime, endTime });
           if (!resultAdd) {
             console.error(senderSocketId, 'Error occurred while update interview');
             this.server.to(senderSocketId).emit('ERROR', { content: 'Error occurred in interview queue' });
@@ -220,13 +258,11 @@ export class EventGateway implements OnGatewayInit, OnGatewayConnection, OnGatew
 
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   async afterInit(socket: Socket) {
-    console.log('afterInit');
   }
 
   // Handle authorized connection
   async handleConnection(socket: Socket): Promise<void> {
     try {
-      console.log('handleConnection');
 
       // Verify token
       const { email, id } = await this.jwtService.verify(socket.handshake.headers.authorization.split(' ')[1]);
@@ -237,15 +273,12 @@ export class EventGateway implements OnGatewayInit, OnGatewayConnection, OnGatew
       // Join room
       if (project_id) await socket.join(`${project_id}_${id}`);
     } catch (error) {
-      console.log('Unauthorized connection');
       socket.disconnect();
     }
   }
 
   // eslint-disable-next-line @typescript-eslint/no-unused-vars, @typescript-eslint/require-await
   async handleDisconnect(socket: Socket) {
-    console.log('handleDisconnect');
-
     socket.disconnect();
   }
 
@@ -253,7 +286,6 @@ export class EventGateway implements OnGatewayInit, OnGatewayConnection, OnGatew
   @SubscribeMessage('SEND_MESSAGE')
   async handleMessage(@ConnectedSocket() client: Socket, @MessageBody() data): Promise<void> {
     try {
-      console.log('handleMessage');
       const checkValidate = await checkObjectMatchesDto(data, MessageDto);
 
       if (!checkValidate) {
@@ -262,7 +294,6 @@ export class EventGateway implements OnGatewayInit, OnGatewayConnection, OnGatew
 
       const { projectId, content, receiverId, senderId, messageFlag } = data;
 
-      console.log('senderSocketId: ' + client.id);
       // Add task to message queue
       this.messageQueue
         .add({ projectId, content, senderId, receiverId, messageFlag, senderSocketId: client.id })
@@ -285,15 +316,15 @@ export class EventGateway implements OnGatewayInit, OnGatewayConnection, OnGatew
       }
 
       const { title, content, startTime, endTime, disableFlag, projectId, senderId, receiverId, meeting_room_code, meeting_room_id, expired_at } = data;
-      
+
       this.interviewQueue
-        .add({ title, content, startTime, endTime, disableFlag, projectId, senderId, receiverId, senderSocketId: client.id, meeting_room_code, meeting_room_id, expired_at})
+        .add({ title, content, startTime, endTime, disableFlag, projectId, senderId, receiverId, senderSocketId: client.id, meeting_room_code, meeting_room_id, expired_at })
         .catch((error) => {
           throw new Error(error);
         });
     } catch (error) {
-      console.error('Error occurred in message queue: ', error);
-      this.server.to(client.id).emit('ERROR', { content: 'Error occurred in message queue' });
+      console.error('Error occurred in interview queue: ', error);
+      this.server.to(client.id).emit('ERROR', { content: 'Error occurred in interview queue' });
     }
   }
 
