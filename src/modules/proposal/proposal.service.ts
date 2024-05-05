@@ -16,11 +16,10 @@ import { EventGateway } from 'src/modules/event/event.gateway';
 import { Student } from 'src/modules/student/student.entity';
 import { Company } from 'src/modules/company/company.entity';
 import { User } from 'src/modules/user/user.entity';
-import { NotifyFlag, TypeNotifyFlag } from 'src/common/common.enum';
+import { NotifyFlag, StatusFlag, TypeNotifyFlag } from 'src/common/common.enum';
 
 @Injectable()
 export class ProposalService {
-  @WebSocketServer() private server: Server;
   private readonly logger = new Logger(ProposalService.name);
   constructor(
     @InjectRepository(Proposal)
@@ -92,7 +91,7 @@ export class ProposalService {
         id,
         deletedAt: null,
       },
-      relations: ['student', 'student.techStack', 'student.educations', 'student.user.fullname', 'student.skillSets'],
+      relations: ['student', 'student.techStack', 'student.educations', 'student.user', 'student.skillSets'],
     });
     return proposal;
   }
@@ -150,11 +149,52 @@ export class ProposalService {
 
     if (!proposalToUpdate) throw new Error('Proposal not found');
     // Update proposal
-    await this.proposalRepository.update(proposalId, proposal);
+    await this.proposalRepository.save({
+      id: proposalId,
+      ...proposalToUpdate,
+      ...proposal,
+    });
     // Get info for notification
     const studentInfo = await this.userRepository.findOneBy({ id: proposalToUpdate.student.userId });
     const projectInfo = await this.projectRepository.findOneBy({ id: proposalToUpdate.projectId });
     const company = await this.companyRepository.findOneBy({ id: proposalToUpdate.project.companyId });
+    let notificationId, receiverId, senderId;
+    switch (proposalToUpdate.statusFlag) {
+      case StatusFlag.Offer:
+        receiverId = proposalToUpdate.studentId;
+        senderId = company.userId;
+        notificationId = await this.notificationService.createNotification({
+          receiverId: proposalToUpdate.studentId,
+          senderId: company.userId,
+          title: `You have an OFFER!`,
+          content: `You was offered by company ${company.companyName} for project ${projectInfo.title}`,
+          notifyFlag: NotifyFlag.Read,
+          typeNotifyFlag: TypeNotifyFlag.Offer,
+          messageId: null,
+          proposalId: proposalId,
+        });
+        break;
+      case StatusFlag.Hired:
+        receiverId = company.userId;
+        senderId = proposalToUpdate.studentId;
+        notificationId = await this.notificationService.createNotification({
+          receiverId: company.userId,
+          senderId: proposalToUpdate.studentId,
+          title: `Candidate accepted your offer !`,
+          content: `Proposal hired by student ${studentInfo.fullname} for project ${projectInfo.title}`,
+          notifyFlag: NotifyFlag.Read,
+          typeNotifyFlag: TypeNotifyFlag.Offer,
+          messageId: null,
+          proposalId: proposalId,
+        });
+        break;
+      default:
+        break;
+    }
+    await this.eventGateway.sendNotification({
+      receiverId: receiverId,
+      notificationId: senderId,
+    });
     // Emit event back to event.gateway.ts
     this.eventGateway.server.emit('PROPOSAL_UPDATED', {
       proposalId,

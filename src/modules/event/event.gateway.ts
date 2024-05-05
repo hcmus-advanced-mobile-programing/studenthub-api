@@ -25,7 +25,7 @@ import { _InterviewUpdateDto } from 'src/modules/event/dto/interview-update.dto'
 import { InterviewService } from 'src/modules/interview/interview.service';
 import { Message } from 'src/modules/message/message.entity';
 import { MeetingRoom } from 'src/modules/meeting-room/meeting-room.entity';
-import { NotifyFlag, TypeNotifyFlag, DisableFlag } from 'src/common/common.enum';
+import { NotifyFlag, TypeNotifyFlag, DisableFlag, statusFlagToTypeNotifyMap, StatusFlag } from 'src/common/common.enum';
 import { NotificationDto } from 'src/modules/event/dto/notification.dto';
 
 @Injectable()
@@ -421,28 +421,7 @@ export class EventGateway implements OnGatewayInit, OnGatewayConnection, OnGatew
   @SubscribeMessage('PROPOSAL_UPDATED')
   async handleProposalUpdated(@ConnectedSocket() client: Socket, @MessageBody() data): Promise<void> {
     try {
-      const { proposalId, studentInfo, projectInfo, company, proposalToUpdate } = data;
-
-      // submit -> offer
-      // notification => student
-
-      // offer -> hired
-      // notification => company
-
-      const notificationId = await this.notificationService.createNotification({
-        receiverId: company.userId,
-        senderId: proposalToUpdate.studentId,
-        title: `PROPOSAL UPDATED !`,
-        content: `Proposal udpated by student ${studentInfo.fullname} for project ${projectInfo.title}`,
-        notifyFlag: NotifyFlag.Read,
-        typeNotifyFlag: TypeNotifyFlag.Submitted,
-        messageId: null,
-        proposalId: proposalId,
-      });
-      await this.sendNotification({
-        receiverId: company.userId as string,
-        notificationId: notificationId as string,
-      });
+      await console.log('PROPOSAL_UPDATED');
     } catch (error) {
       console.error('Error occurred in message queue: ', error);
       this.server.to(client.id).emit('ERROR', { content: 'Error occurred in message queue' });
