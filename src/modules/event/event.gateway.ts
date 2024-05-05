@@ -25,7 +25,7 @@ import { _InterviewUpdateDto } from 'src/modules/event/dto/interview-update.dto'
 import { InterviewService } from 'src/modules/interview/interview.service';
 import { Message } from 'src/modules/message/message.entity';
 import { MeetingRoom } from 'src/modules/meeting-room/meeting-room.entity';
-import { NotifyFlag, TypeNotifyFlag, DisableFlag, statusFlagToTypeNotifyMap } from 'src/common/common.enum';
+import { NotifyFlag, TypeNotifyFlag, DisableFlag } from 'src/common/common.enum';
 import { NotificationDto } from 'src/modules/event/dto/notification.dto';
 
 @Injectable()
@@ -422,6 +422,13 @@ export class EventGateway implements OnGatewayInit, OnGatewayConnection, OnGatew
   async handleProposalUpdated(@ConnectedSocket() client: Socket, @MessageBody() data): Promise<void> {
     try {
       const { proposalId, studentInfo, projectInfo, company, proposalToUpdate } = data;
+
+      // submit -> offer
+      // notification => student
+
+      // offer -> hired
+      // notification => company
+
       const notificationId = await this.notificationService.createNotification({
         receiverId: company.userId,
         senderId: proposalToUpdate.studentId,

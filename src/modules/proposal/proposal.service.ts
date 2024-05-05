@@ -123,7 +123,7 @@ export class ProposalService {
 
     const notificationId = await this.notificationService.createNotification({
       receiverId: company.userId,
-      senderId: studentId,
+      senderId: student.userId,
       title: `New proposal from student ${sender.fullname} for project ${project.title}`,
       content: `New proposal from student ${sender.fullname} for project ${project.title}`,
       notifyFlag: NotifyFlag.Unread,
@@ -143,7 +143,10 @@ export class ProposalService {
   async updateProposal(proposalId: number | string, proposal: ProposalUpdateDto): Promise<void> {
     this.logger.log(`Update proposal with id: ${proposal}`);
 
-    const proposalToUpdate = await this.proposalRepository.findOneBy({ id: proposalId });
+    const proposalToUpdate = await this.proposalRepository.findOne({
+      where: { id: proposalId },
+      relations: ['student', 'project'],
+    });
 
     if (!proposalToUpdate) throw new Error('Proposal not found');
     // Update proposal
