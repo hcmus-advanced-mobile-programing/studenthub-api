@@ -18,7 +18,7 @@ export class NotificationService {
     @InjectRepository(MeetingRoom)
     private meetingRoomRepository: Repository<MeetingRoom>,
     private readonly httpContext: HttpRequestContextService
-  ) {}
+  ) { }
 
   async findByReceiverId(receiverId: string | number): Promise<any[]> {
     const { id } = this.httpContext.getUser();
