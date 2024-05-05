@@ -91,9 +91,9 @@ export class EventGateway implements OnGatewayInit, OnGatewayConnection, OnGatew
         this.server.emit(`NOTI_${receiverId}`, { notification });
         done();
       })
-      .catch((error) => {});
+      .catch((error) => { });
 
-    this.messageQueue.on('error', (error) => {});
+    this.messageQueue.on('error', (error) => { });
 
     // Create interview queue and process interview
     this.interviewQueue = new Queue('interviewQueue');
@@ -198,8 +198,9 @@ export class EventGateway implements OnGatewayInit, OnGatewayConnection, OnGatew
         }
 
         if (deleteAction == true) {
-          const resultDel = this.interviewService.disable(Number(interviewId));
-          if (!resultDel) {
+          try {
+            this.interviewService.disable(Number(interviewId));
+          } catch (error) {
             this.server.to(senderSocketId).emit('ERROR', { content: 'Error occurred in interview queue' });
             return done();
           }
@@ -234,8 +235,9 @@ export class EventGateway implements OnGatewayInit, OnGatewayConnection, OnGatew
         }
 
         if (updateAction == true) {
-          const resultAdd = this.interviewService.update(Number(interviewId), { title, startTime, endTime });
-          if (!resultAdd) {
+          try {
+            this.interviewService.update(Number(interviewId), { title, startTime, endTime });
+          } catch (error) {
             this.server.to(senderSocketId).emit('ERROR', { content: 'Error occurred in interview queue' });
             return done();
           }
@@ -259,9 +261,9 @@ export class EventGateway implements OnGatewayInit, OnGatewayConnection, OnGatew
           done();
         }
       })
-      .catch((error) => {});
+      .catch((error) => { });
 
-    this.updateInterviewQueue.on('error', (error) => {});
+    this.updateInterviewQueue.on('error', (error) => { });
 
     // Create notification queue and process notification
     this.notificationQueue = new Queue('notificationQueue');
@@ -284,7 +286,7 @@ export class EventGateway implements OnGatewayInit, OnGatewayConnection, OnGatew
   }
 
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  async afterInit(socket: Socket) {}
+  async afterInit(socket: Socket) { }
 
   // Handle authorized connection
   async handleConnection(socket: Socket): Promise<void> {
