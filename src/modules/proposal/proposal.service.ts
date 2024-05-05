@@ -125,7 +125,7 @@ export class ProposalService {
 
     const notificationId = await this.notificationService.createNotification({
       receiverId: company.userId,
-      senderId: studentId,
+      senderId: student.userId,
       title: `New proposal from student ${sender.fullname} for project ${project.title}`,
       content: `New proposal from student ${sender.fullname} for project ${project.title}`,
       notifyFlag: NotifyFlag.Unread,
