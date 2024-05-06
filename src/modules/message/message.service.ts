@@ -278,6 +278,8 @@ export class MessageService {
         messageFlag: messageFlag,
       });
 
+      await this.messageRepository.save(newMessage);
+
       const notificationId = await this.notificationService.createNotification({
         senderId: senderId,
         receiverId: receiverId,
@@ -288,8 +290,6 @@ export class MessageService {
         title: `New message is sent by user ${senderId}`,
         proposalId: null,
       });
-
-      await this.messageRepository.save(newMessage);
 
       await this.eventGateway.sendNotification({
         notificationId: notificationId as string,
