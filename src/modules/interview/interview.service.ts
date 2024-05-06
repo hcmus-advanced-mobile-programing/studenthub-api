@@ -73,7 +73,7 @@ export class InterviewService {
 
     const newInterview = await this.interviewRepository.save({ ...interview, meetingRoomId: meeting_room.id });
 
-    const message = await this.messageService.createMessage({
+    const message = await this.messageService.createMessageForNotis({
       senderId: interview.senderId,
       receiverId: interview.receiverId,
       projectId: interview.projectId,

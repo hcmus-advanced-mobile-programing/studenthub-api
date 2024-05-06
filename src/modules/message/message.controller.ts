@@ -1,18 +1,10 @@
 import { Body, Controller, Param, Post, Put, Get, ValidationPipe, Query } from '@nestjs/common';
-
 import { ApiTags } from '@nestjs/swagger';
-import { Validate, ValidationTypes } from 'class-validator';
 import { Auth } from 'src/decorators/http.decorators';
-import { MessageDto } from 'src/modules/event/dto/message.dto';
 import { MessageResDto } from 'src/modules/message/dto/message-res.dto';
 import { MessageGetDto } from 'src/modules/message/dto/message_get.dto';
-import { MessageGet } from 'src/modules/message/interface/message_get.interface';
-import { Message } from 'src/modules/message/message.entity';
 import { MessageService } from 'src/modules/message/message.service';
-import { CreateStudentProfileDto } from 'src/modules/student/dto/create-student-profile.dto';
-import { UpdateStudentProfileDto } from 'src/modules/student/dto/update-student-profile.dto';
-import { StudentProfileService } from 'src/modules/student/student.service';
-import { TechStack } from 'src/modules/techStack/techStack.entity';
+import { MessageCreateDto } from 'src/modules/message/dto/message-create.dto';
 
 @ApiTags('message')
 @Controller('api/message')
@@ -45,5 +37,11 @@ export class MessageController {
   @Get('get/page')
   findMessage(@Query(new ValidationPipe()) messageGetDto: MessageGetDto): any {
     return this.messageService.findMessage(messageGetDto);
+  }
+
+  @Auth()
+  @Post('sendMessage')
+  sendMessage(@Body() data: MessageCreateDto): Promise<void>{
+    return this.messageService.createMessage(data);
   }
 }

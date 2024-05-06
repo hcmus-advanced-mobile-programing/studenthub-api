@@ -11,18 +11,12 @@ import {
   WebSocketGateway,
   WebSocketServer,
 } from '@nestjs/websockets';
-
 import { Server, Socket } from 'socket.io';
-import { Repository } from 'typeorm';
 import * as Queue from 'bull';
-import { checkObjectMatchesDto } from 'src/utils/validators/dto.validator';
-import { MessageDto } from 'src/modules/event/dto/message.dto';
 import { MessageService } from 'src/modules/message/message.service';
 import { UserService } from 'src/modules/user/user.service';
 import { NotificationService } from 'src/modules/notification/notification.service';
 import { _InterviewUpdateDto } from 'src/modules/event/dto/interview-update.dto';
-import { Message } from 'src/modules/message/message.entity';
-import { NotifyFlag, TypeNotifyFlag } from 'src/common/common.enum';
 import { NotificationDto } from 'src/modules/event/dto/notification.dto';
 
 @Injectable()
@@ -38,54 +32,51 @@ export class EventGateway implements OnGatewayInit, OnGatewayConnection, OnGatew
   private readonly logger = new Logger(MessageService.name);
 
   constructor(
-    @InjectRepository(Message)
-    private messageRepository: Repository<Message>,
     private readonly jwtService: JwtService,
-    private messageService: MessageService,
     private userService: UserService,
     private notificationService: NotificationService,
   ) {
     // Create message queue and process message
-    this.messageQueue = new Queue('messageQueue');
-    this.messageQueue
-      .process(async (job: Queue.Job<MessageDto>, done) => {
-        const { projectId, content, senderId, receiverId, messageFlag, senderSocketId } = job.data;
+    // this.messageQueue = new Queue('messageQueue');
+    // this.messageQueue
+    //   .process(async (job: Queue.Job<MessageDto>, done) => {
+    //     const { projectId, content, senderId, receiverId, messageFlag, senderSocketId } = job.data;
 
-        // Create message in database
-        const resultAdd = await messageService.createMessage({ projectId, content, senderId, receiverId, messageFlag });
+    //     // Create message in database
+    //     const resultAdd = await messageService.createMessage({ projectId, content, senderId, receiverId, messageFlag });
 
-        if (!resultAdd) {
-          this.server.to(senderSocketId).emit('ERROR', { content: 'Error occurred in message queue' });
-          return done();
-        }
+    //     if (!resultAdd) {
+    //       this.server.to(senderSocketId).emit('ERROR', { content: 'Error occurred in message queue' });
+    //       return done();
+    //     }
 
-        const messageId = resultAdd;
+    //     const messageId = resultAdd;
 
-        await this.notificationService.createNotification({
-          senderId: senderId,
-          receiverId: receiverId,
-          messageId: messageId,
-          content: `New message created`,
-          notifyFlag: NotifyFlag.Unread,
-          typeNotifyFlag: TypeNotifyFlag.Chat,
-          title: `New message is sent by user ${senderId}`,
-          proposalId: null,
-        });
+    //     await this.notificationService.createNotification({
+    //       senderId: senderId,
+    //       receiverId: receiverId,
+    //       messageId: messageId,
+    //       content: `New message created`,
+    //       notifyFlag: NotifyFlag.Unread,
+    //       typeNotifyFlag: TypeNotifyFlag.Chat,
+    //       title: `New message is sent by user ${senderId}`,
+    //       proposalId: null,
+    //     });
 
-        const notification = await this.notificationService.findOneByReceiverId(receiverId, messageId);
+    //     const notification = await this.notificationService.findOneByReceiverId(receiverId, messageId);
 
-        // Send message to clients
-        this.server
-          .to([`${projectId}_${senderId}`, `${projectId}_${receiverId}`])
-          .emit(`RECEIVE_MESSAGE`, { notification });
+    //     // Send message to clients
+    //     this.server
+    //       .to([`${projectId}_${senderId}`, `${projectId}_${receiverId}`])
+    //       .emit(`RECEIVE_MESSAGE`, { notification });
 
-        // Send notification to receiver
-        this.server.emit(`NOTI_${receiverId}`, { notification });
-        done();
-      })
-      .catch((error) => { });
+    //     // Send notification to receiver
+    //     this.server.emit(`NOTI_${receiverId}`, { notification });
+    //     done();
+    //   })
+    //   .catch((error) => { });
 
-    this.messageQueue.on('error', (error) => { });
+    // this.messageQueue.on('error', (error) => { });
 
     // Create notification queue and process notification
     this.notificationQueue = new Queue('notificationQueue');
@@ -139,25 +130,25 @@ export class EventGateway implements OnGatewayInit, OnGatewayConnection, OnGatew
   }
 
   // Listen for SEND_MESSAGE event
-  @SubscribeMessage('SEND_MESSAGE')
-  async handleMessage(@ConnectedSocket() client: Socket, @MessageBody() data): Promise<void> {
-    try {
-      const checkValidate = await checkObjectMatchesDto(data, MessageDto);
+  // @SubscribeMessage('SEND_MESSAGE')
+  // async handleMessage(@ConnectedSocket() client: Socket, @MessageBody() data): Promise<void> {
+  //   try {
+  //     const checkValidate = await checkObjectMatchesDto(data, MessageDto);
 
-      if (!checkValidate) {
-        throw new Error('Invalid data');
-      }
+  //     if (!checkValidate) {
+  //       throw new Error('Invalid data');
+  //     }
 
-      const { projectId, content, receiverId, senderId, messageFlag } = data;
+  //     const { projectId, content, receiverId, senderId, messageFlag } = data;
 
-      // Add task to message queue
-      this.messageQueue
-        .add({ projectId, content, senderId, receiverId, messageFlag, senderSocketId: client.id })
-        .catch((error) => {
-          throw new Error(error);
-        });
-    } catch (error) {
-      this.server.to(client.id).emit('ERROR', { content: 'Error occurred in message queue' });
-    }
-  }
+  //     // Add task to message queue
+  //     this.messageQueue
+  //       .add({ projectId, content, senderId, receiverId, messageFlag, senderSocketId: client.id })
+  //       .catch((error) => {
+  //         throw new Error(error);
+  //       });
+  //   } catch (error) {
+  //     this.server.to(client.id).emit('ERROR', { content: 'Error occurred in message queue' });
+  //   }
+  // }
 }

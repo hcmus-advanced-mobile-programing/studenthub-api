@@ -15,9 +15,10 @@ import { Notification } from 'src/modules/notification/notification.entity';
 import { Interview } from 'src/modules/interview/interview.entity';
 import { MeetingRoom } from 'src/modules/meeting-room/meeting-room.entity';
 import { Proposal } from 'src/modules/proposal/proposal.entity';
+import { EventModule } from 'src/modules/event/event.module';
 
 @Module({
-  imports: [TypeOrmModule.forFeature([Project, Message, Student, Company, FavoriteProject, User, Notification, Interview, MeetingRoom, Proposal])],
+  imports: [TypeOrmModule.forFeature([Project, Message, Student, Company, FavoriteProject, User, Notification, Interview, MeetingRoom, Proposal]), EventModule],
   providers: [ProjectService, MessageService, CompanyProfileService, NotificationService],
   controllers: [ProjectController],
 })
