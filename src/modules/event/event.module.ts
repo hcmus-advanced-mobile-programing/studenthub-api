@@ -10,22 +10,15 @@ import { NotificationModule } from 'src/modules/notification/notification.module
 import { NotificationService } from 'src/modules/notification/notification.service';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { Notification } from 'src/modules/notification/notification.entity';
-import { InterviewModule } from 'src/modules/interview/interview.module';
-import { InterviewService } from 'src/modules/interview/interview.service';
 import { Interview } from 'src/modules/interview/interview.entity';
 import { Message } from 'src/modules/message/message.entity';
-import { MeetingRoomService } from 'src/modules/meeting-room/meeting-room.service';
 import { MeetingRoom } from 'src/modules/meeting-room/meeting-room.entity';
-import { MeetingRoomModule } from 'src/modules/meeting-room/meeting-room.module';
 
 @Module({
   imports: [
-    TypeOrmModule.forFeature([Notification, Interview, Message, MeetingRoom]),
+    TypeOrmModule.forFeature([Notification, Interview, MeetingRoom]),
     UserModule,
-    MessageModule,
     NotificationModule,
-    InterviewModule,
-    MeetingRoomModule,
     JwtModule.registerAsync({
       imports: [ConfigModule],
       inject: [ConfigService],
@@ -37,7 +30,7 @@ import { MeetingRoomModule } from 'src/modules/meeting-room/meeting-room.module'
       }),
     }),
   ],
-  providers: [JwtStrategy, PublicStrategy, EventGateway, NotificationService, InterviewService, MeetingRoomService],
+  providers: [JwtStrategy, PublicStrategy, EventGateway, NotificationService,],
   exports: [EventGateway],
 })
 export class EventModule {}

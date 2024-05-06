@@ -1,5 +1,6 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsOptional, IsNotEmpty, IsDateString } from 'class-validator';
+import { IsOptional, IsDateString } from 'class-validator';
+import { Transform } from 'class-transformer';
 
 export class InterviewUpdateDto {
   @ApiProperty({ description: 'Title of the interview' })
@@ -15,4 +16,7 @@ export class InterviewUpdateDto {
   @IsOptional()
   @IsDateString()
   endTime: Date;
+
+  @Transform(({ value }) => undefined) // This will ignore any unexpected properties
+  unknownProperty: any;
 }

@@ -10,9 +10,15 @@ import { Student } from 'src/modules/student/student.entity';
 import { HttpRequestContextService } from 'src/shared/http-request-context/http-request-context.service';
 import { Brackets, In, Repository } from 'typeorm';
 import { NotificationService } from 'src/modules/notification/notification.service';
+import { WebSocketServer } from '@nestjs/websockets';
+import { Server } from 'socket.io';
+import { EventGateway } from 'src/modules/event/event.gateway';
+import { NotifyFlag, TypeNotifyFlag } from 'src/common/common.enum';
+import { MessageCreateDto } from 'src/modules/message/dto/message-create.dto';
 
 @Injectable()
 export class MessageService {
+  @WebSocketServer() private server: Server;
   private readonly logger = new Logger(MessageService.name);
 
   constructor(
@@ -26,6 +32,7 @@ export class MessageService {
     @InjectRepository(Project)
     private projectRepository: Repository<Project>, 
     private readonly notificationService: NotificationService,
+    private eventGateway: EventGateway,
   ) {}
 
   async searchProjectId(projectId: number): Promise<MessageResDto[] | any> {
@@ -252,7 +259,50 @@ export class MessageService {
     };
   }
 
-  async createMessage(data: any): Promise<string | number> {
+  async createMessage(data: MessageCreateDto): Promise<void> {
+    const senderId = Number(data.senderId);
+    const receiverId = Number(data.receiverId);
+    const projectId = Number(data.projectId);
+    const content = data.content;
+    const messageFlag = data.messageFlag;
+
+    try {
+      if (!(await this.projectRepository.findOne({ where: { id: projectId } }))) {
+        throw new NotFoundException(`Project not found`);
+      }
+
+      const newMessage = this.messageRepository.create({
+        senderId,
+        receiverId,
+        projectId,
+        content,
+        messageFlag: messageFlag,
+      });
+
+      const notificationId = await this.notificationService.createNotification({
+        senderId: senderId,
+        receiverId: receiverId,
+        messageId: newMessage.id,
+        content: `New message created`,
+        notifyFlag: NotifyFlag.Unread,
+        typeNotifyFlag: TypeNotifyFlag.Chat,
+        title: `New message is sent by user ${senderId}`,
+        proposalId: null,
+      });
+
+      await this.messageRepository.save(newMessage);
+
+      await this.eventGateway.sendNotification({
+        notificationId: notificationId as string,
+        receiverId: data.receiverId as string,
+      });
+    } catch (Exception) {
+      this.logger.error(`Error when create message: ${Exception}`);
+      return;
+    }
+  }
+
+  async createMessageForNotis(data: any): Promise<string | number> {
     const senderId = Number(data.senderId);
     const receiverId = Number(data.receiverId);
     const projectId = Number(data.projectId);
@@ -261,7 +311,6 @@ export class MessageService {
     const interviewId = Number(data.interviewId);
 
     try {
-      // Check project exist
       if (!(await this.projectRepository.findOne({ where: { id: projectId } }))) {
         throw new NotFoundException(`Project not found`);
       }

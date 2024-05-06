@@ -10,9 +10,11 @@ import { Message } from 'src/modules/message/message.entity';
 import { NotificationService } from 'src/modules/notification/notification.service';
 import { MeetingRoomService } from 'src/modules/meeting-room/meeting-room.service';
 import { MeetingRoom } from 'src/modules/meeting-room/meeting-room.entity';
-
+import { EventModule } from 'src/modules/event/event.module';
+import { ConfigModule } from '@nestjs/config';
+import { User } from 'src/modules/user/user.entity';
 @Module({
-  imports: [TypeOrmModule.forFeature([Interview, Message, Notification, MeetingRoom]), MessageModule, AuthModule],
+  imports: [TypeOrmModule.forFeature([Interview, Message, Notification, MeetingRoom, User]), MessageModule, AuthModule, ConfigModule, EventModule,],
   controllers: [InterviewController],
   providers: [InterviewService, NotificationService, MeetingRoomService],
 })
