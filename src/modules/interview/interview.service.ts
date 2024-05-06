@@ -39,13 +39,10 @@ export class InterviewService {
     return interviews.filter((i) => i.deletedAt === null);
   }
 
-  async findById(id: number): Promise<any> {
-    const interview = await this.interviewRepository.findOneBy({
+  async findById(id: number): Promise<Interview> {
+    return await this.interviewRepository.findOneBy({
       id,
     });
-    const meetingRoom = await this.meetingRoomService.findById(id);
-    const meetingRoomCode = meetingRoom?.meeting_room_code ? meetingRoom.meeting_room_code : null;
-    return { ...interview, meetingRoomCode: meetingRoomCode };
   }
 
   async create(interview: InterviewCreateDto): Promise<void> {
@@ -100,8 +97,6 @@ export class InterviewService {
   }
 
   async update(id: number, interview: InterviewUpdateDto): Promise<void> {
-    const { title, startTime, endTime } = interview;
-
     const existingProject = await this.interviewRepository.findOne({ where: { id } });
     if (!existingProject) {
       throw new Error('Interview not found');
@@ -126,7 +121,7 @@ export class InterviewService {
       proposalId: null,
     });
 
-    await this.interviewRepository.update(id, {title, startTime, endTime});
+    await this.interviewRepository.update(id, interview);
     await this.eventGateway.sendNotification({
       notificationId: notificationId as string,
       receiverId: message.receiverId as string,
@@ -169,7 +164,7 @@ export class InterviewService {
     if (existingInterview.disableFlag === DisableFlag.Disable) {
       throw new Error('Interview already disabled');
     }
-    await this.interviewRepository.update(id, { disableFlag: DisableFlag.Disable });
+    await this.interviewRepository.update(id, {disableFlag: DisableFlag.Disable });
 
     await this.eventGateway.sendNotification({
       notificationId: notificationId as string,
