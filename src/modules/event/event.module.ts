@@ -24,8 +24,6 @@ import { MeetingRoomModule } from 'src/modules/meeting-room/meeting-room.module'
     UserModule,
     MessageModule,
     NotificationModule,
-    InterviewModule,
-    MeetingRoomModule,
     JwtModule.registerAsync({
       imports: [ConfigModule],
       inject: [ConfigService],
@@ -37,7 +35,7 @@ import { MeetingRoomModule } from 'src/modules/meeting-room/meeting-room.module'
       }),
     }),
   ],
-  providers: [JwtStrategy, PublicStrategy, EventGateway, NotificationService, InterviewService, MeetingRoomService],
+  providers: [JwtStrategy, PublicStrategy, EventGateway, NotificationService,],
   exports: [EventGateway],
 })
 export class EventModule {}

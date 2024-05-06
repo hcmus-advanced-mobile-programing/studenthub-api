@@ -19,13 +19,10 @@ import { checkObjectMatchesDto } from 'src/utils/validators/dto.validator';
 import { MessageDto } from 'src/modules/event/dto/message.dto';
 import { MessageService } from 'src/modules/message/message.service';
 import { UserService } from 'src/modules/user/user.service';
-import { InterviewDto } from 'src/modules/event/dto/interview.dto';
 import { NotificationService } from 'src/modules/notification/notification.service';
 import { _InterviewUpdateDto } from 'src/modules/event/dto/interview-update.dto';
-import { InterviewService } from 'src/modules/interview/interview.service';
 import { Message } from 'src/modules/message/message.entity';
-import { MeetingRoom } from 'src/modules/meeting-room/meeting-room.entity';
-import { NotifyFlag, TypeNotifyFlag, DisableFlag } from 'src/common/common.enum';
+import { NotifyFlag, TypeNotifyFlag } from 'src/common/common.enum';
 import { NotificationDto } from 'src/modules/event/dto/notification.dto';
 
 @Injectable()
@@ -37,21 +34,16 @@ import { NotificationDto } from 'src/modules/event/dto/notification.dto';
 export class EventGateway implements OnGatewayInit, OnGatewayConnection, OnGatewayDisconnect {
   @WebSocketServer() private server: Server;
   private messageQueue: Queue.Queue;
-  private interviewQueue: Queue.Queue;
-  private updateInterviewQueue: Queue.Queue;
   private notificationQueue: Queue.Queue;
   private readonly logger = new Logger(MessageService.name);
 
   constructor(
     @InjectRepository(Message)
     private messageRepository: Repository<Message>,
-    @InjectRepository(MeetingRoom)
-    private readonly meetingRoomRepository: Repository<MeetingRoom>,
     private readonly jwtService: JwtService,
     private messageService: MessageService,
     private userService: UserService,
     private notificationService: NotificationService,
-    private interviewService: InterviewService
   ) {
     // Create message queue and process message
     this.messageQueue = new Queue('messageQueue');
@@ -94,189 +86,6 @@ export class EventGateway implements OnGatewayInit, OnGatewayConnection, OnGatew
       .catch((error) => { });
 
     this.messageQueue.on('error', (error) => { });
-
-    // Create interview queue and process interview
-    this.interviewQueue = new Queue('interviewQueue');
-    this.interviewQueue
-      .process(async (job: Queue.Job<InterviewDto>, done) => {
-        console.log('interviewQueue');
-
-        const {
-          title,
-          content,
-          startTime,
-          endTime,
-          projectId,
-          senderId,
-          receiverId,
-          senderSocketId,
-          meeting_room_code,
-          meeting_room_id,
-          expired_at,
-        } = job.data;
-
-        const checkMeetingExist = await this.meetingRoomRepository.findOne({
-          where: [{ meeting_room_code: meeting_room_code }, { meeting_room_id: meeting_room_id }],
-        });
-
-        if (checkMeetingExist) {
-          if (checkMeetingExist.meeting_room_code === meeting_room_code) {
-            this.server.to(senderSocketId).emit('ERROR', { content: 'Meeting room code already exists' });
-          } else {
-            this.server.to(senderSocketId).emit('ERROR', { content: 'Meeting room id already exists' });
-          }
-          return done();
-        }
-
-        let messageId;
-
-        try {
-          messageId = await this.interviewService.create({
-            title,
-            content,
-            startTime,
-            endTime,
-            projectId,
-            senderId,
-            receiverId,
-            meeting_room_code,
-            meeting_room_id,
-            expired_at,
-          });
-        } catch (error) {
-          return done();
-        }
-
-        if (messageId) {
-          const notification = await this.notificationService.findOneByReceiverId(receiverId, messageId);
-
-          this.server
-            .to([`${projectId}_${senderId}`, `${projectId}_${receiverId}`])
-            .emit(`RECEIVE_INTERVIEW`, { notification });
-          this.server.emit(`NOTI_${receiverId}`, { notification });
-          done();
-        } else {
-          return done();
-        }
-      })
-      .catch((error) => {
-        console.log('process error', error);
-      });
-
-    this.interviewQueue.on('error', (error) => {
-      console.log('on error', error);
-    });
-
-    // Update interview queue and process interview
-    this.updateInterviewQueue = new Queue('updateInterviewQueue');
-    this.updateInterviewQueue
-      .process(async (job: Queue.Job<_InterviewUpdateDto>, done) => {
-        console.log('updateInterviewQueue');
-        const {
-          interviewId,
-          senderId,
-          receiverId,
-          projectId,
-          title,
-          startTime,
-          endTime,
-          senderSocketId,
-          updateAction,
-          deleteAction,
-        } = job.data;
-        const message = await this.messageRepository.findOneBy({ interviewId: interviewId });
-        const messageId = message.id;
-        const sender = await userService.findOne({ id: senderId });
-        let notification: any;
-
-        const checkInterviewExist = await this.interviewService.findById(Number(interviewId));
-        if (!checkInterviewExist || checkInterviewExist.disableFlag === DisableFlag.Disable) {
-          this.server.to(senderSocketId).emit('ERROR', { content: 'The interview does not exist' });
-          return done();
-        }
-
-        if (deleteAction == true) {
-          console.log('deleteAction');
-          try {
-            this.interviewService.disable(Number(interviewId));
-          } catch (error) {
-            this.server.to(senderSocketId).emit('ERROR', { content: 'Error occurred in interview queue' });
-            return done();
-          }
-
-          try {
-            await this.notificationService.createNotification({
-              senderId: senderId,
-              receiverId: receiverId,
-              messageId: messageId,
-              content: `Interview deleted`,
-              notifyFlag: NotifyFlag.Unread,
-              typeNotifyFlag: TypeNotifyFlag.Interview,
-              title: `Interview deleted from ${sender.fullname}`,
-              proposalId: null,
-            });
-          } catch (error) {
-            this.server.to(senderSocketId).emit('ERROR', { content: 'Error occurred in interview queue' });
-            return done();
-          }
-
-          notification = await this.notificationService.findOneByContent(receiverId, messageId, 'Interview deleted');
-
-          this.server.to([`${projectId}_${senderId}`, `${projectId}_${receiverId}`]).emit(`RECEIVE_INTERVIEW`, {
-            title: `Interview deleted from ${sender.fullname}`,
-            projectId,
-            senderId,
-            receiverId,
-            messageId,
-          });
-          this.server.emit(`NOTI_${receiverId}`, {
-            title: `Interview deleted from ${sender.fullname}`,
-            projectId,
-            senderId,
-            receiverId,
-            messageId,
-          });
-          done();
-        }
-
-        if (updateAction == true) {
-          console.log('updateAction');
-          try {
-            this.interviewService.update(Number(interviewId), { title, startTime, endTime });
-          } catch (error) {
-            this.server.to(senderSocketId).emit('ERROR', { content: 'Error occurred in interview queue' });
-            return done();
-          }
-
-          try {
-            await this.notificationService.createNotification({
-              senderId: senderId,
-              receiverId: receiverId,
-              messageId: messageId,
-              content: `Interview updated`,
-              notifyFlag: NotifyFlag.Unread,
-              typeNotifyFlag: TypeNotifyFlag.Interview,
-              title: `Interview updated from ${sender.fullname}`,
-              proposalId: null,
-            });
-          } catch (error) {
-            this.server.to(senderSocketId).emit('ERROR', { content: 'Error occurred in interview queue' });
-            return done();
-          }
-
-
-          notification = await this.notificationService.findOneByContent(receiverId, messageId, 'Interview updated');
-
-          this.server
-            .to([`${projectId}_${senderId}`, `${projectId}_${receiverId}`])
-            .emit(`RECEIVE_INTERVIEW`, { notification });
-          this.server.emit(`NOTI_${receiverId}`, { notification });
-          done();
-        }
-      })
-      .catch((error) => { });
-
-    this.updateInterviewQueue.on('error', (error) => { });
 
     // Create notification queue and process notification
     this.notificationQueue = new Queue('notificationQueue');
@@ -349,87 +158,6 @@ export class EventGateway implements OnGatewayInit, OnGatewayConnection, OnGatew
         });
     } catch (error) {
       this.server.to(client.id).emit('ERROR', { content: 'Error occurred in message queue' });
-    }
-  }
-
-  @SubscribeMessage('SCHEDULE_INTERVIEW')
-  async handleScheduleInterview(@ConnectedSocket() client: Socket, @MessageBody() data): Promise<void> {
-    try {
-      const checkValidate = await checkObjectMatchesDto(data, InterviewDto);
-
-      if (!checkValidate) {
-        throw new Error('Invalid data');
-      }
-
-      const {
-        title,
-        content,
-        startTime,
-        endTime,
-        disableFlag,
-        projectId,
-        senderId,
-        receiverId,
-        meeting_room_code,
-        meeting_room_id,
-        expired_at,
-      } = data;
-
-      this.interviewQueue
-        .add({
-          title,
-          content,
-          startTime,
-          endTime,
-          disableFlag,
-          projectId,
-          senderId,
-          receiverId,
-          senderSocketId: client.id,
-          meeting_room_code,
-          meeting_room_id,
-          expired_at,
-        })
-        .catch((error) => {
-          console.log('add error', error);
-          throw new Error(error);
-        });
-    } catch (error) {
-      console.log('SCHEDULE_INTERVIEW error', error);
-      this.server.to(client.id).emit('ERROR', { content: 'Error occurred in interview queue' });
-    }
-  }
-
-  @SubscribeMessage('UPDATE_INTERVIEW')
-  async updateInterview(@ConnectedSocket() client: Socket, @MessageBody() data): Promise<void> {
-    try {
-      const checkValidate = await checkObjectMatchesDto(data, _InterviewUpdateDto);
-
-      if (!checkValidate) {
-        throw new Error('Invalid data');
-      }
-
-      const { interviewId, senderId, receiverId, projectId, title, startTime, endTime, updateAction, deleteAction } =
-        data;
-
-      this.updateInterviewQueue
-        .add({
-          interviewId,
-          senderId,
-          receiverId,
-          projectId,
-          title,
-          startTime,
-          endTime,
-          senderSocketId: client.id,
-          updateAction,
-          deleteAction,
-        })
-        .catch((error) => {
-          throw new Error(error);
-        });
-    } catch (error) {
-      this.server.to(client.id).emit('ERROR', { content: 'Error occurred in update interview queue' });
     }
   }
 }
