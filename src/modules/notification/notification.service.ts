@@ -28,36 +28,22 @@ export class NotificationService {
     }
     const notifications = await this.notificationRepository.find({
       where: { receiverId },
-      relations: ['message', 'sender', 'receiver'],
+      relations: ['message', 'sender', 'receiver', 'proposal', 'message.interview', 'message.interview.meetingRoom'],
+      select: {
+        sender: {
+          id: true,
+          fullname: true,
+          email: true,
+        },
+        receiver: {
+          id: true,
+          fullname: true,
+          email: true,
+        },
+      },
     });
 
-    const notificationsWithoutPassword = await Promise.all(
-      notifications.map(async (notification) => {
-        const { sender, receiver, ...rest } = notification;
-        const sanitizedSender = { ...sender };
-        const sanitizedReceiver = { ...receiver };
-        let interview: any;
-        let meetingRoom: any;
-        delete sanitizedSender.password;
-        delete sanitizedReceiver.password;
-        if (notification.message.interviewId != null) {
-          interview = await this.interviewRepository.findOneBy({ id: notification.message.interviewId });
-          meetingRoom = await this.meetingRoomRepository.findOneBy({ id: interview.meetingRoomId });
-        } else {
-          interview = meetingRoom = null;
-        }
-
-        return {
-          ...rest,
-          sender: sanitizedSender,
-          receiver: sanitizedReceiver,
-          interview: interview,
-          meetingRoom: meetingRoom,
-        };
-      })
-    );
-
-    return notificationsWithoutPassword;
+    return notifications;
   }
 
   async createNotification(notificationDto: CreateNotificationDto): Promise<number | string | boolean> {
@@ -69,7 +55,7 @@ export class NotificationService {
   async findOneById(id: string | number): Promise<any> {
     const notification = await this.notificationRepository.findOne({
       where: { id },
-      relations: ['message', 'sender', 'receiver', 'proposal'],
+      relations: ['message', 'sender', 'receiver', 'proposal', 'message.interview', 'message.interview.meetingRoom'],
       select: {
         sender: {
           id: true,
@@ -90,55 +76,43 @@ export class NotificationService {
   async findOneByReceiverId(receiverId: string | number, messageId: string | number): Promise<any> {
     const notification = await this.notificationRepository.findOne({
       where: { messageId: messageId, receiverId: receiverId },
-      relations: ['message', 'sender', 'receiver'],
+      relations: ['message', 'sender', 'receiver', 'proposal', 'message.interview', 'message.interview.meetingRoom'],
+      select: {
+        sender: {
+          id: true,
+          fullname: true,
+          email: true,
+        },
+        receiver: {
+          id: true,
+          fullname: true,
+          email: true,
+        },
+      },
     });
 
-    const notificationWithoutPassword = async () => {
-      const { sender, receiver, ...rest } = notification;
-      const sanitizedSender = { ...sender };
-      const sanitizedReceiver = { ...receiver };
-      let interview: any;
-      let meetingRoom: any;
-      delete sanitizedSender.password;
-      delete sanitizedReceiver.password;
-      if (notification.message.interviewId != null) {
-        interview = await this.interviewRepository.findOneBy({ id: notification.message.interviewId });
-        meetingRoom = await this.meetingRoomRepository.findOneBy({ id: interview.meetingRoomId });
-      } else {
-        interview = meetingRoom = null;
-      }
-
-      return { ...rest, sender: sanitizedSender, receiver: sanitizedReceiver, interview, meetingRoom };
-    };
-
-    return notificationWithoutPassword();
+    return notification;
   }
 
   async findOneByContent(receiverId: string | number, messageId: string | number, content: string): Promise<any> {
     const notification = await this.notificationRepository.findOne({
       where: { messageId: messageId, receiverId: receiverId, content: content },
-      relations: ['message', 'sender', 'receiver'],
+      relations: ['message', 'sender', 'receiver', 'proposal', 'message.interview', 'message.interview.meetingRoom'],
+      select: {
+        sender: {
+          id: true,
+          fullname: true,
+          email: true,
+        },
+        receiver: {
+          id: true,
+          fullname: true,
+          email: true,
+        },
+      },
     });
 
-    const notificationWithoutPassword = async () => {
-      const { sender, receiver, ...rest } = notification;
-      const sanitizedSender = { ...sender };
-      const sanitizedReceiver = { ...receiver };
-      let interview: any;
-      let meetingRoom: any;
-      delete sanitizedSender.password;
-      delete sanitizedReceiver.password;
-      if (notification.message.interviewId != null) {
-        interview = await this.interviewRepository.findOneBy({ id: notification.message.interviewId });
-        meetingRoom = await this.meetingRoomRepository.findOneBy({ id: interview.meetingRoomId });
-      } else {
-        interview = meetingRoom = null;
-      }
-
-      return { ...rest, sender: sanitizedSender, receiver: sanitizedReceiver, interview, meetingRoom };
-    };
-
-    return notificationWithoutPassword();
+    return notification;
   }
 
   async readNotification(id: number | string): Promise<void> {

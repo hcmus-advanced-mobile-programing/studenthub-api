@@ -91,9 +91,9 @@ export class EventGateway implements OnGatewayInit, OnGatewayConnection, OnGatew
         this.server.emit(`NOTI_${receiverId}`, { notification });
         done();
       })
-      .catch((error) => {});
+      .catch((error) => { });
 
-    this.messageQueue.on('error', (error) => {});
+    this.messageQueue.on('error', (error) => { });
 
     // Create interview queue and process interview
     this.interviewQueue = new Queue('interviewQueue');
@@ -147,9 +147,6 @@ export class EventGateway implements OnGatewayInit, OnGatewayConnection, OnGatew
           return done();
         }
 
-        console.log('messageId');
-        console.log(messageId);
-
         if (messageId) {
           const notification = await this.notificationService.findOneByReceiverId(receiverId, messageId);
 
@@ -174,6 +171,7 @@ export class EventGateway implements OnGatewayInit, OnGatewayConnection, OnGatew
     this.updateInterviewQueue = new Queue('updateInterviewQueue');
     this.updateInterviewQueue
       .process(async (job: Queue.Job<_InterviewUpdateDto>, done) => {
+        console.log('updateInterviewQueue');
         const {
           interviewId,
           senderId,
@@ -198,22 +196,30 @@ export class EventGateway implements OnGatewayInit, OnGatewayConnection, OnGatew
         }
 
         if (deleteAction == true) {
-          const resultDel = this.interviewService.disable(Number(interviewId));
-          if (!resultDel) {
+          console.log('deleteAction');
+          try {
+            this.interviewService.disable(Number(interviewId));
+          } catch (error) {
             this.server.to(senderSocketId).emit('ERROR', { content: 'Error occurred in interview queue' });
             return done();
           }
 
-          await this.notificationService.createNotification({
-            senderId: senderId,
-            receiverId: receiverId,
-            messageId: messageId,
-            content: `Interview deleted`,
-            notifyFlag: NotifyFlag.Unread,
-            typeNotifyFlag: TypeNotifyFlag.Interview,
-            title: `Interview deleted from ${sender.fullname}`,
-            proposalId: null,
-          });
+          try {
+            await this.notificationService.createNotification({
+              senderId: senderId,
+              receiverId: receiverId,
+              messageId: messageId,
+              content: `Interview deleted`,
+              notifyFlag: NotifyFlag.Unread,
+              typeNotifyFlag: TypeNotifyFlag.Interview,
+              title: `Interview deleted from ${sender.fullname}`,
+              proposalId: null,
+            });
+          } catch (error) {
+            this.server.to(senderSocketId).emit('ERROR', { content: 'Error occurred in interview queue' });
+            return done();
+          }
+
           notification = await this.notificationService.findOneByContent(receiverId, messageId, 'Interview deleted');
 
           this.server.to([`${projectId}_${senderId}`, `${projectId}_${receiverId}`]).emit(`RECEIVE_INTERVIEW`, {
@@ -234,22 +240,31 @@ export class EventGateway implements OnGatewayInit, OnGatewayConnection, OnGatew
         }
 
         if (updateAction == true) {
-          const resultAdd = this.interviewService.update(Number(interviewId), { title, startTime, endTime });
-          if (!resultAdd) {
+          console.log('updateAction');
+          try {
+            this.interviewService.update(Number(interviewId), { title, startTime, endTime });
+          } catch (error) {
             this.server.to(senderSocketId).emit('ERROR', { content: 'Error occurred in interview queue' });
             return done();
           }
 
-          await this.notificationService.createNotification({
-            senderId: senderId,
-            receiverId: receiverId,
-            messageId: messageId,
-            content: `Interview updated`,
-            notifyFlag: NotifyFlag.Unread,
-            typeNotifyFlag: TypeNotifyFlag.Interview,
-            title: `Interview updated from ${sender.fullname}`,
-            proposalId: null,
-          });
+          try {
+            await this.notificationService.createNotification({
+              senderId: senderId,
+              receiverId: receiverId,
+              messageId: messageId,
+              content: `Interview updated`,
+              notifyFlag: NotifyFlag.Unread,
+              typeNotifyFlag: TypeNotifyFlag.Interview,
+              title: `Interview updated from ${sender.fullname}`,
+              proposalId: null,
+            });
+          } catch (error) {
+            this.server.to(senderSocketId).emit('ERROR', { content: 'Error occurred in interview queue' });
+            return done();
+          }
+
+
           notification = await this.notificationService.findOneByContent(receiverId, messageId, 'Interview updated');
 
           this.server
@@ -259,9 +274,9 @@ export class EventGateway implements OnGatewayInit, OnGatewayConnection, OnGatew
           done();
         }
       })
-      .catch((error) => {});
+      .catch((error) => { });
 
-    this.updateInterviewQueue.on('error', (error) => {});
+    this.updateInterviewQueue.on('error', (error) => { });
 
     // Create notification queue and process notification
     this.notificationQueue = new Queue('notificationQueue');
@@ -284,7 +299,7 @@ export class EventGateway implements OnGatewayInit, OnGatewayConnection, OnGatew
   }
 
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  async afterInit(socket: Socket) {}
+  async afterInit(socket: Socket) { }
 
   // Handle authorized connection
   async handleConnection(socket: Socket): Promise<void> {
