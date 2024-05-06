@@ -9,20 +9,18 @@ import { ProposalFindArgs } from 'src/modules/proposal/dto/proposal-find-args.dt
 import { ProposalCreateDto } from 'src/modules/proposal/dto/proposal-create.dto';
 import { ProposalUpdateDto } from 'src/modules/proposal/dto/proposal-update.dto';
 import { Project } from 'src/modules/project/project.entity';
+import { NotificationService } from 'src/modules/notification/notification.service';
 import { WebSocketServer } from '@nestjs/websockets';
 import { Server } from 'socket.io';
 import { EventGateway } from 'src/modules/event/event.gateway';
-import { NotificationService } from 'src/modules/notification/notification.service';
 import { Student } from 'src/modules/student/student.entity';
 import { Company } from 'src/modules/company/company.entity';
 import { User } from 'src/modules/user/user.entity';
-import { NotifyFlag, TypeNotifyFlag } from 'src/common/common.enum';
+import { NotifyFlag, StatusFlag, TypeNotifyFlag } from 'src/common/common.enum';
 
 @Injectable()
 export class ProposalService {
-  @WebSocketServer() private server: Server;
   private readonly logger = new Logger(ProposalService.name);
-
   constructor(
     @InjectRepository(Proposal)
     private proposalRepository: Repository<Proposal>,
@@ -93,9 +91,8 @@ export class ProposalService {
         id,
         deletedAt: null,
       },
-      relations: ['student', 'student.techStack', 'student.educations'],
+      relations: ['student', 'student.techStack', 'student.educations', 'student.user', 'student.skillSets'],
     });
-
     return proposal;
   }
 
@@ -142,11 +139,66 @@ export class ProposalService {
     return newProposal;
   }
 
-  async updateProposal(id: number | string, proposal: ProposalUpdateDto): Promise<void> {
-    this.logger.log(`Update proposal with id: ${proposal}`);
-    const proposalToUpdate = await this.proposalRepository.findOneBy({ id });
+  async updateProposal(proposalId: number | string, proposal: ProposalUpdateDto): Promise<ProposalResDto> {
+    const proposalToUpdate = await this.proposalRepository.findOne({
+      where: { id: proposalId },
+      relations: ['student', 'project'],
+    });
+
     if (!proposalToUpdate) throw new Error('Proposal not found');
-    await this.proposalRepository.update(id, proposal);
+
+    await this.proposalRepository.save({
+      id: proposalId,
+      ...proposalToUpdate,
+      ...proposal,
+    });
+
+    // Get info for notification
+    const studentInfo = await this.userRepository.findOneBy({ id: proposalToUpdate.student.userId });
+    const projectInfo = await this.projectRepository.findOneBy({ id: proposalToUpdate.projectId });
+    const company = await this.companyRepository.findOneBy({ id: proposalToUpdate.project.companyId });
+    
+    let notificationId, receiverId, senderId;
+
+    switch (proposalToUpdate.statusFlag) {
+      case StatusFlag.Offer:
+        receiverId = studentInfo.id;
+        senderId = company.userId;
+        notificationId = await this.notificationService.createNotification({
+          receiverId: proposalToUpdate.studentId,
+          senderId: company.userId,
+          title: `You have an OFFER!`,
+          content: `You was offered by company ${company.companyName} for project ${projectInfo.title}`,
+          notifyFlag: NotifyFlag.Read,
+          typeNotifyFlag: TypeNotifyFlag.Offer,
+          messageId: null,
+          proposalId: proposalId,
+        });
+        break;
+      case StatusFlag.Hired:
+        receiverId = company.userId;
+        senderId = studentInfo.id;
+        notificationId = await this.notificationService.createNotification({
+          receiverId: company.userId,
+          senderId: proposalToUpdate.studentId,
+          title: `Candidate accepted your offer !`,
+          content: `Proposal hired by student ${studentInfo.fullname} for project ${projectInfo.title}`,
+          notifyFlag: NotifyFlag.Read,
+          typeNotifyFlag: TypeNotifyFlag.Offer,
+          messageId: null,
+          proposalId: proposalId,
+        });
+        break;
+      default:
+        break;
+    }
+
+    await this.eventGateway.sendNotification({
+      receiverId: receiverId,
+      notificationId: notificationId,
+    });
+
+    return proposalToUpdate;
   }
 
   async findByStudentId(studentId: string): Promise<ProposalResDto[]> {

@@ -32,7 +32,7 @@ import { NotificationDto } from 'src/modules/event/dto/notification.dto';
   },
 })
 export class EventGateway implements OnGatewayInit, OnGatewayConnection, OnGatewayDisconnect {
-  @WebSocketServer() private server: Server;
+  @WebSocketServer() public server: Server;
   private messageQueue: Queue.Queue;
   private notificationQueue: Queue.Queue;
   private readonly logger = new Logger(MessageService.name);

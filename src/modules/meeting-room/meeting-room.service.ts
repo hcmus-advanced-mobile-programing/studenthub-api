@@ -8,7 +8,7 @@ import { CreateRoomDto } from './dto/create-room.dto';
 export class MeetingRoomService {
   constructor(
     @InjectRepository(MeetingRoom)
-    private readonly meetingRoomRepository: Repository<MeetingRoom>,
+    private readonly meetingRoomRepository: Repository<MeetingRoom>
   ) {}
 
   async create(createRoomDto: CreateRoomDto): Promise<MeetingRoom> {
@@ -34,5 +34,13 @@ export class MeetingRoomService {
     }
 
     return true; // Meeting room is available
+  }
+
+  async findById(meetingRoomId: number): Promise<MeetingRoom> {
+    return this.meetingRoomRepository.findOne({
+      where: {
+        meeting_room_id: meetingRoomId.toString(),
+      },
+    });
   }
 }
