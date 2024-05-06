@@ -100,6 +100,8 @@ export class InterviewService {
   }
 
   async update(id: number, interview: InterviewUpdateDto): Promise<void> {
+    const { title, startTime, endTime } = interview;
+
     const existingProject = await this.interviewRepository.findOne({ where: { id } });
     if (!existingProject) {
       throw new Error('Interview not found');
@@ -124,7 +126,7 @@ export class InterviewService {
       proposalId: null,
     });
 
-    await this.interviewRepository.update(id, interview);
+    await this.interviewRepository.update(id, {title, startTime, endTime});
     await this.eventGateway.sendNotification({
       notificationId: notificationId as string,
       receiverId: message.receiverId as string,
