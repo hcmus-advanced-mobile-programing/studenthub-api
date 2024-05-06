@@ -25,7 +25,7 @@ import { _InterviewUpdateDto } from 'src/modules/event/dto/interview-update.dto'
 import { InterviewService } from 'src/modules/interview/interview.service';
 import { Message } from 'src/modules/message/message.entity';
 import { MeetingRoom } from 'src/modules/meeting-room/meeting-room.entity';
-import { NotifyFlag, TypeNotifyFlag, DisableFlag } from 'src/common/common.enum';
+import { NotifyFlag, TypeNotifyFlag, DisableFlag, statusFlagToTypeNotifyMap, StatusFlag } from 'src/common/common.enum';
 import { NotificationDto } from 'src/modules/event/dto/notification.dto';
 
 @Injectable()
@@ -35,7 +35,7 @@ import { NotificationDto } from 'src/modules/event/dto/notification.dto';
   },
 })
 export class EventGateway implements OnGatewayInit, OnGatewayConnection, OnGatewayDisconnect {
-  @WebSocketServer() private server: Server;
+  @WebSocketServer() public server: Server;
   private messageQueue: Queue.Queue;
   private interviewQueue: Queue.Queue;
   private updateInterviewQueue: Queue.Queue;
@@ -430,6 +430,16 @@ export class EventGateway implements OnGatewayInit, OnGatewayConnection, OnGatew
         });
     } catch (error) {
       this.server.to(client.id).emit('ERROR', { content: 'Error occurred in update interview queue' });
+    }
+  }
+
+  @SubscribeMessage('PROPOSAL_UPDATED')
+  async handleProposalUpdated(@ConnectedSocket() client: Socket, @MessageBody() data): Promise<void> {
+    try {
+      await console.log('PROPOSAL_UPDATED');
+    } catch (error) {
+      console.error('Error occurred in message queue: ', error);
+      this.server.to(client.id).emit('ERROR', { content: 'Error occurred in message queue' });
     }
   }
 }

@@ -30,6 +30,9 @@ export class ProjectService {
     private readonly httpContext: HttpRequestContextService
   ) {}
 
+  async _findAll(): Promise<Project[]> {
+    return this.projectRepository.find({});
+  }
   async findByCompanyId(companyId: number, typeFlag?: TypeFlag): Promise<Project[]> {
     const whereCondition: any = { companyId: companyId };
 

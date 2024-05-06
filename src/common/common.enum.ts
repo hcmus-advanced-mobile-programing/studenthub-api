@@ -60,3 +60,10 @@ export enum TypeNotifyFlag {
   Submitted = 2,
   Chat = 3,
 }
+
+export const statusFlagToTypeNotifyMap: Record<StatusFlag, TypeNotifyFlag> = {
+  [StatusFlag.Waitting]: TypeNotifyFlag.Submitted,
+  [StatusFlag.Active]: TypeNotifyFlag.Chat,
+  [StatusFlag.Offer]: TypeNotifyFlag.Offer,
+  [StatusFlag.Hired]: TypeNotifyFlag.Offer,
+};

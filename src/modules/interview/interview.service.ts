@@ -14,7 +14,7 @@ import { MeetingRoomService } from 'src/modules/meeting-room/meeting-room.servic
 export class InterviewService {
   constructor(
     @InjectRepository(Interview)
-    private readonly projectRepository: Repository<Interview>,
+    private readonly interviewRepository: Repository<Interview>,
     @InjectRepository(Message)
     private readonly messageRepository: Repository<Message>,
     private readonly messageService: MessageService,
@@ -23,14 +23,17 @@ export class InterviewService {
   ) {}
 
   async findAll(): Promise<Interview[]> {
-    const interviews = await this.projectRepository.find({});
+    const interviews = await this.interviewRepository.find({});
     return interviews.filter((i) => i.deletedAt === null);
   }
 
-  async findById(id: number): Promise<Interview> {
-    return await this.projectRepository.findOneBy({
+  async findById(id: number): Promise<any> {
+    const interview = await this.interviewRepository.findOneBy({
       id,
     });
+    const meetingRoom = await this.meetingRoomService.findById(id);
+    const meetingRoomCode = meetingRoom?.meeting_room_code ? meetingRoom.meeting_room_code : null;
+    return { ...interview, meetingRoomCode: meetingRoomCode };
   }
 
   async create(interview: InterviewCreateDto): Promise<number | string> {
@@ -44,7 +47,7 @@ export class InterviewService {
       expired_at: interview.expired_at,
     });
 
-    const newInterview = await this.projectRepository.save({ ...interview, meetingRoomId: meeting_room.id });
+    const newInterview = await this.interviewRepository.save({ ...interview, meetingRoomId: meeting_room.id });
 
     const message = await this.messageService.createMessage({
       senderId: interview.senderId,
@@ -70,21 +73,21 @@ export class InterviewService {
   }
 
   async update(id: number, interview: InterviewUpdateDto): Promise<void> {
-    if (!this.projectRepository.findOne({ where: { id } })) {
+    if (!this.interviewRepository.findOne({ where: { id } })) {
       throw new Error('Interview not found');
     }
-    await this.projectRepository.update(id, interview);
+    await this.interviewRepository.update(id, interview);
   }
 
   async delete(id: number): Promise<void> {
-    if (!this.projectRepository.findOne({ where: { id } })) {
+    if (!this.interviewRepository.findOne({ where: { id } })) {
       throw new Error('Interview not found');
     }
-    await this.projectRepository.update(id, { deletedAt: new Date() });
+    await this.interviewRepository.update(id, { deletedAt: new Date() });
   }
 
   async disable(id: number): Promise<void> {
-    const interview = await this.projectRepository.findOne({ where: { id } });
+    const interview = await this.interviewRepository.findOne({ where: { id } });
     if (!interview) {
       throw new Error('Interview not found');
     }
@@ -92,6 +95,6 @@ export class InterviewService {
     if (interview.disableFlag === DisableFlag.Disable) {
       throw new Error('Interview already disabled');
     }
-    await this.projectRepository.save({ ...interview, disableFlag: DisableFlag.Disable });
+    await this.interviewRepository.save({ ...interview, disableFlag: DisableFlag.Disable });
   }
 }
