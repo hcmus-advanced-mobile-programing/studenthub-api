@@ -1,6 +1,6 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { IsEnum, IsNotEmpty, IsNotIn, IsNumber, IsOptional, IsString } from 'class-validator';
-import { ProjectScopeFlag, TypeFlag } from 'src/common/common.enum';
+import { ProjectScopeFlag, ProjectStatusFlag, TypeFlag } from 'src/common/common.enum';
 
 export class ProjectUpdateDto {
   @ApiProperty({ description: 'Project Scope Flag', required: false })
@@ -27,4 +27,9 @@ export class ProjectUpdateDto {
   @IsEnum(TypeFlag)
   @IsOptional()
   typeFlag?: TypeFlag;
+
+  @ApiProperty({ description: 'Status of the project', example: ProjectStatusFlag.Working, required: false })
+  @IsEnum(ProjectStatusFlag)
+  @IsOptional()
+  status?: ProjectStatusFlag;
 }

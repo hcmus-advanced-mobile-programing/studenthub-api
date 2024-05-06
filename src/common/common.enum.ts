@@ -31,6 +31,12 @@ export enum TypeFlag {
   Archieved = 2,
 }
 
+export enum ProjectStatusFlag {
+  Working = 0,
+  Success = 1,
+  Fail = 2,
+}
+
 export enum ProjectScopeFlag {
   LessThanOneMOnth = 0,
   OneToThreeMonth = 1,
@@ -52,6 +58,5 @@ export enum TypeNotifyFlag {
   Offer = 0,
   Interview = 1,
   Submitted = 2,
-  Chat = 3, 
-  
+  Chat = 3,
 }
