@@ -139,29 +139,30 @@ export class ProposalService {
     return newProposal;
   }
 
-  async updateProposal(proposalId: number | string, proposal: ProposalUpdateDto): Promise<void> {
-    this.logger.log(`Update proposal with id: ${proposal}`);
-
+  async updateProposal(proposalId: number | string, proposal: ProposalUpdateDto): Promise<ProposalResDto> {
     const proposalToUpdate = await this.proposalRepository.findOne({
       where: { id: proposalId },
       relations: ['student', 'project'],
     });
 
     if (!proposalToUpdate) throw new Error('Proposal not found');
-    // Update proposal
+
     await this.proposalRepository.save({
       id: proposalId,
       ...proposalToUpdate,
       ...proposal,
     });
+
     // Get info for notification
     const studentInfo = await this.userRepository.findOneBy({ id: proposalToUpdate.student.userId });
     const projectInfo = await this.projectRepository.findOneBy({ id: proposalToUpdate.projectId });
     const company = await this.companyRepository.findOneBy({ id: proposalToUpdate.project.companyId });
+    
     let notificationId, receiverId, senderId;
+
     switch (proposalToUpdate.statusFlag) {
       case StatusFlag.Offer:
-        receiverId = proposalToUpdate.studentId;
+        receiverId = studentInfo.id;
         senderId = company.userId;
         notificationId = await this.notificationService.createNotification({
           receiverId: proposalToUpdate.studentId,
@@ -176,7 +177,7 @@ export class ProposalService {
         break;
       case StatusFlag.Hired:
         receiverId = company.userId;
-        senderId = proposalToUpdate.studentId;
+        senderId = studentInfo.id;
         notificationId = await this.notificationService.createNotification({
           receiverId: company.userId,
           senderId: proposalToUpdate.studentId,
@@ -191,18 +192,13 @@ export class ProposalService {
       default:
         break;
     }
+
     await this.eventGateway.sendNotification({
       receiverId: receiverId,
-      notificationId: senderId,
+      notificationId: notificationId,
     });
-    // Emit event back to event.gateway.ts
-    this.eventGateway.server.emit('PROPOSAL_UPDATED', {
-      proposalId,
-      studentInfo,
-      projectInfo,
-      company,
-      proposalToUpdate,
-    });
+
+    return proposalToUpdate;
   }
 
   async findByStudentId(studentId: string): Promise<ProposalResDto[]> {
