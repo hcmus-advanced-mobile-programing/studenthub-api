@@ -30,9 +30,9 @@ export class MessageService {
     private companyRepository: Repository<Company>,
     private readonly httpContext: HttpRequestContextService,
     @InjectRepository(Project)
-    private projectRepository: Repository<Project>, 
+    private projectRepository: Repository<Project>,
     private readonly notificationService: NotificationService,
-    private eventGateway: EventGateway,
+    private eventGateway: EventGateway
   ) {}
 
   async searchProjectId(projectId: number): Promise<MessageResDto[] | any> {
@@ -53,7 +53,7 @@ export class MessageService {
         'receiver.id',
         'receiver.fullname',
         'interview',
-        'meetingRoom'
+        'meetingRoom',
       ])
       .where('message.projectId = :projectId', { projectId })
       .andWhere('message.senderId = :userId', { userId })
@@ -75,7 +75,7 @@ export class MessageService {
         'receiver.id',
         'receiver.fullname',
         'interview',
-        'meetingRoom'
+        'meetingRoom',
       ])
       .where('message.projectId = :projectId', { projectId })
       .andWhere('message.receiverId = :userId', { userId })
@@ -117,7 +117,7 @@ export class MessageService {
         'receiver.id',
         'receiver.fullname',
         'interview',
-        'meetingRoom'
+        'meetingRoom',
       ])
       .where('message.projectId = :projectId', { projectId })
       .andWhere(
@@ -161,7 +161,7 @@ export class MessageService {
         'receiver.fullname',
         'interview',
         'project',
-        'meetingRoom'
+        'meetingRoom',
       ])
       .andWhere(
         new Brackets((qb) => {
@@ -173,17 +173,17 @@ export class MessageService {
       )
       .orderBy('message.createdAt', 'ASC')
       .getMany();
-    
+
     const groupedMessages = messages.reduce((acc, message) => {
       const senderId = message.sender.id;
       const receiverId = message.receiver.id;
       const projectId = message.project.id;
-    
+
       const key1 = `${projectId}_${senderId}_${receiverId}`;
       const key2 = `${projectId}_${receiverId}_${senderId}`;
-    
+
       const key = acc[key1] ? key1 : acc[key2] ? key2 : key1;
-    
+
       if (!acc[key]) {
         acc[key] = {
           project: message.project,
@@ -207,8 +207,7 @@ export class MessageService {
 
       return latestMessage;
     });
-    
-    
+
     return latestMessages;
   }
 
@@ -271,7 +270,7 @@ export class MessageService {
         throw new NotFoundException(`Project not found`);
       }
 
-      const newMessage = this.messageRepository.create({
+      const newMessage = await this.messageRepository.create({
         senderId,
         receiverId,
         projectId,
