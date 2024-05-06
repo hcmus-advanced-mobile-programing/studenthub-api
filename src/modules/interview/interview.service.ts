@@ -145,8 +145,6 @@ export class InterviewService {
     if (!message) {
       throw new Error('Related message not found');
     }
-    console.log('message');
-    console.log(message);
 
     const sender = await this.userRepository.findOneBy({ id: message.senderId });
     const receiver = await this.userRepository.findOneBy({ id: message.receiverId });
