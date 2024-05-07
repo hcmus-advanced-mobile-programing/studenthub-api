@@ -1,4 +1,4 @@
-import { IsNotEmpty } from 'class-validator';
+import { IsNotEmpty, IsOptional } from 'class-validator';
 
 export class NotificationDto {
   @IsNotEmpty()
@@ -6,4 +6,11 @@ export class NotificationDto {
 
   @IsNotEmpty()
   receiverId: string;
+
+  @IsOptional()
+  senderId?: string;
+
+  @IsOptional()
+  projectId?: string;
+
 }

@@ -16,7 +16,4 @@ export class InterviewUpdateDto {
   @IsOptional()
   @IsDateString()
   endTime: Date;
-
-  @Transform(({ value }) => undefined) // This will ignore any unexpected properties
-  unknownProperty: any;
 }
