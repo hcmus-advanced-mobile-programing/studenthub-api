@@ -16,8 +16,8 @@ import * as Queue from 'bull';
 import { MessageService } from 'src/modules/message/message.service';
 import { UserService } from 'src/modules/user/user.service';
 import { NotificationService } from 'src/modules/notification/notification.service';
-import { _InterviewUpdateDto } from 'src/modules/event/dto/interview-update.dto';
 import { NotificationDto } from 'src/modules/event/dto/notification.dto';
+import { TypeNotifyFlag } from 'src/common/common.enum';
 
 @Injectable()
 @WebSocketGateway({
@@ -41,9 +41,16 @@ export class EventGateway implements OnGatewayInit, OnGatewayConnection, OnGatew
     this.notificationQueue = new Queue('notificationQueue');
     this.notificationQueue
       .process(async (job: Queue.Job<NotificationDto>, done) => {
-        const { receiverId, notificationId } = job.data;
+        const { receiverId, notificationId, senderId, projectId } = job.data;
 
         const notification = await this.notificationService.findOneById(notificationId);
+
+        if (notification.typeNotifyFlag == TypeNotifyFlag.Chat){
+          this.server.to([`${projectId}_${senderId}`, `${projectId}_${receiverId}`]).emit('RECEIVE_MESSAGE', { notification });
+        }
+        else if (notification.typeNotifyFlag == TypeNotifyFlag.Interview){
+          this.server.to([`${projectId}_${senderId}`, `${projectId}_${receiverId}`]).emit('RECEIVE_INTERVIEW', { notification });
+        }
 
         this.server.emit(`NOTI_${receiverId}`, { notification });
         done();

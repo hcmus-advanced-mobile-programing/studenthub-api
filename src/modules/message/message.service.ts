@@ -294,6 +294,8 @@ export class MessageService {
       await this.eventGateway.sendNotification({
         notificationId: notificationId as string,
         receiverId: data.receiverId as string,
+        senderId: data.senderId as string,
+        projectId: data.projectId as string
       });
     } catch (Exception) {
       this.logger.error(`Error when create message: ${Exception}`);

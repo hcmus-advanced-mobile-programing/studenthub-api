@@ -93,6 +93,8 @@ export class InterviewService {
     await this.eventGateway.sendNotification({
       notificationId: notificationId as string,
       receiverId: interview.receiverId as string,
+      senderId: interview.senderId as string,
+      projectId: interview.projectId as string
     });
   }
 
@@ -125,6 +127,8 @@ export class InterviewService {
     await this.eventGateway.sendNotification({
       notificationId: notificationId as string,
       receiverId: message.receiverId as string,
+      senderId: message.senderId as string,
+      projectId: message.projectId as string
     });
   }
 
@@ -167,6 +171,8 @@ export class InterviewService {
     await this.eventGateway.sendNotification({
       notificationId: notificationId as string,
       receiverId: message.receiverId as string,
+      senderId: message.senderId as string,
+      projectId: message.projectId as string
     });
   }
 }
