@@ -32,7 +32,7 @@ export class InterviewService {
     private readonly notificationService: NotificationService,
     private readonly meetingRoomService: MeetingRoomService,
     private eventGateway: EventGateway,
-  ) {}
+  ) { }
 
   async findAll(): Promise<Interview[]> {
     const interviews = await this.interviewRepository.find({});
@@ -56,7 +56,7 @@ export class InterviewService {
 
     if (checkMeetingExist) {
       if (checkMeetingExist.meeting_room_code === interview.meeting_room_code) {
-        throw new Error('Meeting room code already exists' );
+        throw new Error('Meeting room code already exists');
       } else {
         throw new Error('Meeting room id already exists');
       }
@@ -166,7 +166,7 @@ export class InterviewService {
     if (existingInterview.disableFlag === DisableFlag.Disable) {
       throw new Error('Interview already disabled');
     }
-    await this.interviewRepository.update(id, {disableFlag: DisableFlag.Disable });
+    await this.interviewRepository.update(id, { disableFlag: DisableFlag.Disable });
 
     await this.eventGateway.sendNotification({
       notificationId: notificationId as string,
@@ -174,5 +174,16 @@ export class InterviewService {
       senderId: message.senderId as string,
       projectId: message.projectId as string
     });
+  }
+
+  async searchUserId(userId: number | string): Promise<Interview[]> {
+    const interviews = await this.interviewRepository.findBy({
+      disableFlag: DisableFlag.Enable, messages: [{
+        receiverId: userId
+      }, {
+        senderId: userId
+      }]
+    })
+    return interviews;
   }
 }
