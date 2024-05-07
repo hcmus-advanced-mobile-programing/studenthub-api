@@ -177,13 +177,13 @@ export class InterviewService {
   }
 
   async searchUserId(userId: number | string): Promise<Interview[]> {
-    const interviews = await this.interviewRepository.findBy({
-      disableFlag: DisableFlag.Enable, messages: [{
-        receiverId: userId
-      }, {
-        senderId: userId
-      }]
-    })
+    const interviews = await this.interviewRepository.createQueryBuilder('interview')
+    .leftJoin('interview.messages', 'messages')
+    .leftJoinAndSelect('interview.meetingRoom', 'meetingRoom')
+    .where('interview.disableFlag = :disableFlag', { disableFlag: DisableFlag.Enable })
+    .andWhere('(messages.receiverId = :userId OR messages.senderId = :userId)', { userId })
+    .getMany();
+
     return interviews;
   }
 }
