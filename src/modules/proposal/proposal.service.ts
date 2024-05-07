@@ -140,14 +140,14 @@ export class ProposalService {
   }
 
   async updateProposal(proposalId: number | string, proposal: ProposalUpdateDto): Promise<ProposalResDto> {
-    const proposalToUpdate = await this.proposalRepository.findOne({
+    let proposalToUpdate = await this.proposalRepository.findOne({
       where: { id: proposalId },
       relations: ['student', 'project'],
     });
 
     if (!proposalToUpdate) throw new Error('Proposal not found');
 
-    await this.proposalRepository.save({
+    proposalToUpdate = await this.proposalRepository.save({
       id: proposalId,
       ...proposalToUpdate,
       ...proposal,
