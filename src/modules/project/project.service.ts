@@ -127,7 +127,6 @@ export class ProjectService {
     const student = await this.studentRepository.findOneBy({ userId: userId });
     const studentId = student ? student.id : null;
 
-
     const query = this.projectRepository.createQueryBuilder('project')
       .leftJoin('project.proposals', 'proposal')
       .where('project.type_flag != :typeFlag', { typeFlag: TypeFlag.Archieved })
@@ -177,7 +176,8 @@ export class ProjectService {
       take = filterDto.perPage;
     }
 
-    query.skip(skip).take(take);
+    query.offset(skip)
+    .limit(take)
 
     const projects = await query.getRawMany();
 
