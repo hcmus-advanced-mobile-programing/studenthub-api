@@ -28,7 +28,7 @@ export class ProjectService {
     private MessageService: _MessageService,
     private CompanyService: CompanyProfileService,
     private readonly httpContext: HttpRequestContextService
-  ) {}
+  ) { }
 
   async _findAll(): Promise<Project[]> {
     return this.projectRepository.find({});
@@ -127,11 +127,24 @@ export class ProjectService {
     const student = await this.studentRepository.findOneBy({ userId: userId });
     const studentId = student ? student.id : null;
 
-    const query = this.projectRepository
-      .createQueryBuilder('project')
-      .leftJoinAndSelect('project.proposals', 'proposal')
+
+    const query = this.projectRepository.createQueryBuilder('project')
+      .leftJoin('project.proposals', 'proposal')
       .where('project.type_flag != :typeFlag', { typeFlag: TypeFlag.Archieved })
-      .andWhere('project.deleted_at IS NULL');
+      .andWhere('project.deleted_at IS NULL')
+      .select([
+        "project.id AS id",
+        "project.created_at AS createdAt",
+        "project.updated_at AS updatedAt",
+        "project.deleted_at AS deletedAt",
+        "project.company_id AS companyId",
+        "project.project_scope_flag AS projectScopeFlag",
+        "project.title AS title",
+        "project.description AS description",
+        "project.number_of_students AS numberOfStudents",
+        "project.type_flag AS typeFlag",
+        "project.status AS status",
+        "COUNT(proposal.id) AS proposalCount"]);
 
     if (filterDto.title !== undefined) {
       const title = filterDto.title.toLowerCase();
@@ -153,9 +166,7 @@ export class ProjectService {
     if (filterDto.proposalsLessThan !== undefined) {
       query
         .groupBy('project.id')
-        .having('COUNT(proposal.id) < :proposalsLessThan', {
-          proposalsLessThan: filterDto.proposalsLessThan,
-        });
+        .having('COUNT(proposal.id) < :proposalsLessThan', { proposalsLessThan: filterDto.proposalsLessThan });
     }
 
     let skip = 0;
@@ -166,9 +177,9 @@ export class ProjectService {
       take = filterDto.perPage;
     }
 
-  query.skip(skip).take(take);
+    query.skip(skip).take(take);
 
-    const projects = await query.getMany();
+    const projects = await query.getRawMany();
 
     if (projects.length === 0) {
       throw new NotFoundException(`No projects found`);
@@ -189,28 +200,28 @@ export class ProjectService {
     }
 
     const projectsWithDetails = await Promise.all(
-      projects.map(async (project) => {
+      projects.map(async (project: any) => {
         let companyInfo;
-        if (project.companyId) {
+        if (project.companyid) {
           try {
-            companyInfo = await this.CompanyService.searchCompanyById(project.companyId);
+            companyInfo = await this.CompanyService.searchCompanyById(project.companyid);
           } catch (error) {
             companyInfo = null;
           }
         }
         return {
           id: project.id,
-          createdAt: project.createdAt,
-          updatedAt: project.updatedAt,
-          deletedAt: project.deletedAt,
-          companyId: project.companyId,
+          createdAt: project.createdat,
+          updatedAt: project.updatedat,
+          deletedAt: project.deletedat,
+          companyId: project.companyid,
           companyName: companyInfo ? companyInfo.companyName : null,
-          projectScopeFlag: project.projectScopeFlag,
+          projectScopeFlag: project.projectscopeflag,
           title: project.title,
           description: project.description,
-          numberOfStudents: project.numberOfStudents,
-          typeFlag: project.typeFlag,
-          countProposals: project.proposals ? project.proposals.length : 0,
+          numberOfStudents: project.numberofstudents,
+          typeFlag: project.typeflag,
+          countProposals: project.proposalcount,
           isFavorite: favoriteProjectIds.includes(project.id),
         };
       })
