@@ -165,8 +165,8 @@ export class ProposalService {
         receiverId = studentInfo.id;
         senderId = company.userId;
         notificationId = await this.notificationService.createNotification({
-          receiverId: proposalToUpdate.studentId,
-          senderId: company.userId,
+          receiverId,
+          senderId,
           title: `You have an OFFER!`,
           content: `You was offered by company ${company.companyName} for project ${projectInfo.title}`,
           notifyFlag: NotifyFlag.Read,
@@ -179,8 +179,8 @@ export class ProposalService {
         receiverId = company.userId;
         senderId = studentInfo.id;
         notificationId = await this.notificationService.createNotification({
-          receiverId: company.userId,
-          senderId: proposalToUpdate.studentId,
+          receiverId,
+          senderId,
           title: `Candidate accepted your offer !`,
           content: `Proposal hired by student ${studentInfo.fullname} for project ${projectInfo.title}`,
           notifyFlag: NotifyFlag.Read,
