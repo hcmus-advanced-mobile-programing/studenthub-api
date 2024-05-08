@@ -17,6 +17,7 @@ import { Student } from 'src/modules/student/student.entity';
 import { Company } from 'src/modules/company/company.entity';
 import { User } from 'src/modules/user/user.entity';
 import { NotifyFlag, StatusFlag, TypeNotifyFlag } from 'src/common/common.enum';
+import { StudentProfileService } from 'src/modules/student/student.service';
 
 @Injectable()
 export class ProposalService {
@@ -34,7 +35,8 @@ export class ProposalService {
     private userRepository: Repository<User>,
     private readonly httpContext: HttpRequestContextService,
     private eventGateway: EventGateway,
-    private notificationService: NotificationService
+    private notificationService: NotificationService,
+    private studentProfileService: StudentProfileService
   ) {}
 
   async searchProjectId(projectId: number | string, args: ProposalFindArgs): Promise<PaginationResult<ProposalResDto>> {
@@ -91,8 +93,19 @@ export class ProposalService {
         id,
         deletedAt: null,
       },
-      relations: ['student', 'student.techStack', 'student.educations', 'student.user', 'student.skillSets'],
+      relations: [
+        'student',
+        'student.techStack',
+        'student.educations',
+        'student.user',
+        'student.skillSets',
+        'student.experiences',
+      ],
     });
+
+    proposal.student.resume = await this.studentProfileService.getResume(proposal.student.userId as number);
+    proposal.student.transcript = await this.studentProfileService.getTranscript(proposal.student.userId as number);
+
     return proposal;
   }
 
@@ -157,7 +170,7 @@ export class ProposalService {
     const studentInfo = await this.userRepository.findOneBy({ id: proposalToUpdate.student.userId });
     const projectInfo = await this.projectRepository.findOneBy({ id: proposalToUpdate.projectId });
     const company = await this.companyRepository.findOneBy({ id: proposalToUpdate.project.companyId });
-    
+
     let notificationId, receiverId, senderId;
 
     switch (proposalToUpdate.statusFlag) {

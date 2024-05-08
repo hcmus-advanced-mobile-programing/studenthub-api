@@ -15,6 +15,7 @@ import { Server } from 'socket.io';
 import { EventGateway } from 'src/modules/event/event.gateway';
 import { NotifyFlag, TypeNotifyFlag } from 'src/common/common.enum';
 import { MessageCreateDto } from 'src/modules/message/dto/message-create.dto';
+import { User } from 'src/modules/user/user.entity';
 
 @Injectable()
 export class MessageService {
@@ -26,6 +27,8 @@ export class MessageService {
     private messageRepository: Repository<Message>,
     @InjectRepository(Student)
     private studentRepository: Repository<Student>,
+    @InjectRepository(User)
+    private userRepository: Repository<User>,
     @InjectRepository(Company)
     private companyRepository: Repository<Company>,
     private readonly httpContext: HttpRequestContextService,
@@ -280,6 +283,8 @@ export class MessageService {
 
       await this.messageRepository.save(newMessage);
 
+      const user = await this.userRepository.findOne({ where: { id: senderId } });
+
       const notificationId = await this.notificationService.createNotification({
         senderId: senderId,
         receiverId: receiverId,
@@ -287,7 +292,7 @@ export class MessageService {
         content: `New message created`,
         notifyFlag: NotifyFlag.Unread,
         typeNotifyFlag: TypeNotifyFlag.Chat,
-        title: `New message is sent by user ${senderId}`,
+        title: `New message is sent by ${user.fullname}`,
         proposalId: null,
       });
 
@@ -295,7 +300,7 @@ export class MessageService {
         notificationId: notificationId as string,
         receiverId: data.receiverId as string,
         senderId: data.senderId as string,
-        projectId: data.projectId as string
+        projectId: data.projectId as string,
       });
     } catch (Exception) {
       this.logger.error(`Error when create message: ${Exception}`);
