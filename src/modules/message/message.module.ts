@@ -12,9 +12,14 @@ import { Interview } from 'src/modules/interview/interview.entity';
 import { MeetingRoom } from 'src/modules/meeting-room/meeting-room.entity';
 import { EventModule } from 'src/modules/event/event.module';
 import { ConfigModule } from '@nestjs/config';
+import { User } from 'src/modules/user/user.entity';
 
 @Module({
-  imports: [TypeOrmModule.forFeature([Message, Student, Company, Project, Notification, Interview, MeetingRoom]), ConfigModule, EventModule],
+  imports: [
+    TypeOrmModule.forFeature([Message, Student, Company, Project, Notification, Interview, MeetingRoom, User]),
+    ConfigModule,
+    EventModule,
+  ],
   providers: [MessageService, NotificationService],
   controllers: [MessageController],
   exports: [MessageService],
