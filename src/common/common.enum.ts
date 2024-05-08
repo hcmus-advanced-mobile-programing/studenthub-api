@@ -59,6 +59,7 @@ export enum TypeNotifyFlag {
   Interview = 1,
   Submitted = 2,
   Chat = 3,
+  Hired = 4
 }
 
 export const statusFlagToTypeNotifyMap: Record<StatusFlag, TypeNotifyFlag> = {
