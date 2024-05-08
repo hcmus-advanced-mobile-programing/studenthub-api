@@ -152,7 +152,6 @@ export class ProjectService {
 
     if (filterDto.proposalsLessThan !== undefined) {
       query
-        .leftJoin('project.proposals', 'proposal')
         .groupBy('project.id')
         .having('COUNT(proposal.id) < :proposalsLessThan', {
           proposalsLessThan: filterDto.proposalsLessThan,
