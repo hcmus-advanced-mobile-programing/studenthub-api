@@ -143,7 +143,8 @@ export class ProjectService {
         "project.number_of_students AS numberOfStudents",
         "project.type_flag AS typeFlag",
         "project.status AS status",
-        "COUNT(proposal.id) AS proposalCount"]);
+        "COUNT(proposal.id) AS proposalCount"])
+        .groupBy('project.id');
 
     if (filterDto.title !== undefined) {
       const title = filterDto.title.toLowerCase();
@@ -164,7 +165,6 @@ export class ProjectService {
 
     if (filterDto.proposalsLessThan !== undefined) {
       query
-        .groupBy('project.id')
         .having('COUNT(proposal.id) < :proposalsLessThan', { proposalsLessThan: filterDto.proposalsLessThan });
     }
 
