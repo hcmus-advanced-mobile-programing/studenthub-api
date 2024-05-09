@@ -36,7 +36,7 @@ export class MessageService {
     private projectRepository: Repository<Project>,
     private readonly notificationService: NotificationService,
     private eventGateway: EventGateway
-  ) {}
+  ) { }
 
   async searchProjectId(projectId: number): Promise<MessageResDto[] | any> {
     const userId = this.httpContext.getUser().id;
@@ -166,6 +166,7 @@ export class MessageService {
         'interview',
         'project',
         'meetingRoom',
+        'notification.id',
         'notification.notifyFlag'
       ])
       .andWhere(
@@ -197,10 +198,15 @@ export class MessageService {
       }
       message.project = undefined;
 
-      (message as any).notifyFlag = message.notifications.length > 0 ? message.notifications[message.notifications.length - 1].notifyFlag : null;
+      if (message.notifications.length > 0) {
+        (message as any).notifications = {
+          id: message.notifications[message.notifications.length - 1].id,
+          notifyFlag: message.notifications[message.notifications.length - 1].notifyFlag
+        };
+      } else {
+        message.notifications = null
+      }
 
-      message.notifications = undefined;
-      
       acc[key].messages.push(message);
       return acc;
     }, {});
