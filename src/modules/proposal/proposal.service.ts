@@ -37,7 +37,7 @@ export class ProposalService {
     private eventGateway: EventGateway,
     private notificationService: NotificationService,
     private studentProfileService: StudentProfileService
-  ) {}
+  ) { }
 
   async searchProjectId(projectId: number | string, args: ProposalFindArgs): Promise<PaginationResult<ProposalResDto>> {
     const { limit, offset, statusFlag } = args;
@@ -103,8 +103,12 @@ export class ProposalService {
       ],
     });
 
-    proposal.student.resume = await this.studentProfileService.getResume(proposal.student.userId as number);
-    proposal.student.transcript = await this.studentProfileService.getTranscript(proposal.student.userId as number);
+    if (!proposal) {
+      throw new NotFoundException(`Not found: proposalId = ${id}`);
+    }
+
+    (proposal.student as any).resumeLink = await this.studentProfileService.getResume(proposal.student.id as number);
+    (proposal.student as any).transcriptLink = await this.studentProfileService.getTranscript(proposal.student.id as number);
 
     return proposal;
   }
