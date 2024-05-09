@@ -221,7 +221,7 @@ export class ProjectService {
           description: project.description,
           numberOfStudents: project.numberofstudents,
           typeFlag: project.typeflag,
-          countProposals: project.proposalcount,
+          countProposals: parseInt(project.proposalcount),
           isFavorite: favoriteProjectIds.includes(project.id),
         };
       })
