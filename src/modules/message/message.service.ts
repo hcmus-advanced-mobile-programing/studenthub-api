@@ -154,6 +154,7 @@ export class MessageService {
       .leftJoinAndSelect('message.interview', 'interview')
       .leftJoinAndSelect('interview.meetingRoom', 'meetingRoom')
       .leftJoinAndSelect('message.project', 'project')
+      .leftJoinAndSelect('message.notifications', 'notification')
       .select([
         'message.id',
         'message.content',
@@ -165,6 +166,7 @@ export class MessageService {
         'interview',
         'project',
         'meetingRoom',
+        'notification.notifyFlag'
       ])
       .andWhere(
         new Brackets((qb) => {
@@ -194,6 +196,11 @@ export class MessageService {
         };
       }
       message.project = undefined;
+
+      (message as any).notifyFlag = message.notifications.length > 0 ? message.notifications[message.notifications.length - 1].notifyFlag : null;
+
+      message.notifications = undefined;
+      
       acc[key].messages.push(message);
       return acc;
     }, {});
