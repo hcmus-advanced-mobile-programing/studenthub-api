@@ -28,7 +28,15 @@ export class NotificationService {
     }
     const notifications = await this.notificationRepository.find({
       where: { receiverId },
-      relations: ['message', 'sender', 'receiver', 'proposal', 'message.interview', 'message.interview.meetingRoom'],
+      relations: [
+        'message',
+        'sender',
+        'receiver',
+        'proposal',
+        'proposal.project',
+        'message.interview',
+        'message.interview.meetingRoom',
+      ],
       select: {
         sender: {
           id: true,
