@@ -16,8 +16,9 @@ import { EventGateway } from 'src/modules/event/event.gateway';
 import { Student } from 'src/modules/student/student.entity';
 import { Company } from 'src/modules/company/company.entity';
 import { User } from 'src/modules/user/user.entity';
-import { NotifyFlag, StatusFlag, TypeNotifyFlag } from 'src/common/common.enum';
+import { NotifyFlag, StatusFlag, TypeNotifyFlag, DisableFlag } from 'src/common/common.enum';
 import { StudentProfileService } from 'src/modules/student/student.service';
+import { Not } from 'typeorm'
 
 @Injectable()
 export class ProposalService {
@@ -231,6 +232,7 @@ export class ProposalService {
 
   async findProjectByStudentId(studentId: number, args: ProposalFindArgs): Promise<Proposal[]> {
     const whereCondition: any = { studentId: studentId };
+    console.log(whereCondition);
 
     if (Array.isArray(args.statusFlag) && args.statusFlag.length > 0) {
       whereCondition.statusFlag = In(args.statusFlag);
@@ -239,6 +241,8 @@ export class ProposalService {
     if (Array.isArray(args.typeFlag) && args.typeFlag.length > 0) {
       whereCondition.project = { typeFlag: In(args.typeFlag) };
     }
+
+    whereCondition.disableFlag = Not(DisableFlag.Disable);
 
     return this.proposalRepository.find({
       where: whereCondition,
