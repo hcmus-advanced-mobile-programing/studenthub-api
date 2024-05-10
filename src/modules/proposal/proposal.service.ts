@@ -1,6 +1,6 @@
 import { Injectable, Logger, NotFoundException, ConflictException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository, In } from 'typeorm';
+import { Repository, In, IsNull, Not } from 'typeorm';
 import { PaginationResult, genPaginationResult } from 'src/shared/dtos/common.dtos';
 import { HttpRequestContextService } from 'src/shared/http-request-context/http-request-context.service';
 import { Proposal } from 'src/modules/proposal/proposal.entity';
@@ -16,9 +16,8 @@ import { EventGateway } from 'src/modules/event/event.gateway';
 import { Student } from 'src/modules/student/student.entity';
 import { Company } from 'src/modules/company/company.entity';
 import { User } from 'src/modules/user/user.entity';
-import { NotifyFlag, StatusFlag, TypeNotifyFlag, DisableFlag } from 'src/common/common.enum';
+import { NotifyFlag, StatusFlag, TypeNotifyFlag } from 'src/common/common.enum';
 import { StudentProfileService } from 'src/modules/student/student.service';
-import { Not } from 'typeorm'
 
 @Injectable()
 export class ProposalService {
@@ -242,7 +241,7 @@ export class ProposalService {
       whereCondition.project = { typeFlag: In(args.typeFlag) };
     }
 
-    whereCondition.disableFlag = Not(DisableFlag.Disable);
+    whereCondition.project = { ...whereCondition.project, deletedAt: IsNull() };
 
     return this.proposalRepository.find({
       where: whereCondition,
