@@ -231,7 +231,6 @@ export class ProposalService {
 
   async findProjectByStudentId(studentId: number, args: ProposalFindArgs): Promise<Proposal[]> {
     const whereCondition: any = { studentId: studentId };
-    console.log(whereCondition);
 
     if (Array.isArray(args.statusFlag) && args.statusFlag.length > 0) {
       whereCondition.statusFlag = In(args.statusFlag);
