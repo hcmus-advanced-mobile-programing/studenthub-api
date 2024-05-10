@@ -131,6 +131,7 @@ export class ProjectService {
       .leftJoin('project.proposals', 'proposal')
       .where('project.type_flag != :typeFlag', { typeFlag: TypeFlag.Archieved })
       .andWhere('project.deleted_at IS NULL')
+      .orderBy('project.created_at', 'DESC')
       .select([
         "project.id AS id",
         "project.created_at AS createdAt",

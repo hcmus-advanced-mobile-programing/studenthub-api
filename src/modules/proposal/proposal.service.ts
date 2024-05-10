@@ -1,6 +1,6 @@
 import { Injectable, Logger, NotFoundException, ConflictException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository, In } from 'typeorm';
+import { Repository, In, IsNull, Not } from 'typeorm';
 import { PaginationResult, genPaginationResult } from 'src/shared/dtos/common.dtos';
 import { HttpRequestContextService } from 'src/shared/http-request-context/http-request-context.service';
 import { Proposal } from 'src/modules/proposal/proposal.entity';
@@ -239,6 +239,8 @@ export class ProposalService {
     if (Array.isArray(args.typeFlag) && args.typeFlag.length > 0) {
       whereCondition.project = { typeFlag: In(args.typeFlag) };
     }
+
+    whereCondition.project = { ...whereCondition.project, deletedAt: IsNull() };
 
     return this.proposalRepository.find({
       where: whereCondition,
