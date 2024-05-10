@@ -49,6 +49,9 @@ export class NotificationService {
           email: true,
         },
       },
+      order: {
+        createdAt: 'DESC',
+      },
     });
 
     return notifications;
