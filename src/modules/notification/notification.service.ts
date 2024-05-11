@@ -34,6 +34,7 @@ export class NotificationService {
         'receiver',
         'proposal',
         'proposal.student',
+        'proposal.student.techStack',
         'proposal.project',
         'message.interview',
         'message.interview.meetingRoom',
@@ -68,7 +69,18 @@ export class NotificationService {
   async findOneById(id: string | number): Promise<any> {
     const notification = await this.notificationRepository.findOne({
       where: { id },
-      relations: ['message', 'sender', 'receiver', 'proposal', 'message.interview', 'message.interview.meetingRoom'],
+      relations: [
+        'message',
+        'sender',
+        'receiver',
+        'proposal',
+        'proposal.student',
+        'proposal.student.techStack',
+        'proposal.project',
+        'message.interview',
+        'message.interview.meetingRoom',
+        'message.project',
+      ],
       select: {
         sender: {
           id: true,
@@ -89,7 +101,18 @@ export class NotificationService {
   async findOneByReceiverId(receiverId: string | number, messageId: string | number): Promise<any> {
     const notification = await this.notificationRepository.findOne({
       where: { messageId: messageId, receiverId: receiverId },
-      relations: ['message', 'sender', 'receiver', 'proposal', 'message.interview', 'message.interview.meetingRoom'],
+      relations: [
+        'message',
+        'sender',
+        'receiver',
+        'proposal',
+        'proposal.student',
+        'proposal.student.techStack',
+        'proposal.project',
+        'message.interview',
+        'message.interview.meetingRoom',
+        'message.project',
+      ],
       select: {
         sender: {
           id: true,
@@ -110,7 +133,18 @@ export class NotificationService {
   async findOneByContent(receiverId: string | number, messageId: string | number, content: string): Promise<any> {
     const notification = await this.notificationRepository.findOne({
       where: { messageId: messageId, receiverId: receiverId, content: content },
-      relations: ['message', 'sender', 'receiver', 'proposal', 'message.interview', 'message.interview.meetingRoom'],
+      relations: [
+        'message',
+        'sender',
+        'receiver',
+        'proposal',
+        'proposal.student',
+        'proposal.student.techStack',
+        'proposal.project',
+        'message.interview',
+        'message.interview.meetingRoom',
+        'message.project',
+      ],
       select: {
         sender: {
           id: true,
