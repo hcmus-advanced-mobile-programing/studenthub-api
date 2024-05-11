@@ -33,9 +33,11 @@ export class NotificationService {
         'sender',
         'receiver',
         'proposal',
+        'proposal.student',
         'proposal.project',
         'message.interview',
         'message.interview.meetingRoom',
+        'message.project',
       ],
       select: {
         sender: {
